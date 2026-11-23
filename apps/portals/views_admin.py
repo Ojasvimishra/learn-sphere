@@ -57,7 +57,7 @@ def admin_panel_view(request):
 
     # 5. Immutable Audit Logs (Recent 30 entries)
     audit_page = audit_repo.query_logs(page=1, per_page=30)
-    audit_logs = audit_page.get("logs", [])
+    audit_logs = audit_page.get("items", [])
 
     context = {
         "user": user,
