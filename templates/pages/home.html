@@ -47,76 +47,43 @@
         </a>
       </div>
 
-      <!-- Interactive Chromebook Frame with Accessible Looping Preview -->
-      <div style="max-width: 960px; margin: 0 auto; background: #ffffff; border-radius: 28px; box-shadow: 0 16px 48px rgba(60,64,67,0.12); border: 1px solid var(--border-light); overflow: hidden;">
-        <!-- Browser Frame Header -->
-        <div style="background: #f1f3f4; padding: 0.75rem 1.5rem; display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid #e0e3e7;">
-          <div style="display: flex; align-items: center; gap: 0.5rem;">
-            <span style="width: 11px; height: 11px; border-radius: 50%; background: #ea4335;"></span>
-            <span style="width: 11px; height: 11px; border-radius: 50%; background: #fbbc05;"></span>
-            <span style="width: 11px; height: 11px; border-radius: 50%; background: #34a853;"></span>
+      <!-- Four Smart Education Core Pillars -->
+      <div style="max-width: 960px; margin: 0 auto;">
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1.25rem; text-align: left;">
+          <!-- Effectively -->
+          <div class="card" style="padding: 1.6rem; border-radius: 20px; border-top: 3.5px solid var(--google-blue); box-shadow: 0 4px 18px rgba(60,64,67,0.06);">
+            <div style="width: 42px; height: 42px; border-radius: 50%; background: #e8f0fe; display: flex; align-items: center; justify-content: center; color: var(--google-blue); font-size: 1.15rem; margin-bottom: 0.85rem;">
+              <i class="fas fa-bullseye"></i>
+            </div>
+            <h4 style="font-size: 1.1rem; font-weight: 700; color: #1f1f1f; margin-bottom: 0.35rem;">Learn Effectively</h4>
+            <p style="font-size: 0.88rem; color: #5f6368; line-height: 1.5; margin: 0;">Mastery-driven modular curriculum and cognitive reinforcement.</p>
           </div>
-          <div style="background: #ffffff; padding: 0.35rem 1.75rem; border-radius: var(--radius-pill); font-size: 0.85rem; color: #5f6368; width: 55%; display: flex; align-items: center; justify-content: center; gap: 0.5rem; border: 1px solid #dadce0;">
-            <i class="fas fa-lock" style="color: #1e8e3e; font-size: 0.75rem;"></i>
-            <span>learnsphere.edu/smart-education/overview</span>
+
+          <!-- Efficiently -->
+          <div class="card" style="padding: 1.6rem; border-radius: 20px; border-top: 3.5px solid var(--google-green); box-shadow: 0 4px 18px rgba(60,64,67,0.06);">
+            <div style="width: 42px; height: 42px; border-radius: 50%; background: #e6f4ea; display: flex; align-items: center; justify-content: center; color: var(--google-green); font-size: 1.15rem; margin-bottom: 0.85rem;">
+              <i class="fas fa-tachometer-alt"></i>
+            </div>
+            <h4 style="font-size: 1.1rem; font-weight: 700; color: #1f1f1f; margin-bottom: 0.35rem;">Learn Efficiently</h4>
+            <p style="font-size: 0.88rem; color: #5f6368; line-height: 1.5; margin: 0;">High-yield digital books, smart summaries, and zero friction.</p>
           </div>
-          <div>
-            <button class="play-pause-btn" onclick="toggleDemoPlayback(this)" aria-pressed="false" aria-label="Pause or play interactive preview animation">
-              <i class="fas fa-pause"></i> <span>Pause Preview</span>
-            </button>
+
+          <!-- Flexibly -->
+          <div class="card" style="padding: 1.6rem; border-radius: 20px; border-top: 3.5px solid #b06000; box-shadow: 0 4px 18px rgba(60,64,67,0.06);">
+            <div style="width: 42px; height: 42px; border-radius: 50%; background: #fef7e0; display: flex; align-items: center; justify-content: center; color: #b06000; font-size: 1.15rem; margin-bottom: 0.85rem;">
+              <i class="fas fa-clock"></i>
+            </div>
+            <h4 style="font-size: 1.1rem; font-weight: 700; color: #1f1f1f; margin-bottom: 0.35rem;">Learn Flexibly</h4>
+            <p style="font-size: 0.88rem; color: #5f6368; line-height: 1.5; margin: 0;">Self-paced study pathways accessible anywhere across devices.</p>
           </div>
-        </div>
 
-        <!-- Four Smart Education Pillars inside Mockup -->
-        <div style="padding: 2.5rem; text-align: left; background: #fafcff;">
-          <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1.25rem;">
-            <!-- Effectively -->
-            <div style="background: #ffffff; padding: 1.5rem; border-radius: 20px; border: 1px solid #e8eaed; box-shadow: 0 1px 3px rgba(60,64,67,0.06);">
-              <div style="width: 40px; height: 40px; border-radius: 50%; background: #e8f0fe; display: flex; align-items: center; justify-content: center; color: var(--google-blue); font-size: 1.1rem; margin-bottom: 0.85rem;">
-                <i class="fas fa-bullseye"></i>
-              </div>
-              <h4 style="font-size: 1.1rem; font-weight: 700; color: #1f1f1f; margin-bottom: 0.25rem;">Learn Effectively</h4>
-              <p style="font-size: 0.85rem; color: #5f6368; line-height: 1.5;">Mastery-driven modular curriculum and cognitive reinforcement.</p>
-              <div class="metric-gauge-bar" style="height:6px; margin-top:0.75rem;">
-                <div class="metric-gauge-fill looping-progress-bar" style="width: 85%; background: var(--google-blue);"></div>
-              </div>
+          <!-- Comfortably -->
+          <div class="card" style="padding: 1.6rem; border-radius: 20px; border-top: 3.5px solid var(--google-purple); box-shadow: 0 4px 18px rgba(60,64,67,0.06);">
+            <div style="width: 42px; height: 42px; border-radius: 50%; background: #f3e8fd; display: flex; align-items: center; justify-content: center; color: var(--google-purple); font-size: 1.15rem; margin-bottom: 0.85rem;">
+              <i class="fas fa-couch"></i>
             </div>
-
-            <!-- Efficiently -->
-            <div style="background: #ffffff; padding: 1.5rem; border-radius: 20px; border: 1px solid #e8eaed; box-shadow: 0 1px 3px rgba(60,64,67,0.06);">
-              <div style="width: 40px; height: 40px; border-radius: 50%; background: #e6f4ea; display: flex; align-items: center; justify-content: center; color: var(--google-green); font-size: 1.1rem; margin-bottom: 0.85rem;">
-                <i class="fas fa-tachometer-alt"></i>
-              </div>
-              <h4 style="font-size: 1.1rem; font-weight: 700; color: #1f1f1f; margin-bottom: 0.25rem;">Learn Efficiently</h4>
-              <p style="font-size: 0.85rem; color: #5f6368; line-height: 1.5;">High-yield digital books, smart summaries, and zero friction.</p>
-              <div class="metric-gauge-bar" style="height:6px; margin-top:0.75rem;">
-                <div class="metric-gauge-fill looping-progress-bar" style="width: 92%; background: var(--google-green);"></div>
-              </div>
-            </div>
-
-            <!-- Flexibly -->
-            <div style="background: #ffffff; padding: 1.5rem; border-radius: 20px; border: 1px solid #e8eaed; box-shadow: 0 1px 3px rgba(60,64,67,0.06);">
-              <div style="width: 40px; height: 40px; border-radius: 50%; background: #fef7e0; display: flex; align-items: center; justify-content: center; color: #b06000; font-size: 1.1rem; margin-bottom: 0.85rem;">
-                <i class="fas fa-clock"></i>
-              </div>
-              <h4 style="font-size: 1.1rem; font-weight: 700; color: #1f1f1f; margin-bottom: 0.25rem;">Learn Flexibly</h4>
-              <p style="font-size: 0.85rem; color: #5f6368; line-height: 1.5;">Self-paced study pathways accessible anywhere across devices.</p>
-              <div class="metric-gauge-bar" style="height:6px; margin-top:0.75rem;">
-                <div class="metric-gauge-fill looping-progress-bar" style="width: 78%; background: var(--google-yellow);"></div>
-              </div>
-            </div>
-
-            <!-- Comfortably -->
-            <div style="background: #ffffff; padding: 1.5rem; border-radius: 20px; border: 1px solid #e8eaed; box-shadow: 0 1px 3px rgba(60,64,67,0.06);">
-              <div style="width: 40px; height: 40px; border-radius: 50%; background: #f3e8fd; display: flex; align-items: center; justify-content: center; color: var(--google-purple); font-size: 1.1rem; margin-bottom: 0.85rem;">
-                <i class="fas fa-couch"></i>
-              </div>
-              <h4 style="font-size: 1.1rem; font-weight: 700; color: #1f1f1f; margin-bottom: 0.25rem;">Learn Comfortably</h4>
-              <p style="font-size: 0.85rem; color: #5f6368; line-height: 1.5;">Accessible typography, eye-strain protection, and wellness pacing.</p>
-              <div class="metric-gauge-bar" style="height:6px; margin-top:0.75rem;">
-                <div class="metric-gauge-fill looping-progress-bar" style="width: 88%; background: var(--google-purple);"></div>
-              </div>
-            </div>
+            <h4 style="font-size: 1.1rem; font-weight: 700; color: #1f1f1f; margin-bottom: 0.35rem;">Learn Comfortably</h4>
+            <p style="font-size: 0.88rem; color: #5f6368; line-height: 1.5; margin: 0;">Accessible typography, eye-strain protection, and wellness pacing.</p>
           </div>
         </div>
       </div>
