@@ -8,26 +8,26 @@
   <div class="glass-panel" style="padding: 1.25rem 1.75rem; border-radius: 20px; margin-bottom: 1.5rem; display: flex; justify-content: space-between; align-items: center; background: #fff; box-shadow: 0 4px 20px rgba(0,0,0,0.06); position: sticky; top: 80px; z-index: 100;">
     <div>
       <div style="font-size: 0.8rem; font-weight: 700; color: var(--google-blue); text-transform: uppercase;">
-        {{ exam.course_title }} &bull; Proctored Mode
+        {{ exam.course_title|default:"Smart Education Curriculum" }} &bull; Proctored Mode
       </div>
       <h2 style="font-size: 1.35rem; font-weight: 800; color: var(--text-primary); margin: 0;">{{ exam.title }}</h2>
     </div>
 
-    <div style="display: flex; align-items: center; gap: 1.5rem;">
+    <div style="display: flex; align-items: center; gap: 1.5rem; flex-wrap: wrap;">
       <div style="text-align: right;">
         <div style="font-size: 0.75rem; color: var(--text-tertiary);">Time Remaining</div>
         <div id="countdown-timer" style="font-size: 1.4rem; font-weight: 800; font-family: monospace; color: #ea4335;">--:--</div>
       </div>
 
       <div style="display: flex; align-items: center; gap: 0.5rem; background: #fef7e0; border: 1px solid #fef08a; padding: 0.4rem 0.85rem; border-radius: 999px; font-size: 0.82rem; color: #b06000;">
-        <i class="fas fa-shield-alt"></i> Tab Switches: <strong id="tab-switch-count">0</strong> / {{ exam.tab_switch_limit }}
+        <i class="fas fa-shield-alt"></i> Tab Switches: <strong id="tab-switch-count">0</strong> / {{ exam.tab_switch_limit|default:3 }}
       </div>
     </div>
   </div>
 
   <!-- Warning Banner -->
   <div style="background: #e8f0fe; border-left: 4px solid var(--google-blue); padding: 1rem 1.5rem; border-radius: 0 12px 12px 0; margin-bottom: 2rem; color: #1a73e8; font-size: 0.92rem;">
-    <strong><i class="fas fa-lock"></i> Proctored Integrity Active:</strong> All tab switches, window blurs, and screen exits are timestamped and recorded in the immutable platform security audit log. Exceeding {{ exam.tab_switch_limit }} tab switches will automatically flag this attempt for faculty audit.
+    <strong><i class="fas fa-lock"></i> Proctored Integrity Active:</strong> All tab switches, window blurs, and screen exits are timestamped and recorded in the immutable platform security audit log. Exceeding {{ exam.tab_switch_limit|default:3 }} tab switches will automatically flag this attempt for faculty audit.
   </div>
 
   <!-- Exam Questions Container -->
@@ -37,7 +37,7 @@
         <div class="glass-panel" style="padding: 2rem; border-radius: 20px; background: #fff;">
           <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 1rem;">
             <span class="pill pill-indigo" style="font-size: 0.8rem;">Question {{ forloop.counter }}</span>
-            <span style="font-size: 0.85rem; font-weight: 600; color: var(--text-tertiary);">{{ q.marks }} Marks</span>
+            <span style="font-size: 0.85rem; font-weight: 600; color: var(--text-tertiary);">{{ q.marks|default:5 }} Marks</span>
           </div>
 
           <h3 style="font-size: 1.15rem; font-weight: 700; color: var(--text-primary); line-height: 1.6; margin-bottom: 1.25rem;">
@@ -70,7 +70,7 @@
 
 <script>
 const attemptId = "{{ exam.attempt_id }}";
-let durationMinutes = {{ exam.duration_minutes }};
+let durationMinutes = {{ exam.duration_minutes|default:30 }};
 let totalSeconds = durationMinutes * 60;
 let tabSwitches = 0;
 

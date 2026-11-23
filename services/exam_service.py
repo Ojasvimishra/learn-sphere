@@ -64,13 +64,18 @@ class ExamService:
             return False, "Exam not found", None
 
         attempt = self.attempt_repo.start_attempt(exam, student)
+        started_at = attempt.get("started_at")
+        if hasattr(started_at, "isoformat"):
+            started_at_str = started_at.isoformat()
+        else:
+            started_at_str = str(started_at) if started_at else ""
 
         # Sanitize questions for client
         sanitized_questions = []
         for q in exam.get("questions", []):
             sanitized_questions.append({
                 "id": q.get("id"),
-                "text": q.get("text"),
+                "text": q.get("text") or q.get("question", ""),
                 "type": q.get("type", "single_choice"),
                 "options": q.get("options", []),
                 "marks": q.get("marks", 5)
@@ -79,13 +84,13 @@ class ExamService:
         return True, "Success", {
             "exam_id": exam["id"],
             "title": exam["title"],
-            "course_title": exam.get("course_title"),
+            "course_title": exam.get("course_title", "Course Examination"),
             "duration_minutes": exam["duration_minutes"],
             "total_marks": exam["total_marks"],
             "tab_switch_limit": exam.get("tab_switch_limit", 3),
             "is_proctored": exam.get("is_proctored", True),
             "attempt_id": attempt["id"],
-            "started_at": attempt["started_at"],
+            "started_at": started_at_str,
             "questions": sanitized_questions,
             "existing_answers": attempt.get("answers", {})
         }

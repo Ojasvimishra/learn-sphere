@@ -10,10 +10,11 @@
         </div>
       </div>
       <span>Learn<span style="color:var(--google-blue);">Sphere</span></span>
-      <span class="pill pill-indigo" style="font-size:0.7rem; margin-left:0.25rem;">EdTech Platform</span>
+      <span class="pill pill-indigo brand-pill" style="font-size:0.7rem; margin-left:0.25rem;">EdTech</span>
     </a>
 
-    <ul class="nav-links">
+    <!-- Desktop Navigation Links -->
+    <ul class="nav-links" id="desktop-nav-links">
       <li><a href="/courses/" class="nav-link"><i class="fas fa-graduation-cap" style="color:var(--google-blue);"></i> Courses</a></li>
       <li><a href="/live/" class="nav-link"><i class="fas fa-satellite-dish" style="color:#ea4335;"></i> Live</a></li>
       <li><a href="/exams/" class="nav-link"><i class="fas fa-file-signature" style="color:#b06000;"></i> Exams</a></li>
@@ -28,23 +29,96 @@
       {% endif %}
     </ul>
 
+    <!-- Right Actions & Mobile Hamburger -->
     <div class="nav-actions">
       <button id="sparkle-toggle-btn" class="sparkle-toggle-pill" onclick="toggleSparkles()" title="Toggle ambient background sparkles" aria-label="Toggle ambient sparkles">
-        <i class="fas fa-sparkles"></i> <span>Sparkles</span>
+        <i class="fas fa-sparkles"></i> <span class="hide-on-mobile">Sparkles</span>
       </button>
+
       {% if request.mongo_user %}
-        <a href="/dashboard/" class="btn btn-secondary btn-sm" style="display:flex; align-items:center; gap:0.5rem;">
-          <div style="width:26px; height:26px; border-radius:50%; background:var(--google-blue); display:flex; align-items:center; justify-content:center; font-size:0.78rem; color:#fff; font-weight:700;">
+        <a href="/student/" class="btn btn-secondary btn-sm nav-user-btn" style="display:flex; align-items:center; gap:0.5rem;" title="Go to Student Portal">
+          <div style="width:24px; height:24px; border-radius:50%; background:var(--google-blue); display:flex; align-items:center; justify-content:center; font-size:0.75rem; color:#fff; font-weight:700;">
             {{ request.mongo_user.username|slice:":1"|upper }}
           </div>
-          <span>{{ request.mongo_user.username }}</span>
-          <span class="pill pill-cyan" style="font-size:0.65rem; text-transform:uppercase;">{{ request.mongo_user.role }}</span>
+          <span class="hide-on-mobile">{{ request.mongo_user.username }}</span>
+          <span class="pill pill-cyan hide-on-mobile" style="font-size:0.65rem; text-transform:uppercase;">{{ request.mongo_user.role }}</span>
         </a>
         <a href="/auth/logout/" class="btn btn-secondary btn-sm" title="Sign Out"><i class="fas fa-sign-out-alt"></i></a>
       {% else %}
         <a href="/auth/login/" class="btn btn-secondary btn-sm">Sign In</a>
-        <a href="/auth/register/" class="btn btn-primary btn-sm">Get Started</a>
+        <a href="/auth/register/" class="btn btn-primary btn-sm hide-on-mobile">Get Started</a>
       {% endif %}
+
+      <!-- Mobile Hamburger Toggle Button -->
+      <button id="mobile-menu-toggle" class="mobile-menu-btn" onclick="toggleMobileMenu()" aria-label="Toggle navigation menu" aria-expanded="false">
+        <i class="fas fa-bars" id="menu-icon"></i>
+      </button>
+    </div>
+  </div>
+
+  <!-- Mobile Dropdown Navigation Drawer -->
+  <div id="mobile-nav-drawer" class="mobile-nav-drawer">
+    <div class="mobile-nav-content">
+      <div class="mobile-nav-section-title">Navigation</div>
+      <a href="/courses/" class="mobile-nav-link" onclick="toggleMobileMenu()"><i class="fas fa-graduation-cap" style="color:var(--google-blue);"></i> Courses & Curricula</a>
+      <a href="/live/" class="mobile-nav-link" onclick="toggleMobileMenu()"><i class="fas fa-satellite-dish" style="color:#ea4335;"></i> Live Broadcasts & Timetable</a>
+      <a href="/exams/" class="mobile-nav-link" onclick="toggleMobileMenu()"><i class="fas fa-file-signature" style="color:#b06000;"></i> Proctored Exams & Quizzes</a>
+      <a href="/labs/" class="mobile-nav-link" onclick="toggleMobileMenu()"><i class="fas fa-terminal" style="color:var(--google-green);"></i> Hands-on Virtual Labs</a>
+      <a href="/doubts/" class="mobile-nav-link" onclick="toggleMobileMenu()"><i class="fas fa-question-circle" style="color:var(--google-blue);"></i> Doubts & AI Tutor</a>
+
+      <div class="mobile-nav-section-title" style="margin-top: 1rem;">Portals</div>
+      <a href="/student/" class="mobile-nav-link" onclick="toggleMobileMenu()"><i class="fas fa-user-graduate" style="color:var(--google-blue);"></i> Student Portal</a>
+      {% if request.mongo_user.role in "educator,dept_admin,super_admin,admin" %}
+        <a href="/educator/" class="mobile-nav-link" onclick="toggleMobileMenu()"><i class="fas fa-chalkboard-teacher" style="color:var(--google-green);"></i> Educator Studio</a>
+      {% endif %}
+      {% if request.mongo_user.role in "super_admin,dept_admin,moderator,admin" %}
+        <a href="/admin-panel/" class="mobile-nav-link" onclick="toggleMobileMenu()"><i class="fas fa-tools" style="color:var(--google-purple);"></i> Admin Command Center</a>
+      {% endif %}
+
+      <div style="margin-top: 1.25rem; padding-top: 1rem; border-top: 1px solid var(--border-light); display: flex; flex-direction: column; gap: 0.75rem;">
+        {% if request.mongo_user %}
+          <div style="font-size: 0.85rem; color: var(--text-secondary); display: flex; align-items: center; justify-content: space-between;">
+            <span>Signed in as <strong>@{{ request.mongo_user.username }}</strong></span>
+            <span class="pill pill-cyan">{{ request.mongo_user.role|upper }}</span>
+          </div>
+          <a href="/auth/logout/" class="btn btn-secondary btn-sm" style="width: 100%; text-align: center;"><i class="fas fa-sign-out-alt"></i> Sign Out</a>
+        {% else %}
+          <a href="/auth/login/" class="btn btn-secondary btn-sm" style="width: 100%; text-align: center;">Sign In</a>
+          <a href="/auth/register/" class="btn btn-primary btn-sm" style="width: 100%; text-align: center;">Get Started</a>
+        {% endif %}
+      </div>
     </div>
   </div>
 </header>
+
+<script>
+function toggleMobileMenu() {
+  const drawer = document.getElementById("mobile-nav-drawer");
+  const icon = document.getElementById("menu-icon");
+  const btn = document.getElementById("mobile-menu-toggle");
+  if (!drawer) return;
+  const isOpen = drawer.classList.contains("open");
+  if (isOpen) {
+    drawer.classList.remove("open");
+    if (icon) icon.className = "fas fa-bars";
+    if (btn) btn.setAttribute("aria-expanded", "false");
+  } else {
+    drawer.classList.add("open");
+    if (icon) icon.className = "fas fa-times";
+    if (btn) btn.setAttribute("aria-expanded", "true");
+  }
+}
+
+document.addEventListener("click", function(e) {
+  const drawer = document.getElementById("mobile-nav-drawer");
+  const btn = document.getElementById("mobile-menu-toggle");
+  if (drawer && drawer.classList.contains("open")) {
+    if (!drawer.contains(e.target) && !btn.contains(e.target)) {
+      drawer.classList.remove("open");
+      const icon = document.getElementById("menu-icon");
+      if (icon) icon.className = "fas fa-bars";
+      if (btn) btn.setAttribute("aria-expanded", "false");
+    }
+  }
+});
+</script>

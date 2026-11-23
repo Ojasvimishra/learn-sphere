@@ -19,6 +19,7 @@ django.setup()
 
 from database.repositories.exam_repo import ExamRepository, ExamAttemptRepository
 from database.repositories.audit_repo import AuditRepository
+from database.repositories.user_repo import UserRepository
 from services.exam_service import ExamService
 
 
@@ -26,11 +27,14 @@ from services.exam_service import ExamService
 def cleanup_test_exams():
     exam_repo = ExamRepository()
     att_repo = ExamAttemptRepository()
+    user_repo = UserRepository()
     exam_repo.collection.delete_many({"title": {"$regex": "^TEST_EXAM_"}})
     att_repo.collection.delete_many({"exam_title": {"$regex": "^TEST_EXAM_"}})
+    user_repo.collection.delete_many({"username": {"$regex": "^test_exam_"}})
     yield
     exam_repo.collection.delete_many({"title": {"$regex": "^TEST_EXAM_"}})
     att_repo.collection.delete_many({"exam_title": {"$regex": "^TEST_EXAM_"}})
+    user_repo.collection.delete_many({"username": {"$regex": "^test_exam_"}})
 
 
 def test_exam_creation_and_taker_payload_sanitization():
@@ -188,3 +192,42 @@ def test_faculty_grade_override_and_audit_trail():
     audit_events = audit_repo.find_many({"action": "grade.override", "resource_id": f"stud_review:{exam_id}"})
     assert len(audit_events) > 0
     assert audit_events[0]["details"]["new_grade"] == 85
+
+
+def test_exam_take_view_renders_cleanly_for_student():
+    """Verifies that the /exams/<id>/take/ view renders 200 without JSON/datetime serialization errors."""
+    from django.test import Client
+    from database.repositories.user_repo import UserRepository
+    from django.conf import settings
+
+    exam_service = ExamService()
+    user_repo = UserRepository()
+
+    instructor = {"id": "inst_render", "username": "prof_render", "role": "educator"}
+    ok, _, exam_id = exam_service.create_exam(instructor, {
+        "title": "TEST_EXAM_ Rendering Validation",
+        "course_id": "course_render",
+        "duration_minutes": 25,
+        "questions": [{"id": "q1", "text": "Is this working?", "options": ["Yes", "No"], "correct_option_index": 0, "marks": 10}]
+    })
+    assert ok is True
+
+    # Authenticate student via session
+    student = user_repo.create_user(
+        username="test_exam_student_taker",
+        email="test_exam_student_taker@learnsphere.io",
+        raw_password="TestPassword@123!",
+        role="student"
+    )
+
+    client = Client()
+    s = client.session
+    s["mongo_user_id"] = str(student["id"])
+    s.save()
+    client.cookies[settings.SESSION_COOKIE_NAME] = s.session_key
+
+    resp = client.get(f"/exams/{exam_id}/take/")
+    assert resp.status_code == 200
+    assert "TEST_EXAM_ Rendering Validation" in resp.content.decode("utf-8")
+    assert "Time Remaining" in resp.content.decode("utf-8")
+

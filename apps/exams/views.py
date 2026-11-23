@@ -42,7 +42,7 @@ def exam_take_view(request, exam_id):
         raise Http404(msg)
 
     return render(request, "pages/exam_take.html", {
-        "exam_data": json.dumps(payload),
+        "exam_data": json.dumps(payload, default=str),
         "exam": payload,
         "user": user
     })
