@@ -134,7 +134,7 @@ function submitExam() {
   })
   .then(res => res.json())
   .then(data => {
-    if (data.status === 200 || data.data) {
+    if (data.status === "success" || data.status === 200 || data.data) {
       window.location.href = `/exams/attempt/${attemptId}/result/`;
     } else {
       btn.disabled = false;

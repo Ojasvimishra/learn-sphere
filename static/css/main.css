@@ -197,7 +197,7 @@ body {
 
 /* Mobile Menu Button */
 .mobile-menu-btn {
-  display: none;
+  display: none !important;
   background: #ffffff;
   border: 1px solid var(--border-light);
   width: 38px;
@@ -219,7 +219,7 @@ body {
 
 /* Mobile Dropdown Navigation Drawer */
 .mobile-nav-drawer {
-  display: none;
+  display: none !important;
   position: absolute;
   top: 100%;
   left: 0;
@@ -230,12 +230,12 @@ body {
   border-bottom: 2px solid var(--border-light);
   box-shadow: 0 12px 32px rgba(0, 0, 0, 0.1);
   padding: 1.25rem 1.5rem 1.75rem;
-  animation: navSlideDown 0.25s cubic-bezier(0.4, 0, 0.2, 1);
   z-index: 999;
 }
 
 .mobile-nav-drawer.open {
-  display: block;
+  display: block !important;
+  animation: navSlideDown 0.25s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 @keyframes navSlideDown {
@@ -1097,9 +1097,9 @@ textarea.form-control {
 }
 
 /* Responsive Media Queries */
-@media (max-width: 1180px) {
+@media (max-width: 992px) {
   .nav-links { display: none !important; }
-  .mobile-menu-btn { display: flex !important; }
+  .mobile-menu-btn { display: inline-flex !important; }
   .brand-pill { display: none !important; }
 }
 

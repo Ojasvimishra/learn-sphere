@@ -1,4 +1,47 @@
 <header class="glass-header">
+  <style>
+    /* Critical Navbar Styles: Immune to external CSS caching */
+    .mobile-menu-btn {
+      display: none !important;
+    }
+    .mobile-nav-drawer {
+      display: none !important;
+      position: absolute;
+      top: 100%;
+      left: 0;
+      width: 100%;
+      background: rgba(255, 255, 255, 0.98);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border-bottom: 2px solid var(--border-light, #e8eaed);
+      box-shadow: 0 12px 32px rgba(0, 0, 0, 0.1);
+      padding: 1.25rem 1.5rem 1.75rem;
+      z-index: 9999;
+    }
+    .mobile-nav-drawer.open {
+      display: block !important;
+      animation: navSlideDown 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    @keyframes navSlideDown {
+      from { opacity: 0; transform: translateY(-8px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    @media (max-width: 992px) {
+      .nav-links {
+        display: none !important;
+      }
+      .mobile-menu-btn {
+        display: inline-flex !important;
+      }
+      .hide-on-mobile {
+        display: none !important;
+      }
+      .brand-pill {
+        display: none !important;
+      }
+    }
+  </style>
+
   <div class="container navbar-wrapper">
     <a href="/" class="brand-logo">
       <div class="logo-icon">
@@ -13,30 +56,32 @@
       <span class="pill pill-indigo brand-pill" style="font-size:0.7rem; margin-left:0.25rem;">EdTech</span>
     </a>
 
-    <!-- Desktop Navigation Links -->
+    <!-- Desktop Navigation Links (Clean 5 Core Features + Role Portal if Logged In) -->
     <ul class="nav-links" id="desktop-nav-links">
       <li><a href="/courses/" class="nav-link"><i class="fas fa-graduation-cap" style="color:var(--google-blue);"></i> Courses</a></li>
       <li><a href="/live/" class="nav-link"><i class="fas fa-satellite-dish" style="color:#ea4335;"></i> Live</a></li>
       <li><a href="/exams/" class="nav-link"><i class="fas fa-file-signature" style="color:#b06000;"></i> Exams</a></li>
       <li><a href="/labs/" class="nav-link"><i class="fas fa-terminal" style="color:var(--google-green);"></i> Labs</a></li>
       <li><a href="/doubts/" class="nav-link"><i class="fas fa-question-circle" style="color:var(--google-blue);"></i> Doubts</a></li>
-      <li><a href="/student/" class="nav-link"><i class="fas fa-user-graduate" style="color:var(--google-blue);"></i> Student Portal</a></li>
-      {% if request.mongo_user.role in "educator,dept_admin,super_admin,admin" %}
-        <li><a href="/educator/" class="nav-link"><i class="fas fa-chalkboard-teacher" style="color:var(--google-green);"></i> Educator Studio</a></li>
-      {% endif %}
-      {% if request.mongo_user.role in "super_admin,dept_admin,moderator,admin" %}
-        <li><a href="/admin-panel/" class="nav-link"><i class="fas fa-tools" style="color:var(--google-purple);"></i> Admin Panel</a></li>
+      {% if request.mongo_user %}
+        {% if request.mongo_user.role == "student" %}
+          <li><a href="/student/" class="nav-link"><i class="fas fa-user-graduate" style="color:var(--google-blue);"></i> Student Portal</a></li>
+        {% elif request.mongo_user.role in "educator,dept_admin" %}
+          <li><a href="/educator/" class="nav-link"><i class="fas fa-chalkboard-teacher" style="color:var(--google-green);"></i> Educator Studio</a></li>
+        {% elif request.mongo_user.role in "super_admin,admin" %}
+          <li><a href="/admin-panel/" class="nav-link"><i class="fas fa-tools" style="color:var(--google-purple);"></i> Admin Panel</a></li>
+        {% endif %}
       {% endif %}
     </ul>
 
     <!-- Right Actions & Mobile Hamburger -->
     <div class="nav-actions">
-      <button id="sparkle-toggle-btn" class="sparkle-toggle-pill" onclick="toggleSparkles()" title="Toggle ambient background sparkles" aria-label="Toggle ambient sparkles">
-        <i class="fas fa-sparkles"></i> <span class="hide-on-mobile">Sparkles</span>
+      <button id="sparkle-toggle-btn" class="sparkle-toggle-pill" onclick="toggleSparkles()" title="Toggle ambient background sparkles" aria-label="Toggle ambient sparkles" style="padding:0.45rem 0.75rem; border-radius:999px; display:inline-flex; align-items:center; gap:0.4rem; font-size:0.85rem; border:1px solid var(--border-light); background:#fff; cursor:pointer;">
+        <i class="fas fa-sparkles" style="color:#fbbc05;"></i> <span class="hide-on-mobile" style="font-size:0.8rem; font-weight:600; color:var(--text-secondary);">Sparkles</span>
       </button>
 
       {% if request.mongo_user %}
-        <a href="/student/" class="btn btn-secondary btn-sm nav-user-btn" style="display:flex; align-items:center; gap:0.5rem;" title="Go to Student Portal">
+        <a href="{% if request.mongo_user.role == 'student' %}/student/{% elif request.mongo_user.role in 'educator,dept_admin' %}/educator/{% else %}/admin-panel/{% endif %}" class="btn btn-secondary btn-sm nav-user-btn" style="display:flex; align-items:center; gap:0.5rem;" title="Go to Dashboard">
           <div style="width:24px; height:24px; border-radius:50%; background:var(--google-blue); display:flex; align-items:center; justify-content:center; font-size:0.75rem; color:#fff; font-weight:700;">
             {{ request.mongo_user.username|slice:":1"|upper }}
           </div>
@@ -49,33 +94,37 @@
         <a href="/auth/register/" class="btn btn-primary btn-sm hide-on-mobile">Get Started</a>
       {% endif %}
 
-      <!-- Mobile Hamburger Toggle Button -->
-      <button id="mobile-menu-toggle" class="mobile-menu-btn" onclick="toggleMobileMenu()" aria-label="Toggle navigation menu" aria-expanded="false">
+      <!-- Mobile Hamburger Toggle Button (Hidden on desktop by default) -->
+      <button id="mobile-menu-toggle" class="mobile-menu-btn" onclick="toggleMobileMenu()" aria-label="Toggle navigation menu" aria-expanded="false" style="display: none;">
         <i class="fas fa-bars" id="menu-icon"></i>
       </button>
     </div>
   </div>
 
-  <!-- Mobile Dropdown Navigation Drawer -->
-  <div id="mobile-nav-drawer" class="mobile-nav-drawer">
-    <div class="mobile-nav-content">
-      <div class="mobile-nav-section-title">Navigation</div>
-      <a href="/courses/" class="mobile-nav-link" onclick="toggleMobileMenu()"><i class="fas fa-graduation-cap" style="color:var(--google-blue);"></i> Courses & Curricula</a>
-      <a href="/live/" class="mobile-nav-link" onclick="toggleMobileMenu()"><i class="fas fa-satellite-dish" style="color:#ea4335;"></i> Live Broadcasts & Timetable</a>
-      <a href="/exams/" class="mobile-nav-link" onclick="toggleMobileMenu()"><i class="fas fa-file-signature" style="color:#b06000;"></i> Proctored Exams & Quizzes</a>
-      <a href="/labs/" class="mobile-nav-link" onclick="toggleMobileMenu()"><i class="fas fa-terminal" style="color:var(--google-green);"></i> Hands-on Virtual Labs</a>
-      <a href="/doubts/" class="mobile-nav-link" onclick="toggleMobileMenu()"><i class="fas fa-question-circle" style="color:var(--google-blue);"></i> Doubts & AI Tutor</a>
+  <!-- Mobile Dropdown Navigation Drawer: Explicitly hidden inline by default -->
+  <div id="mobile-nav-drawer" class="mobile-nav-drawer" style="display: none;">
+    <div class="mobile-nav-content" style="max-width: 600px; margin: 0 auto;">
+      <div class="mobile-nav-section-title" style="font-size: 0.75rem; font-weight: 800; text-transform: uppercase; color: var(--text-tertiary); letter-spacing: 0.05em; margin-bottom: 0.5rem;">Academic Curricula</div>
+      <div style="display: flex; flex-direction: column; gap: 0.35rem;">
+        <a href="/courses/" class="mobile-nav-link" onclick="toggleMobileMenu()"><i class="fas fa-graduation-cap" style="color:var(--google-blue); width: 20px;"></i> Courses & Curricula</a>
+        <a href="/live/" class="mobile-nav-link" onclick="toggleMobileMenu()"><i class="fas fa-satellite-dish" style="color:#ea4335; width: 20px;"></i> Live Broadcasts & Timetable</a>
+        <a href="/exams/" class="mobile-nav-link" onclick="toggleMobileMenu()"><i class="fas fa-file-signature" style="color:#b06000; width: 20px;"></i> Proctored Exams & Quizzes</a>
+        <a href="/labs/" class="mobile-nav-link" onclick="toggleMobileMenu()"><i class="fas fa-terminal" style="color:var(--google-green); width: 20px;"></i> Hands-on Virtual Labs</a>
+        <a href="/doubts/" class="mobile-nav-link" onclick="toggleMobileMenu()"><i class="fas fa-question-circle" style="color:var(--google-blue); width: 20px;"></i> Doubts & AI Tutor</a>
+      </div>
 
-      <div class="mobile-nav-section-title" style="margin-top: 1rem;">Portals</div>
-      <a href="/student/" class="mobile-nav-link" onclick="toggleMobileMenu()"><i class="fas fa-user-graduate" style="color:var(--google-blue);"></i> Student Portal</a>
-      {% if request.mongo_user.role in "educator,dept_admin,super_admin,admin" %}
-        <a href="/educator/" class="mobile-nav-link" onclick="toggleMobileMenu()"><i class="fas fa-chalkboard-teacher" style="color:var(--google-green);"></i> Educator Studio</a>
-      {% endif %}
-      {% if request.mongo_user.role in "super_admin,dept_admin,moderator,admin" %}
-        <a href="/admin-panel/" class="mobile-nav-link" onclick="toggleMobileMenu()"><i class="fas fa-tools" style="color:var(--google-purple);"></i> Admin Command Center</a>
-      {% endif %}
+      <div class="mobile-nav-section-title" style="font-size: 0.75rem; font-weight: 800; text-transform: uppercase; color: var(--text-tertiary); letter-spacing: 0.05em; margin-top: 1.25rem; margin-bottom: 0.5rem;">Portals</div>
+      <div style="display: flex; flex-direction: column; gap: 0.35rem;">
+        <a href="/student/" class="mobile-nav-link" onclick="toggleMobileMenu()"><i class="fas fa-user-graduate" style="color:var(--google-blue); width: 20px;"></i> Student Portal</a>
+        {% if request.mongo_user.role in "educator,dept_admin,super_admin,admin" %}
+          <a href="/educator/" class="mobile-nav-link" onclick="toggleMobileMenu()"><i class="fas fa-chalkboard-teacher" style="color:var(--google-green); width: 20px;"></i> Educator Studio</a>
+        {% endif %}
+        {% if request.mongo_user.role in "super_admin,dept_admin,moderator,admin" %}
+          <a href="/admin-panel/" class="mobile-nav-link" onclick="toggleMobileMenu()"><i class="fas fa-tools" style="color:var(--google-purple); width: 20px;"></i> Admin Command Center</a>
+        {% endif %}
+      </div>
 
-      <div style="margin-top: 1.25rem; padding-top: 1rem; border-top: 1px solid var(--border-light); display: flex; flex-direction: column; gap: 0.75rem;">
+      <div style="margin-top: 1.5rem; padding-top: 1rem; border-top: 1px solid var(--border-light); display: flex; flex-direction: column; gap: 0.75rem;">
         {% if request.mongo_user %}
           <div style="font-size: 0.85rem; color: var(--text-secondary); display: flex; align-items: center; justify-content: space-between;">
             <span>Signed in as <strong>@{{ request.mongo_user.username }}</strong></span>
@@ -97,13 +146,15 @@ function toggleMobileMenu() {
   const icon = document.getElementById("menu-icon");
   const btn = document.getElementById("mobile-menu-toggle");
   if (!drawer) return;
-  const isOpen = drawer.classList.contains("open");
+  const isOpen = drawer.classList.contains("open") && drawer.style.display !== "none";
   if (isOpen) {
     drawer.classList.remove("open");
+    drawer.style.display = "none";
     if (icon) icon.className = "fas fa-bars";
     if (btn) btn.setAttribute("aria-expanded", "false");
   } else {
     drawer.classList.add("open");
+    drawer.style.display = "block";
     if (icon) icon.className = "fas fa-times";
     if (btn) btn.setAttribute("aria-expanded", "true");
   }
@@ -115,6 +166,7 @@ document.addEventListener("click", function(e) {
   if (drawer && drawer.classList.contains("open")) {
     if (!drawer.contains(e.target) && !btn.contains(e.target)) {
       drawer.classList.remove("open");
+      drawer.style.display = "none";
       const icon = document.getElementById("menu-icon");
       if (icon) icon.className = "fas fa-bars";
       if (btn) btn.setAttribute("aria-expanded", "false");
