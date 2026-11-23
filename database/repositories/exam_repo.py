@@ -185,3 +185,14 @@ class ExamAttemptRepository(BaseRepository):
 
     def list_by_student(self, student_id: str) -> List[Dict[str, Any]]:
         return self.find_many({"student_id": str(student_id)}, sort=[("created_at", -1)])
+
+    def list_all_submissions(self, is_flagged: Optional[bool] = None, limit: int = 50) -> List[Dict[str, Any]]:
+        query = {}
+        if is_flagged is not None:
+            query["is_flagged"] = is_flagged
+        return self.find_many(query, sort=[("submitted_at", -1), ("created_at", -1)], limit=limit)
+
+
+# Canonical alias for submissions repository
+ExamSubmissionRepository = ExamAttemptRepository
+

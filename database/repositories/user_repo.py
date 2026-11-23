@@ -164,6 +164,63 @@ class UserRepository(BaseRepository):
         """Finds all educator accounts waiting for approval."""
         return self.find_many({"role": ROLE_EDUCATOR, "is_approved": False})
 
+    def reject_educator(self, user_id: str) -> bool:
+        """Rejects a pending educator account, reverting to student."""
+        oid = self.to_object_id(user_id)
+        if not oid:
+            return False
+        return self.update_one(
+            {"_id": oid},
+            {"role": ROLE_STUDENT, "is_approved": True, "updated_at": datetime.now(timezone.utc)}
+        )
+
+    def list_all_users(
+        self,
+        role: Optional[str] = None,
+        search: Optional[str] = None,
+        limit: int = 100
+    ) -> List[Dict[str, Any]]:
+        """Lists users with optional role and username/email search."""
+        query = {}
+        if role and role != "all":
+            query["role"] = normalize_role(role)
+        if search:
+            query["$or"] = [
+                {"username": {"$regex": search, "$options": "i"}},
+                {"email": {"$regex": search, "$options": "i"}},
+                {"full_name": {"$regex": search, "$options": "i"}}
+            ]
+        return self.find_many(query, sort=[("created_at", -1)], limit=limit)
+
+    def award_daily_quiz_xp(self, user_id: str, xp_amount: int = 50) -> Tuple[bool, int, int]:
+        """
+        Awards daily quiz XP once per calendar day.
+        Returns (awarded: bool, xp_added: int, total_xp: int)
+        """
+        oid = self.to_object_id(user_id)
+        if not oid:
+            return False, 0, 0
+        user = self.find_by_id(user_id)
+        if not user:
+            return False, 0, 0
+
+        today_str = datetime.now(timezone.utc).strftime("%Y-%m-%d")
+        if user.get("last_daily_quiz_date") == today_str:
+            return False, 0, user.get("xp", 0)
+
+        new_xp = user.get("xp", 0) + xp_amount
+        self.update_one(
+            {"_id": oid},
+            {
+                "$set": {
+                    "last_daily_quiz_date": today_str,
+                    "updated_at": datetime.now(timezone.utc)
+                },
+                "$inc": {"xp": xp_amount}
+            }
+        )
+        return True, xp_amount, new_xp
+
     def update_profile(self, user_id: str, full_name: str, bio: str) -> bool:
         oid = self.to_object_id(user_id)
         if not oid:

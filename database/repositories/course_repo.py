@@ -88,6 +88,16 @@ class CourseRepository(BaseRepository):
     def list_by_instructor(self, instructor_id: str) -> List[Dict[str, Any]]:
         return self.find_many({"instructor_id": str(instructor_id)}, sort=[("updated_at", -1)])
 
+    def approve_course(self, course_id: str) -> bool:
+        """Approves a course and transitions status to published."""
+        oid = self.to_object_id(course_id)
+        if not oid:
+            return False
+        return self.update_one(
+            {"_id": oid},
+            {"status": "published", "updated_at": datetime.now(timezone.utc)}
+        )
+
     def update_course_details(self, course_id: str, update_data: Dict[str, Any]) -> bool:
         oid = self.to_object_id(course_id)
         if not oid:

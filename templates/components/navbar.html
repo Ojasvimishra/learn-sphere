@@ -19,9 +19,13 @@
       <li><a href="/exams/" class="nav-link"><i class="fas fa-file-signature" style="color:#b06000;"></i> Exams</a></li>
       <li><a href="/labs/" class="nav-link"><i class="fas fa-terminal" style="color:var(--google-green);"></i> Labs</a></li>
       <li><a href="/doubts/" class="nav-link"><i class="fas fa-question-circle" style="color:var(--google-blue);"></i> Doubts</a></li>
-      <li><a href="/resources/" class="nav-link"><i class="fas fa-book-open" style="color:var(--google-green);"></i> Bookshelf</a></li>
-      <li><a href="/innovation/" class="nav-link"><i class="fas fa-lightbulb" style="color:var(--google-yellow);"></i> Innovations</a></li>
-      <li><a href="/dashboard/" class="nav-link"><i class="fas fa-chalkboard-teacher" style="color:var(--google-purple);"></i> Studio</a></li>
+      <li><a href="/student/" class="nav-link"><i class="fas fa-user-graduate" style="color:var(--google-blue);"></i> Student Portal</a></li>
+      {% if request.mongo_user.role in "educator,dept_admin,super_admin,admin" %}
+        <li><a href="/educator/" class="nav-link"><i class="fas fa-chalkboard-teacher" style="color:var(--google-green);"></i> Educator Studio</a></li>
+      {% endif %}
+      {% if request.mongo_user.role in "super_admin,dept_admin,moderator,admin" %}
+        <li><a href="/admin-panel/" class="nav-link"><i class="fas fa-tools" style="color:var(--google-purple);"></i> Admin Panel</a></li>
+      {% endif %}
     </ul>
 
     <div class="nav-actions">

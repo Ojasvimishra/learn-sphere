@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Certificate of Completion - {{ course.title }} | LearnSphere</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700;800&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: 'Inter', sans-serif;
+      background: #0f172a;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+      padding: 2rem;
+      color: #1e293b;
+    }
+    .print-actions {
+      margin-bottom: 1.5rem;
+      display: flex;
+      gap: 1rem;
+    }
+    .btn {
+      padding: 0.65rem 1.4rem;
+      border-radius: 999px;
+      font-weight: 700;
+      font-size: 0.9rem;
+      cursor: pointer;
+      text-decoration: none;
+      border: none;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      transition: all 0.2s ease;
+    }
+    .btn-print { background: #1a73e8; color: #fff; }
+    .btn-back { background: rgba(255,255,255,0.15); color: #fff; }
+    .btn:hover { transform: translateY(-2px); opacity: 0.95; }
+
+    .certificate-card {
+      width: 100%;
+      max-width: 960px;
+      background: #ffffff;
+      padding: 3.5rem 4rem;
+      border-radius: 20px;
+      box-shadow: 0 25px 60px rgba(0, 0, 0, 0.45);
+      position: relative;
+      border: 12px double #e2e8f0;
+      text-align: center;
+      background-image: radial-gradient(circle at 50% 50%, rgba(26, 115, 232, 0.02) 0%, transparent 80%);
+    }
+
+    .cert-header {
+      margin-bottom: 2rem;
+    }
+    .cert-logo {
+      font-size: 1.35rem;
+      font-weight: 800;
+      color: #1a73e8;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      margin-bottom: 0.5rem;
+    }
+    .cert-title {
+      font-family: 'Cinzel', serif;
+      font-size: 2.3rem;
+      font-weight: 800;
+      color: #0f172a;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      margin-bottom: 0.5rem;
+    }
+    .cert-subtitle {
+      font-size: 1rem;
+      color: #64748b;
+      letter-spacing: 0.5px;
+    }
+
+    .cert-recipient {
+      margin: 2rem 0;
+    }
+    .presented-to {
+      font-size: 0.9rem;
+      text-transform: uppercase;
+      color: #94a3b8;
+      font-weight: 600;
+      letter-spacing: 1px;
+    }
+    .recipient-name {
+      font-family: 'Cinzel', serif;
+      font-size: 2.5rem;
+      font-weight: 700;
+      color: #1e3a8a;
+      margin: 0.5rem 0;
+      border-bottom: 2px solid #cbd5e1;
+      display: inline-block;
+      padding: 0 2rem 0.4rem;
+    }
+
+    .cert-reason {
+      font-size: 1.05rem;
+      color: #475569;
+      max-width: 720px;
+      margin: 0 auto 2.5rem;
+      line-height: 1.6;
+    }
+    .course-highlight {
+      font-weight: 700;
+      color: #0f172a;
+    }
+
+    .cert-footer {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-end;
+      margin-top: 3rem;
+      padding-top: 1.5rem;
+      border-top: 1px solid #e2e8f0;
+      text-align: left;
+    }
+    .signature-block {
+      text-align: center;
+    }
+    .signature-line {
+      width: 180px;
+      height: 1px;
+      background: #0f172a;
+      margin-bottom: 0.4rem;
+    }
+    .signer-name {
+      font-weight: 700;
+      font-size: 0.95rem;
+      color: #0f172a;
+    }
+    .signer-title {
+      font-size: 0.8rem;
+      color: #64748b;
+    }
+
+    .seal-badge {
+      width: 110px;
+      height: 110px;
+      border-radius: 50%;
+      border: 4px dashed #f59e0b;
+      background: #fffbeb;
+      color: #b45309;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      margin: 0 auto;
+      font-size: 0.72rem;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      box-shadow: 0 8px 18px rgba(245, 158, 11, 0.2);
+    }
+    .seal-badge i { font-size: 1.6rem; margin-bottom: 0.25rem; }
+
+    @media print {
+      body { background: #fff; padding: 0; }
+      .print-actions { display: none !important; }
+      .certificate-card { box-shadow: none; border: 8px double #000; }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="print-actions">
+    <button onclick="window.print()" class="btn btn-print"><i class="fas fa-print"></i> Print / Download PDF</button>
+    <a href="/student/" class="btn btn-back"><i class="fas fa-arrow-left"></i> Return to Dashboard</a>
+  </div>
+
+  <div class="certificate-card">
+    <div class="cert-header">
+      <div class="cert-logo"><i class="fas fa-graduation-cap"></i> LearnSphere EdTech</div>
+      <h1 class="cert-title">Certificate of Completion</h1>
+      <p class="cert-subtitle">Smart Education & Master Curriculum Certification</p>
+    </div>
+
+    <div class="cert-recipient">
+      <div class="presented-to">This is proudly presented to</div>
+      <div class="recipient-name">{{ user.full_name|default:user.username }}</div>
+    </div>
+
+    <p class="cert-reason">
+      For successfully completing all interactive modules, proctored assessments, and hands-on laboratory exercises in the curriculum:
+      <br>
+      <span class="course-highlight">&ldquo;{{ course.title }}&rdquo;</span>
+      <br>
+      demonstrating cognitive mastery in digital learning standards.
+    </p>
+
+    <div class="seal-badge">
+      <i class="fas fa-certificate"></i>
+      <span>Verified</span>
+      <span>Official</span>
+    </div>
+
+    <div class="cert-footer">
+      <div>
+        <div style="font-size: 0.8rem; color: #94a3b8; text-transform: uppercase; font-weight: 700;">Certificate ID</div>
+        <div style="font-size: 0.95rem; font-weight: 800; color: #1e293b; font-family: monospace;">{{ certificate_id }}</div>
+        <div style="font-size: 0.8rem; color: #64748b; margin-top: 0.2rem;">Issued: {{ completed_at|date:"F d, Y" }}</div>
+      </div>
+
+      <div class="signature-block">
+        <div style="font-family: 'Cinzel', serif; font-size: 1.1rem; color: #1a73e8; margin-bottom: 0.2rem; font-style: italic;">
+          {{ course.instructor_name }}
+        </div>
+        <div class="signature-line"></div>
+        <div class="signer-name">{{ course.instructor_name }}</div>
+        <div class="signer-title">Course Lead & Faculty Mentor</div>
+      </div>
+    </div>
+  </div>
+
+</body>
+</html>

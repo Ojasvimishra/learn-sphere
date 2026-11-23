@@ -98,6 +98,29 @@ def can_edit_resource(user: Optional[Dict[str, Any]], resource_owner_id: Any) ->
     return str(user.get("id")) == str(resource_owner_id)
 
 
+def portal_access_required(portal_name: str):
+    """View decorator validating portal access authorization via core.rbac.can_access_portal."""
+    def decorator(view_func):
+        @wraps(view_func)
+        def wrapper(request, *args, **kwargs):
+            user = getattr(request, "mongo_user", None)
+            if not user or not user.get("is_active", True):
+                if request.headers.get("x-requested-with") == "XMLHttpRequest" or request.path.startswith("/api/"):
+                    return JsonResponse({"error": "Unauthorized", "message": "Authentication required."}, status=401)
+                return redirect(f"/auth/login/?next={request.path}")
+
+            if not can_access_portal(user, portal_name):
+                if request.headers.get("x-requested-with") == "XMLHttpRequest" or request.path.startswith("/api/"):
+                    return JsonResponse(
+                        {"error": "Forbidden", "message": f"Access denied to '{portal_name}' portal for role '{user.get('role')}'"},
+                        status=403
+                    )
+                return redirect("/dashboard/?error=portal_access_denied")
+            return view_func(request, *args, **kwargs)
+        return wrapper
+    return decorator
+
+
 class IsMongoAuthenticated(permissions.BasePermission):
     """DRF permission checking request.mongo_user."""
     def has_permission(self, request, view):

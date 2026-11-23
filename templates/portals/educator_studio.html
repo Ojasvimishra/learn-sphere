@@ -1,0 +1,275 @@
+{% extends "base.html" %}
+
+{% block title %}Educator Operations Studio | LearnSphere EdTech{% endblock %}
+
+{% block content %}
+<div class="container" style="padding-top: 2rem; padding-bottom: 4rem;">
+
+  <!-- Educator Header & Operations Hub -->
+  <div class="glass-panel" style="padding: 2.25rem 2.5rem; margin-bottom: 2rem; border-left: 5px solid var(--google-green);">
+    <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1.5rem;">
+      <div>
+        <div style="display: flex; align-items: center; gap: 0.75rem; margin-bottom: 0.4rem;">
+          <h1 style="font-size: 1.85rem; font-weight: 800; color: var(--text-primary); margin: 0;">Educator Operations Studio</h1>
+          <span class="pill pill-emerald">{{ user.role|upper }}</span>
+        </div>
+        <p style="color: var(--text-secondary); font-size: 0.95rem; margin: 0 0 1rem;">
+          Manage recorded curricula, schedule live lectures, audit proctored exam attempts, and verify student doubt inquiries.
+        </p>
+        <div style="display: flex; gap: 0.6rem; flex-wrap: wrap;">
+          <a href="/courses/create/" class="btn btn-primary btn-sm"><i class="fas fa-plus-circle"></i> Create New Course</a>
+          <a href="/live/create/" class="btn btn-emerald btn-sm"><i class="fas fa-video"></i> Schedule Live Lecture</a>
+          <a href="/exams/create/" class="btn btn-secondary btn-sm"><i class="fas fa-file-alt"></i> Create Proctored Exam</a>
+          <a href="/labs/create/" class="btn btn-secondary btn-sm"><i class="fas fa-flask"></i> Author Virtual Lab</a>
+        </div>
+      </div>
+
+      <div style="display: flex; gap: 1rem; flex-wrap: wrap;">
+        <div style="background: var(--bg-surface); padding: 1rem 1.25rem; border-radius: var(--radius-md); border: 1px solid var(--border-light); text-align: center;">
+          <div style="font-size: 0.75rem; color: var(--text-tertiary); font-weight: 700; text-transform: uppercase;">Students Taught</div>
+          <div style="font-size: 1.6rem; font-weight: 800; color: var(--google-green);">{{ total_students_enrolled }}</div>
+        </div>
+        <div style="background: var(--bg-surface); padding: 1rem 1.25rem; border-radius: var(--radius-md); border: 1px solid var(--border-light); text-align: center;">
+          <div style="font-size: 0.75rem; color: var(--text-tertiary); font-weight: 700; text-transform: uppercase;">Active Courses</div>
+          <div style="font-size: 1.6rem; font-weight: 800; color: var(--google-blue);">{{ published_courses_count }}</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Telemetry Metrics Cards -->
+  <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 1.25rem; margin-bottom: 2rem;">
+    <div class="glass-panel" style="padding: 1.5rem; border-top: 3px solid var(--google-blue);">
+      <div style="font-size: 0.8rem; font-weight: 700; color: var(--google-blue); text-transform: uppercase;">My Courses</div>
+      <div style="font-size: 2.2rem; font-weight: 800; color: var(--text-primary); margin: 0.25rem 0;">{{ my_courses|length }}</div>
+      <div style="font-size: 0.82rem; color: var(--text-tertiary);">{{ published_courses_count }} published &bull; {{ draft_courses_count }} drafts</div>
+    </div>
+
+    <div class="glass-panel" style="padding: 1.5rem; border-top: 3px solid var(--google-green);">
+      <div style="font-size: 0.8rem; font-weight: 700; color: var(--google-green); text-transform: uppercase;">Upcoming Broadcasts</div>
+      <div style="font-size: 2.2rem; font-weight: 800; color: var(--text-primary); margin: 0.25rem 0;">{{ my_live_classes|length }}</div>
+      <div style="font-size: 0.82rem; color: var(--text-tertiary);">Interactive live classroom sessions</div>
+    </div>
+
+    <div class="glass-panel" style="padding: 1.5rem; border-top: 3px solid #ea4335;">
+      <div style="font-size: 0.8rem; font-weight: 700; color: #ea4335; text-transform: uppercase;">Flagged Exam Attempts</div>
+      <div style="font-size: 2.2rem; font-weight: 800; color: var(--text-primary); margin: 0.25rem 0;">{{ flagged_submissions|length }}</div>
+      <div style="font-size: 0.82rem; color: var(--text-tertiary);">Tab-switch & anti-cheat anomalies</div>
+    </div>
+
+    <div class="glass-panel" style="padding: 1.5rem; border-top: 3px solid #a142f4;">
+      <div style="font-size: 0.8rem; font-weight: 700; color: #a142f4; text-transform: uppercase;">Open Doubts</div>
+      <div style="font-size: 2.2rem; font-weight: 800; color: var(--text-primary); margin: 0.25rem 0;">{{ open_doubts|length }}</div>
+      <div style="font-size: 0.82rem; color: var(--text-tertiary);">Awaiting faculty verification</div>
+    </div>
+  </div>
+
+  <!-- Section 1: Authored Courses -->
+  <div class="glass-panel" style="padding: 2rem; margin-bottom: 2rem;">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
+      <h2 style="font-size: 1.3rem; font-weight: 800; color: var(--text-primary); margin: 0;">
+        <i class="fas fa-layer-group" style="color: var(--google-blue); margin-right: 0.5rem;"></i> My Authored Curricula
+      </h2>
+      <a href="/courses/create/" class="btn btn-primary btn-sm"><i class="fas fa-plus"></i> New Curriculum</a>
+    </div>
+
+    {% if my_courses %}
+      <div style="overflow-x: auto;">
+        <table style="width: 100%; border-collapse: collapse; text-align: left; font-size: 0.9rem;">
+          <thead>
+            <tr style="border-bottom: 2px solid var(--border-light); color: var(--text-tertiary); font-size: 0.8rem; text-transform: uppercase;">
+              <th style="padding: 0.75rem 1rem;">Course Title</th>
+              <th style="padding: 0.75rem 1rem;">Category</th>
+              <th style="padding: 0.75rem 1rem;">Level</th>
+              <th style="padding: 0.75rem 1rem;">Lessons</th>
+              <th style="padding: 0.75rem 1rem;">Enrolled</th>
+              <th style="padding: 0.75rem 1rem;">Status</th>
+              <th style="padding: 0.75rem 1rem; text-align: right;">Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for c in my_courses %}
+              <tr style="border-bottom: 1px solid var(--border-light);">
+                <td style="padding: 1rem; font-weight: 700; color: var(--text-primary);">
+                  {{ c.title }}
+                </td>
+                <td style="padding: 1rem; color: var(--text-secondary);">{{ c.category }}</td>
+                <td style="padding: 1rem;"><span class="pill pill-blue">{{ c.level }}</span></td>
+                <td style="padding: 1rem; color: var(--text-primary); font-weight: 600;">{{ c.lessons_count|default:"8" }}</td>
+                <td style="padding: 1rem; font-weight: 700; color: var(--google-green);">{{ c.enrolled_count }}</td>
+                <td style="padding: 1rem;">
+                  <span class="pill {% if c.status == 'published' %}pill-emerald{% else %}pill-amber{% endif %}">
+                    {{ c.status|upper }}
+                  </span>
+                </td>
+                <td style="padding: 1rem; text-align: right;">
+                  <a href="/courses/{{ c.id }}/" class="btn btn-secondary btn-sm"><i class="fas fa-eye"></i> View</a>
+                </td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    {% else %}
+      <p style="color: var(--text-secondary); margin: 0;">No courses authored yet. Click "Create New Course" above to build your first curriculum.</p>
+    {% endif %}
+  </div>
+
+  <!-- Section 2: Proctored Exam Submissions & Anti-Cheat Telemetry -->
+  <div class="glass-panel" style="padding: 2rem; margin-bottom: 2rem;">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
+      <div>
+        <h2 style="font-size: 1.3rem; font-weight: 800; color: var(--text-primary); margin: 0;">
+          <i class="fas fa-user-shield" style="color: #ea4335; margin-right: 0.5rem;"></i> Proctored Exam Attempts & Grade Overrides
+        </h2>
+        <p style="color: var(--text-secondary); font-size: 0.85rem; margin: 0.25rem 0 0;">
+          Inspect student submissions. Attempts with tab-switch anomalies are automatically flagged for faculty audit.
+        </p>
+      </div>
+      <a href="/educator/exams/submissions/" class="btn btn-secondary btn-sm">Full Submissions Log</a>
+    </div>
+
+    {% if all_submissions %}
+      <div style="overflow-x: auto;">
+        <table style="width: 100%; border-collapse: collapse; text-align: left; font-size: 0.9rem;">
+          <thead>
+            <tr style="border-bottom: 2px solid var(--border-light); color: var(--text-tertiary); font-size: 0.8rem; text-transform: uppercase;">
+              <th style="padding: 0.75rem 1rem;">Student</th>
+              <th style="padding: 0.75rem 1rem;">Exam Course</th>
+              <th style="padding: 0.75rem 1rem;">Score</th>
+              <th style="padding: 0.75rem 1rem;">Tab Switches</th>
+              <th style="padding: 0.75rem 1rem;">Anti-Cheat Status</th>
+              <th style="padding: 0.75rem 1rem; text-align: right;">Action</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for s in all_submissions|slice:":10" %}
+              <tr style="border-bottom: 1px solid var(--border-light);">
+                <td style="padding: 1rem;">
+                  <div style="font-weight: 700; color: var(--text-primary);">{{ s.student_name }}</div>
+                  <div style="font-size: 0.8rem; color: var(--text-tertiary);">{{ s.student_email }}</div>
+                </td>
+                <td style="padding: 1rem; color: var(--text-secondary);">{{ s.course_id }}</td>
+                <td style="padding: 1rem; font-weight: 700; color: {% if s.passed %}var(--google-green){% else %}#ea4335{% endif %};">
+                  {{ s.score }}/{{ s.total_marks }} ({{ s.percentage }}%)
+                  {% if s.grade_overridden %}
+                    <span class="pill pill-purple" style="font-size:0.65rem;">OVERRIDDEN</span>
+                  {% endif %}
+                </td>
+                <td style="padding: 1rem; font-weight: 700; color: {% if s.tab_switches_count > 2 %}#ea4335{% else %}var(--text-secondary){% endif %};">
+                  {{ s.tab_switches_count }} Switches
+                </td>
+                <td style="padding: 1rem;">
+                  {% if s.is_flagged %}
+                    <span class="pill pill-red"><i class="fas fa-exclamation-triangle"></i> Flagged Cheating</span>
+                  {% else %}
+                    <span class="pill pill-emerald"><i class="fas fa-shield-alt"></i> Clean Proctor</span>
+                  {% endif %}
+                </td>
+                <td style="padding: 1rem; text-align: right;">
+                  <button class="btn btn-secondary btn-sm" onclick="openOverrideModal('{{ s.id }}', '{{ s.student_name }}', '{{ s.score }}', '{{ s.total_marks }}')">
+                    <i class="fas fa-edit"></i> Override
+                  </button>
+                </td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    {% else %}
+      <p style="color: var(--text-secondary); margin: 0;">No student exam submissions recorded yet.</p>
+    {% endif %}
+  </div>
+
+</div>
+
+<!-- Grade Override Modal -->
+<div id="overrideModal" style="display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 9999; align-items: center; justify-content: center;">
+  <div style="background: var(--bg-surface); width: 100%; max-width: 480px; padding: 2rem; border-radius: var(--radius-lg); box-shadow: var(--shadow-xl); border: 1px solid var(--border-light);">
+    <h3 style="font-size: 1.25rem; font-weight: 800; color: var(--text-primary); margin: 0 0 0.5rem;">
+      Manual Grade Override
+    </h3>
+    <p style="font-size: 0.88rem; color: var(--text-secondary); margin-bottom: 1.25rem;">
+      Overriding grades triggers an immutable audit log entry. Please provide a clear academic justification.
+    </p>
+
+    <form id="overrideForm" onsubmit="submitGradeOverride(event)">
+      {% csrf_token %}
+      <input type="hidden" id="overrideAttemptId">
+
+      <div style="margin-bottom: 1rem;">
+        <label style="font-size: 0.85rem; font-weight: 700; color: var(--text-primary);">Student</label>
+        <input type="text" id="overrideStudentName" style="width: 100%; padding: 0.65rem; border-radius: var(--radius-sm); border: 1px solid var(--border-light); background: rgba(0,0,0,0.02);" readonly>
+      </div>
+
+      <div style="display: flex; gap: 1rem; margin-bottom: 1rem;">
+        <div style="flex: 1;">
+          <label style="font-size: 0.85rem; font-weight: 700; color: var(--text-primary);">New Score</label>
+          <input type="number" id="overrideScore" style="width: 100%; padding: 0.65rem; border-radius: var(--radius-sm); border: 1px solid var(--border-light);" required>
+        </div>
+        <div style="flex: 1;">
+          <label style="font-size: 0.85rem; font-weight: 700; color: var(--text-primary);">Total Marks</label>
+          <input type="number" id="overrideTotalMarks" style="width: 100%; padding: 0.65rem; border-radius: var(--radius-sm); border: 1px solid var(--border-light);" required>
+        </div>
+      </div>
+
+      <div style="margin-bottom: 1.5rem;">
+        <label style="font-size: 0.85rem; font-weight: 700; color: var(--text-primary);">Mandatory Justification Reason</label>
+        <textarea id="overrideReason" rows="3" placeholder="Explain why the score was revised (e.g. false-positive tab switch verified with student)..." style="width: 100%; padding: 0.65rem; border-radius: var(--radius-sm); border: 1px solid var(--border-light); font-size: 0.9rem;" required></textarea>
+      </div>
+
+      <div style="display: flex; justify-content: flex-end; gap: 0.75rem;">
+        <button type="button" class="btn btn-secondary btn-sm" onclick="closeOverrideModal()">Cancel</button>
+        <button type="submit" class="btn btn-primary btn-sm"><i class="fas fa-save"></i> Save Override</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<script>
+function openOverrideModal(attemptId, studentName, score, totalMarks) {
+  document.getElementById("overrideAttemptId").value = attemptId;
+  document.getElementById("overrideStudentName").value = studentName;
+  document.getElementById("overrideScore").value = score;
+  document.getElementById("overrideTotalMarks").value = totalMarks;
+  document.getElementById("overrideReason").value = "";
+  document.getElementById("overrideModal").style.display = "flex";
+}
+
+function closeOverrideModal() {
+  document.getElementById("overrideModal").style.display = "none";
+}
+
+async function submitGradeOverride(e) {
+  e.preventDefault();
+  const attemptId = document.getElementById("overrideAttemptId").value;
+  const newScore = document.getElementById("overrideScore").value;
+  const totalMarks = document.getElementById("overrideTotalMarks").value;
+  const reason = document.getElementById("overrideReason").value;
+
+  const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+  const formData = new FormData();
+  formData.append("csrfmiddlewaretoken", csrfToken);
+  formData.append("new_score", newScore);
+  formData.append("total_marks", totalMarks);
+  formData.append("reason", reason);
+
+  try {
+    const res = await fetch(`/educator/exams/submissions/${attemptId}/override/`, {
+      method: "POST",
+      headers: { "X-Requested-With": "XMLHttpRequest" },
+      body: formData
+    });
+    const data = await res.json();
+    if (data.success) {
+      alert(data.message);
+      location.reload();
+    } else {
+      alert(data.error || "Override failed.");
+    }
+  } catch (err) {
+    alert("Network error processing override.");
+  }
+}
+</script>
+{% endblock %}

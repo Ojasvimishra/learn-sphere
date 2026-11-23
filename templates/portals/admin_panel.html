@@ -1,0 +1,420 @@
+{% extends "base.html" %}
+
+{% block title %}Administrative Command Center | LearnSphere EdTech{% endblock %}
+
+{% block content %}
+<div class="container" style="padding-top: 2rem; padding-bottom: 4rem;">
+
+  <!-- Admin Master Header -->
+  <div class="glass-panel" style="padding: 2.25rem 2.5rem; margin-bottom: 2rem; border-left: 5px solid #a142f4;">
+    <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1.5rem;">
+      <div>
+        <div style="display: flex; align-items: center; gap: 0.75rem; margin-bottom: 0.4rem;">
+          <h1 style="font-size: 1.85rem; font-weight: 800; color: var(--text-primary); margin: 0;">Administrative Command Center</h1>
+          <span class="pill pill-purple">{{ user.role|upper }}</span>
+        </div>
+        <p style="color: var(--text-secondary); font-size: 0.95rem; margin: 0;">
+          5-Role RBAC governance, faculty approvals, curriculum oversight, and immutable audit compliance.
+        </p>
+      </div>
+
+      <div style="display: flex; gap: 0.75rem;">
+        <span class="pill pill-cyan"><i class="fas fa-shield-alt"></i> ISO 27001 Compliant</span>
+        <span class="pill pill-emerald"><i class="fas fa-lock"></i> Append-Only Audit</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Telemetry Counters -->
+  <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1.25rem; margin-bottom: 2rem;">
+    <div class="glass-panel" style="padding: 1.4rem; border-top: 3px solid var(--google-blue);">
+      <div style="font-size: 0.78rem; font-weight: 700; color: var(--google-blue); text-transform: uppercase;">Total Users</div>
+      <div style="font-size: 2rem; font-weight: 800; color: var(--text-primary); margin: 0.25rem 0;">{{ metrics.total_users }}</div>
+      <div style="font-size: 0.78rem; color: var(--text-tertiary);">Active accounts in MongoDB</div>
+    </div>
+
+    <div class="glass-panel" style="padding: 1.4rem; border-top: 3px solid var(--google-green);">
+      <div style="font-size: 0.78rem; font-weight: 700; color: var(--google-green); text-transform: uppercase;">Curricula Tracks</div>
+      <div style="font-size: 2rem; font-weight: 800; color: var(--text-primary); margin: 0.25rem 0;">{{ metrics.total_courses }}</div>
+      <div style="font-size: 0.78rem; color: var(--text-tertiary);">Recorded and modular courses</div>
+    </div>
+
+    <div class="glass-panel" style="padding: 1.4rem; border-top: 3px solid var(--google-yellow);">
+      <div style="font-size: 0.78rem; font-weight: 700; color: #b06000; text-transform: uppercase;">Total Enrollments</div>
+      <div style="font-size: 2rem; font-weight: 800; color: var(--text-primary); margin: 0.25rem 0;">{{ metrics.total_enrollments }}</div>
+      <div style="font-size: 0.78rem; color: var(--text-tertiary);">Student learning tracks</div>
+    </div>
+
+    <div class="glass-panel" style="padding: 1.4rem; border-top: 3px solid #ea4335;">
+      <div style="font-size: 0.78rem; font-weight: 700; color: #ea4335; text-transform: uppercase;">Exam Submissions</div>
+      <div style="font-size: 2rem; font-weight: 800; color: var(--text-primary); margin: 0.25rem 0;">{{ metrics.total_exam_submissions }}</div>
+      <div style="font-size: 0.78rem; color: var(--text-tertiary);">Proctored evaluations</div>
+    </div>
+
+    <div class="glass-panel" style="padding: 1.4rem; border-top: 3px solid #a142f4;">
+      <div style="font-size: 0.78rem; font-weight: 700; color: #a142f4; text-transform: uppercase;">Academic Doubts</div>
+      <div style="font-size: 2rem; font-weight: 800; color: var(--text-primary); margin: 0.25rem 0;">{{ metrics.total_doubts }}</div>
+      <div style="font-size: 0.78rem; color: var(--text-tertiary);">Questions asked by learners</div>
+    </div>
+  </div>
+
+  <!-- Tab Navigation -->
+  <div style="display: flex; gap: 0.5rem; margin-bottom: 1.5rem; border-bottom: 2px solid var(--border-light); padding-bottom: 0.5rem; flex-wrap: wrap;">
+    <button class="tab-btn active" onclick="switchAdminTab('users', this)">
+      <i class="fas fa-users-cog"></i> 5-Role User Management
+    </button>
+    <button class="tab-btn" onclick="switchAdminTab('educators', this)">
+      <i class="fas fa-user-check"></i> Educator Approval Queue {% if pending_educators %}<span class="pill pill-red" style="padding:0.1rem 0.4rem;font-size:0.7rem;">{{ pending_educators|length }}</span>{% endif %}
+    </button>
+    <button class="tab-btn" onclick="switchAdminTab('courses', this)">
+      <i class="fas fa-book"></i> Course Approval Queue {% if pending_courses %}<span class="pill pill-amber" style="padding:0.1rem 0.4rem;font-size:0.7rem;">{{ pending_courses|length }}</span>{% endif %}
+    </button>
+    <button class="tab-btn" onclick="switchAdminTab('audit', this)">
+      <i class="fas fa-clipboard-list"></i> Immutable Audit Explorer
+    </button>
+  </div>
+
+  {% csrf_token %}
+
+  <!-- Tab 1: User Management -->
+  <div id="tab-users" class="tab-pane active glass-panel" style="padding: 2rem;">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; flex-wrap: wrap; gap: 1rem;">
+      <h2 style="font-size: 1.25rem; font-weight: 800; color: var(--text-primary); margin: 0;">
+        User Directory & Role Governance
+      </h2>
+
+      <div style="display: flex; gap: 0.75rem; align-items: center;">
+        <label style="font-size: 0.85rem; font-weight: 700; color: var(--text-secondary);">Role Filter:</label>
+        <select onchange="location.href='?role=' + this.value" style="padding: 0.4rem 0.8rem; border-radius: var(--radius-sm); border: 1px solid var(--border-light); font-size: 0.85rem;">
+          <option value="all" {% if current_role_filter == 'all' %}selected{% endif %}>All Roles</option>
+          {% for r in available_roles %}
+            <option value="{{ r }}" {% if current_role_filter == r %}selected{% endif %}>{{ r|upper }}</option>
+          {% endfor %}
+        </select>
+      </div>
+    </div>
+
+    <div style="overflow-x: auto;">
+      <table style="width: 100%; border-collapse: collapse; text-align: left; font-size: 0.9rem;">
+        <thead>
+          <tr style="border-bottom: 2px solid var(--border-light); color: var(--text-tertiary); font-size: 0.8rem; text-transform: uppercase;">
+            <th style="padding: 0.75rem 1rem;">Username / Email</th>
+            <th style="padding: 0.75rem 1rem;">Full Name</th>
+            <th style="padding: 0.75rem 1rem;">Current Role</th>
+            <th style="padding: 0.75rem 1rem;">Account Status</th>
+            <th style="padding: 0.75rem 1rem; text-align: right;">Assign Role</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for u in users_list %}
+            <tr style="border-bottom: 1px solid var(--border-light);">
+              <td style="padding: 1rem;">
+                <div style="font-weight: 700; color: var(--text-primary);">@{{ u.username }}</div>
+                <div style="font-size: 0.8rem; color: var(--text-tertiary);">{{ u.email }}</div>
+              </td>
+              <td style="padding: 1rem; color: var(--text-primary);">{{ u.full_name|default:"-" }}</td>
+              <td style="padding: 1rem;">
+                <span class="pill {% if u.role == 'super_admin' %}pill-purple{% elif u.role == 'educator' %}pill-emerald{% else %}pill-blue{% endif %}">
+                  {{ u.role|upper }}
+                </span>
+              </td>
+              <td style="padding: 1rem;">
+                {% if u.is_approved %}
+                  <span class="pill pill-emerald"><i class="fas fa-check"></i> Approved</span>
+                {% else %}
+                  <span class="pill pill-amber"><i class="fas fa-clock"></i> Pending Approval</span>
+                {% endif %}
+              </td>
+              <td style="padding: 1rem; text-align: right;">
+                <select id="role-select-{{ u.id }}" style="padding: 0.35rem 0.6rem; border-radius: var(--radius-sm); border: 1px solid var(--border-light); font-size: 0.82rem;">
+                  {% for r in available_roles %}
+                    <option value="{{ r }}" {% if u.role == r %}selected{% endif %}>{{ r }}</option>
+                  {% endfor %}
+                </select>
+                <button class="btn btn-secondary btn-sm" onclick="changeUserRole('{{ u.id }}')">
+                  Update
+                </button>
+              </td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- Tab 2: Educator Approval Queue -->
+  <div id="tab-educators" class="tab-pane glass-panel" style="display: none; padding: 2rem;">
+    <div style="margin-bottom: 1.5rem;">
+      <h2 style="font-size: 1.25rem; font-weight: 800; color: var(--text-primary); margin: 0 0 0.3rem;">
+        Pending Educator Approval Queue
+      </h2>
+      <p style="color: var(--text-secondary); font-size: 0.88rem; margin: 0;">
+        Educator accounts cannot create courses or award badges until approved by an administrator.
+      </p>
+    </div>
+
+    {% if pending_educators %}
+      <div style="overflow-x: auto;">
+        <table style="width: 100%; border-collapse: collapse; text-align: left; font-size: 0.9rem;">
+          <thead>
+            <tr style="border-bottom: 2px solid var(--border-light); color: var(--text-tertiary); font-size: 0.8rem; text-transform: uppercase;">
+              <th style="padding: 0.75rem 1rem;">Applicant</th>
+              <th style="padding: 0.75rem 1rem;">Email</th>
+              <th style="padding: 0.75rem 1rem;">Bio / Qualifications</th>
+              <th style="padding: 0.75rem 1rem; text-align: right;">Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for pe in pending_educators %}
+              <tr style="border-bottom: 1px solid var(--border-light);">
+                <td style="padding: 1rem; font-weight: 700; color: var(--text-primary);">
+                  {{ pe.full_name|default:pe.username }} (@{{ pe.username }})
+                </td>
+                <td style="padding: 1rem; color: var(--text-secondary);">{{ pe.email }}</td>
+                <td style="padding: 1rem; color: var(--text-secondary); max-width: 320px;">
+                  {{ pe.bio|default:"No bio provided." }}
+                </td>
+                <td style="padding: 1rem; text-align: right;">
+                  <button class="btn btn-emerald btn-sm" onclick="approveEducator('{{ pe.id }}')">
+                    <i class="fas fa-check"></i> Approve
+                  </button>
+                  <button class="btn btn-secondary btn-sm" onclick="rejectEducator('{{ pe.id }}')">
+                    <i class="fas fa-times"></i> Reject
+                  </button>
+                </td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    {% else %}
+      <div style="text-align: center; padding: 2.5rem; color: var(--text-secondary);">
+        <i class="fas fa-check-circle" style="font-size: 2.5rem; color: var(--google-green); margin-bottom: 0.75rem;"></i>
+        <h3 style="font-size: 1.1rem; font-weight: 700; color: var(--text-primary);">No Pending Educator Applications</h3>
+        <p style="font-size: 0.88rem; margin: 0.25rem 0 0;">All faculty registrations have been processed.</p>
+      </div>
+    {% endif %}
+  </div>
+
+  <!-- Tab 3: Course Approval Queue -->
+  <div id="tab-courses" class="tab-pane glass-panel" style="display: none; padding: 2rem;">
+    <div style="margin-bottom: 1.5rem;">
+      <h2 style="font-size: 1.25rem; font-weight: 800; color: var(--text-primary); margin: 0 0 0.3rem;">
+        Curriculum Review & Publication Queue
+      </h2>
+      <p style="color: var(--text-secondary); font-size: 0.88rem; margin: 0;">
+        Review course drafts and module syllabi before publishing them live to students.
+      </p>
+    </div>
+
+    {% if pending_courses %}
+      <div style="overflow-x: auto;">
+        <table style="width: 100%; border-collapse: collapse; text-align: left; font-size: 0.9rem;">
+          <thead>
+            <tr style="border-bottom: 2px solid var(--border-light); color: var(--text-tertiary); font-size: 0.8rem; text-transform: uppercase;">
+              <th style="padding: 0.75rem 1rem;">Course Title</th>
+              <th style="padding: 0.75rem 1rem;">Instructor</th>
+              <th style="padding: 0.75rem 1rem;">Category</th>
+              <th style="padding: 0.75rem 1rem;">Lessons</th>
+              <th style="padding: 0.75rem 1rem;">Current Status</th>
+              <th style="padding: 0.75rem 1rem; text-align: right;">Action</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for pc in pending_courses %}
+              <tr style="border-bottom: 1px solid var(--border-light);">
+                <td style="padding: 1rem; font-weight: 700; color: var(--text-primary);">
+                  {{ pc.title }}
+                </td>
+                <td style="padding: 1rem; color: var(--text-secondary);">{{ pc.instructor_name }}</td>
+                <td style="padding: 1rem;"><span class="pill pill-blue">{{ pc.category }}</span></td>
+                <td style="padding: 1rem; font-weight: 600;">{{ pc.lessons_count|default:"8" }}</td>
+                <td style="padding: 1rem;"><span class="pill pill-amber">{{ pc.status|upper }}</span></td>
+                <td style="padding: 1rem; text-align: right;">
+                  <button class="btn btn-emerald btn-sm" onclick="approveCourse('{{ pc.id }}')">
+                    <i class="fas fa-check-double"></i> Approve & Publish
+                  </button>
+                </td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    {% else %}
+      <div style="text-align: center; padding: 2.5rem; color: var(--text-secondary);">
+        <i class="fas fa-layer-group" style="font-size: 2.5rem; color: var(--google-blue); margin-bottom: 0.75rem;"></i>
+        <h3 style="font-size: 1.1rem; font-weight: 700; color: var(--text-primary);">No Curricula Pending Review</h3>
+        <p style="font-size: 0.88rem; margin: 0.25rem 0 0;">All educator course submissions are currently published.</p>
+      </div>
+    {% endif %}
+  </div>
+
+  <!-- Tab 4: Immutable Audit Log Explorer -->
+  <div id="tab-audit" class="tab-pane glass-panel" style="display: none; padding: 2rem;">
+    <div style="margin-bottom: 1.5rem;">
+      <h2 style="font-size: 1.25rem; font-weight: 800; color: var(--text-primary); margin: 0 0 0.3rem;">
+        <i class="fas fa-shield-alt" style="color: var(--google-blue); margin-right: 0.4rem;"></i> Append-Only Security Audit Log
+      </h2>
+      <p style="color: var(--text-secondary); font-size: 0.88rem; margin: 0;">
+        Immutable audit stream strictly blocking updates or deletions for enterprise compliance and forensic verification.
+      </p>
+    </div>
+
+    {% if audit_logs %}
+      <div style="overflow-x: auto;">
+        <table style="width: 100%; border-collapse: collapse; text-align: left; font-size: 0.85rem;">
+          <thead>
+            <tr style="border-bottom: 2px solid var(--border-light); color: var(--text-tertiary); font-size: 0.75rem; text-transform: uppercase;">
+              <th style="padding: 0.65rem 0.85rem;">Timestamp (UTC)</th>
+              <th style="padding: 0.65rem 0.85rem;">Action</th>
+              <th style="padding: 0.65rem 0.85rem;">Actor Email</th>
+              <th style="padding: 0.65rem 0.85rem;">Role</th>
+              <th style="padding: 0.65rem 0.85rem;">Resource</th>
+              <th style="padding: 0.65rem 0.85rem;">IP Address</th>
+              <th style="padding: 0.65rem 0.85rem;">Status</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for log in audit_logs %}
+              <tr style="border-bottom: 1px solid var(--border-light); font-family: monospace;">
+                <td style="padding: 0.75rem 0.85rem; color: var(--text-secondary);">{{ log.timestamp|date:"Y-m-d H:i:s" }}</td>
+                <td style="padding: 0.75rem 0.85rem; font-weight: 700; color: var(--text-primary);">{{ log.action }}</td>
+                <td style="padding: 0.75rem 0.85rem; color: var(--google-blue);">{{ log.actor_email }}</td>
+                <td style="padding: 0.75rem 0.85rem;"><span class="pill pill-cyan" style="font-size:0.65rem;">{{ log.actor_role }}</span></td>
+                <td style="padding: 0.75rem 0.85rem; color: var(--text-tertiary);">{{ log.resource_type }}:{{ log.resource_id|truncatechars:10 }}</td>
+                <td style="padding: 0.75rem 0.85rem; color: var(--text-secondary);">{{ log.ip_address }}</td>
+                <td style="padding: 0.75rem 0.85rem;">
+                  <span class="pill {% if log.status == 'success' %}pill-emerald{% else %}pill-red{% endif %}" style="font-size:0.65rem;">
+                    {{ log.status|upper }}
+                  </span>
+                </td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    {% else %}
+      <p style="color: var(--text-secondary); margin: 0;">No audit entries recorded yet.</p>
+    {% endif %}
+  </div>
+
+</div>
+
+<style>
+.tab-btn {
+  padding: 0.65rem 1.25rem;
+  background: transparent;
+  border: none;
+  font-size: 0.92rem;
+  font-weight: 700;
+  color: var(--text-secondary);
+  cursor: pointer;
+  border-radius: var(--radius-sm);
+  transition: all 0.2s ease;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+.tab-btn:hover {
+  color: var(--text-primary);
+  background: rgba(0,0,0,0.03);
+}
+.tab-btn.active {
+  color: var(--google-blue);
+  background: rgba(26, 115, 232, 0.08);
+}
+</style>
+
+<script>
+function switchAdminTab(tabName, el) {
+  document.querySelectorAll(".tab-pane").forEach(p => p.style.display = "none");
+  document.querySelectorAll(".tab-btn").forEach(b => b.classList.remove("active"));
+  document.getElementById("tab-" + tabName).style.display = "block";
+  el.classList.add("active");
+}
+
+function getCsrf() {
+  return document.querySelector('[name=csrfmiddlewaretoken]').value;
+}
+
+async function approveEducator(userId) {
+  if (!confirm("Approve this educator application?")) return;
+  const formData = new FormData();
+  formData.append("csrfmiddlewaretoken", getCsrf());
+
+  const res = await fetch(`/admin-panel/educators/${userId}/approve/`, {
+    method: "POST",
+    headers: { "X-Requested-With": "XMLHttpRequest" },
+    body: formData
+  });
+  const data = await res.json();
+  if (data.success) {
+    alert(data.message);
+    location.reload();
+  } else {
+    alert(data.error || "Approval failed.");
+  }
+}
+
+async function rejectEducator(userId) {
+  if (!confirm("Reject this educator application and revert account to student?")) return;
+  const formData = new FormData();
+  formData.append("csrfmiddlewaretoken", getCsrf());
+
+  const res = await fetch(`/admin-panel/educators/${userId}/reject/`, {
+    method: "POST",
+    headers: { "X-Requested-With": "XMLHttpRequest" },
+    body: formData
+  });
+  const data = await res.json();
+  if (data.success) {
+    alert(data.message);
+    location.reload();
+  } else {
+    alert(data.error || "Rejection failed.");
+  }
+}
+
+async function changeUserRole(userId) {
+  const select = document.getElementById("role-select-" + userId);
+  const newRole = select.value;
+  if (!confirm(`Are you sure you want to change user role to '${newRole}'?`)) return;
+
+  const formData = new FormData();
+  formData.append("csrfmiddlewaretoken", getCsrf());
+  formData.append("new_role", newRole);
+
+  const res = await fetch(`/admin-panel/users/${userId}/role/`, {
+    method: "POST",
+    headers: { "X-Requested-With": "XMLHttpRequest" },
+    body: formData
+  });
+  const data = await res.json();
+  if (data.success) {
+    alert(data.message);
+    location.reload();
+  } else {
+    alert(data.error || "Failed to update role.");
+  }
+}
+
+async function approveCourse(courseId) {
+  if (!confirm("Approve and publish this curriculum?")) return;
+  const formData = new FormData();
+  formData.append("csrfmiddlewaretoken", getCsrf());
+
+  const res = await fetch(`/admin-panel/courses/${courseId}/approve/`, {
+    method: "POST",
+    headers: { "X-Requested-With": "XMLHttpRequest" },
+    body: formData
+  });
+  const data = await res.json();
+  if (data.success) {
+    alert(data.message);
+    location.reload();
+  } else {
+    alert(data.error || "Approval failed.");
+  }
+}
+</script>
+{% endblock %}

@@ -1,0 +1,321 @@
+{% extends "base.html" %}
+
+{% block title %}Student Learning Center | LearnSphere EdTech{% endblock %}
+
+{% block content %}
+<div class="container" style="padding-top: 2rem; padding-bottom: 4rem;">
+
+  <!-- Student Hero & Smart Education Vision Banner -->
+  <div class="glass-panel" style="padding: 2.25rem 2.5rem; margin-bottom: 2rem; border-left: 5px solid var(--google-blue); position: relative; overflow: hidden;">
+    <div style="display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 1.5rem;">
+      <div>
+        <div style="display: flex; align-items: center; gap: 0.75rem; margin-bottom: 0.5rem;">
+          <h1 style="font-size: 1.85rem; font-weight: 800; color: var(--text-primary); margin: 0;">Welcome back, {{ user.full_name|default:user.username }}!</h1>
+          <span class="pill pill-cyan">STUDENT</span>
+          <span class="pill pill-amber" id="user-xp-badge" style="font-weight: 700;">⭐ {{ user.xp|default:0 }} XP</span>
+        </div>
+        <p style="color: var(--text-secondary); font-size: 0.95rem; max-width: 780px; line-height: 1.6; margin: 0.25rem 0 1rem;">
+          <em>&ldquo;Student Innovation &ndash; Smart education, a concept that describes learning in digital age. It enables learners to learn more effectively, efficiently, flexibly and comfortably.&rdquo;</em>
+        </p>
+        <div style="display: flex; gap: 0.6rem; flex-wrap: wrap;">
+          <a href="/courses/" class="btn btn-primary btn-sm"><i class="fas fa-compass"></i> Explore Courses</a>
+          <a href="/live/timetable/" class="btn btn-secondary btn-sm"><i class="fas fa-calendar-alt"></i> Weekly Timetable</a>
+          <a href="/labs/" class="btn btn-secondary btn-sm"><i class="fas fa-terminal"></i> Virtual Labs</a>
+          <a href="/doubts/" class="btn btn-secondary btn-sm"><i class="fas fa-question-circle"></i> Ask a Doubt</a>
+        </div>
+      </div>
+      <div style="text-align: right; min-width: 140px;">
+        <span style="font-size: 0.8rem; color: var(--text-tertiary); text-transform: uppercase; font-weight: 700; letter-spacing: 0.5px;">Today's Date</span>
+        <div style="font-size: 1.1rem; font-weight: 700; color: var(--text-primary);">{{ today_str }}</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Real-Event Telemetry Metrics Grid -->
+  <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 1.25rem; margin-bottom: 2rem;">
+    <div class="glass-panel" style="padding: 1.5rem; border-top: 3px solid #ea4335;">
+      <div style="display: flex; justify-content: space-between; align-items: center;">
+        <span style="font-size: 0.82rem; font-weight: 700; color: #ea4335; text-transform: uppercase;">Learning Streak</span>
+        <i class="fas fa-fire" style="color: #ea4335; font-size: 1.25rem;"></i>
+      </div>
+      <div style="font-size: 2.2rem; font-weight: 800; color: var(--text-primary); margin: 0.35rem 0 0.1rem;">
+        {{ metrics.current_streak_days }} <span style="font-size: 1rem; font-weight: 600; color: var(--text-secondary);">Days</span>
+      </div>
+      <div style="font-size: 0.8rem; color: var(--text-tertiary);">Computed from live activity events</div>
+    </div>
+
+    <div class="glass-panel" style="padding: 1.5rem; border-top: 3px solid var(--google-blue);">
+      <div style="display: flex; justify-content: space-between; align-items: center;">
+        <span style="font-size: 0.82rem; font-weight: 700; color: var(--google-blue); text-transform: uppercase;">Study Time</span>
+        <i class="fas fa-clock" style="color: var(--google-blue); font-size: 1.25rem;"></i>
+      </div>
+      <div style="font-size: 2.2rem; font-weight: 800; color: var(--text-primary); margin: 0.35rem 0 0.1rem;">
+        {{ metrics.total_study_hours }} <span style="font-size: 1rem; font-weight: 600; color: var(--text-secondary);">Hours</span>
+      </div>
+      <div style="font-size: 0.8rem; color: var(--text-tertiary);">Course lessons & lab execution</div>
+    </div>
+
+    <div class="glass-panel" style="padding: 1.5rem; border-top: 3px solid var(--google-green);">
+      <div style="display: flex; justify-content: space-between; align-items: center;">
+        <span style="font-size: 0.82rem; font-weight: 700; color: var(--google-green); text-transform: uppercase;">Lessons Finished</span>
+        <i class="fas fa-check-circle" style="color: var(--google-green); font-size: 1.25rem;"></i>
+      </div>
+      <div style="font-size: 2.2rem; font-weight: 800; color: var(--text-primary); margin: 0.35rem 0 0.1rem;">
+        {{ metrics.total_completed_lessons }}
+      </div>
+      <div style="font-size: 0.8rem; color: var(--text-tertiary);">Syllabus topics mastered</div>
+    </div>
+
+    <div class="glass-panel" style="padding: 1.5rem; border-top: 3px solid #a142f4;">
+      <div style="display: flex; justify-content: space-between; align-items: center;">
+        <span style="font-size: 0.82rem; font-weight: 700; color: #a142f4; text-transform: uppercase;">Certificates</span>
+        <i class="fas fa-award" style="color: #a142f4; font-size: 1.25rem;"></i>
+      </div>
+      <div style="font-size: 2.2rem; font-weight: 800; color: var(--text-primary); margin: 0.35rem 0 0.1rem;">
+        {{ metrics.certificates_count }}
+      </div>
+      <div style="font-size: 0.8rem; color: var(--text-tertiary);">100% completed curricula</div>
+    </div>
+  </div>
+
+  <!-- Bento Grid: Main Dashboard Columns -->
+  <div style="display: grid; grid-template-columns: 2fr 1.2fr; gap: 2rem;">
+
+    <!-- Left Column: Enrolled Courses & Progress -->
+    <div>
+      <div class="glass-panel" style="padding: 2rem; margin-bottom: 2rem;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
+          <h2 style="font-size: 1.35rem; font-weight: 800; color: var(--text-primary); margin: 0;">
+            <i class="fas fa-graduation-cap" style="color: var(--google-blue); margin-right: 0.5rem;"></i> My Enrolled Courses
+          </h2>
+          <span class="pill pill-cyan">{{ enrolled_courses|length }} Active</span>
+        </div>
+
+        {% if enrolled_courses %}
+          <div style="display: flex; flex-direction: column; gap: 1.25rem;">
+            {% for item in enrolled_courses %}
+              <div style="padding: 1.4rem; background: var(--bg-surface); border: 1px solid var(--border-light); border-radius: var(--radius-md); transition: var(--transition-base);">
+                <div style="display: flex; justify-content: space-between; align-items: flex-start; gap: 1rem; margin-bottom: 0.75rem;">
+                  <div>
+                    <h3 style="font-size: 1.15rem; font-weight: 700; color: var(--text-primary); margin: 0 0 0.25rem;">
+                      {{ item.course.title }}
+                    </h3>
+                    <div style="font-size: 0.85rem; color: var(--text-secondary);">
+                      Instructor: <strong>{{ item.course.instructor_name }}</strong> &bull; Level: {{ item.course.level }} &bull; {{ item.completed_lessons_count }}/{{ item.course.lessons_count|default:"8" }} Lessons Finished
+                    </div>
+                  </div>
+                  <div>
+                    {% if item.is_completed %}
+                      <span class="pill pill-emerald"><i class="fas fa-check"></i> Completed</span>
+                    {% else %}
+                      <span class="pill pill-blue">{{ item.progress_percent }}%</span>
+                    {% endif %}
+                  </div>
+                </div>
+
+                <!-- Progress Bar -->
+                <div style="width: 100%; height: 8px; background: rgba(0,0,0,0.06); border-radius: 999px; overflow: hidden; margin-bottom: 1rem;">
+                  <div style="width: {{ item.progress_percent }}%; height: 100%; background: {% if item.is_completed %}var(--google-green){% else %}var(--google-blue){% endif %}; border-radius: 999px;"></div>
+                </div>
+
+                <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 0.5rem;">
+                  <a href="/courses/{{ item.course.id }}/" class="btn btn-primary btn-sm">
+                    <i class="fas fa-play"></i> {% if item.is_completed %}Review Course{% else %}Continue Lesson{% endif %}
+                  </a>
+
+                  {% if item.is_completed %}
+                    <a href="/student/certificate/{{ item.course.id }}/" class="btn btn-emerald btn-sm" target="_blank">
+                      <i class="fas fa-award"></i> View Certificate
+                    </a>
+                  {% endif %}
+                </div>
+              </div>
+            {% endfor %}
+          </div>
+        {% else %}
+          <div style="text-align: center; padding: 2.5rem 1rem; color: var(--text-secondary);">
+            <i class="fas fa-book-open" style="font-size: 2.5rem; color: var(--text-tertiary); margin-bottom: 1rem;"></i>
+            <h3 style="font-size: 1.1rem; font-weight: 700;">No Courses Enrolled Yet</h3>
+            <p style="font-size: 0.9rem; max-width: 400px; margin: 0.5rem auto 1.25rem;">
+              Explore our smart education curricula across Computer Science, AI, and Cloud Architecture.
+            </p>
+            <a href="/courses/" class="btn btn-primary btn-sm"><i class="fas fa-compass"></i> Browse All Curricula</a>
+          </div>
+        {% endif %}
+      </div>
+
+      <!-- Recent Doubt Discussions -->
+      <div class="glass-panel" style="padding: 2rem;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.25rem;">
+          <h2 style="font-size: 1.25rem; font-weight: 800; color: var(--text-primary); margin: 0;">
+            <i class="fas fa-comments" style="color: #a142f4; margin-right: 0.5rem;"></i> Academic Doubts & Discussions
+          </h2>
+          <a href="/doubts/ask/" class="btn btn-primary btn-sm"><i class="fas fa-plus"></i> Ask Doubt</a>
+        </div>
+
+        {% if recent_doubts %}
+          <div style="display: flex; flex-direction: column; gap: 0.85rem;">
+            {% for d in recent_doubts %}
+              <div style="padding: 1rem 1.25rem; background: var(--bg-surface); border: 1px solid var(--border-light); border-radius: var(--radius-md); display: flex; justify-content: space-between; align-items: center;">
+                <div>
+                  <a href="/doubts/{{ d.id }}/" style="font-weight: 700; color: var(--text-primary); text-decoration: none; font-size: 0.95rem;">
+                    {{ d.title }}
+                  </a>
+                  <div style="font-size: 0.8rem; color: var(--text-tertiary); margin-top: 0.2rem;">
+                    By {{ d.author_name }} &bull; {{ d.answers_count|default:0 }} Answers &bull; {{ d.upvotes|default:0 }} Upvotes
+                  </div>
+                </div>
+                <span class="pill {% if d.status == 'resolved' %}pill-emerald{% else %}pill-blue{% endif %}">
+                  {{ d.status|upper }}
+                </span>
+              </div>
+            {% endfor %}
+          </div>
+        {% else %}
+          <p style="color: var(--text-secondary); font-size: 0.9rem; margin: 0;">No active questions found. Ask a doubt to get help from mentors and peers!</p>
+        {% endif %}
+      </div>
+    </div>
+
+    <!-- Right Column: Daily Server-Side Quiz & Live Classes -->
+    <div>
+      <!-- Daily Smart Education Quiz Card -->
+      <div class="glass-panel" style="padding: 2rem; margin-bottom: 2rem; border-top: 4px solid var(--google-yellow);">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+          <span style="font-size: 0.82rem; font-weight: 800; color: #b06000; text-transform: uppercase;">
+            <i class="fas fa-bolt"></i> Daily Concept Quiz
+          </span>
+          <span class="pill pill-amber">+50 XP</span>
+        </div>
+
+        <h3 style="font-size: 1.05rem; font-weight: 700; color: var(--text-primary); line-height: 1.5; margin: 0 0 1.25rem;">
+          {{ daily_question.question }}
+        </h3>
+
+        <form id="daily-quiz-form" style="display: flex; flex-direction: column; gap: 0.75rem;">
+          {% csrf_token %}
+          <input type="hidden" name="question_id" value="{{ daily_question.id }}">
+
+          {% for opt in daily_question.options %}
+            <label style="display: flex; align-items: flex-start; gap: 0.75rem; padding: 0.85rem 1rem; background: var(--bg-surface); border: 1px solid var(--border-light); border-radius: var(--radius-sm); cursor: pointer; font-size: 0.9rem; color: var(--text-primary); transition: var(--transition-base);">
+              <input type="radio" name="selected_option" value="{{ forloop.counter0 }}" style="margin-top: 0.2rem;" {% if already_completed_quiz %}disabled{% endif %} required>
+              <span>{{ opt }}</span>
+            </label>
+          {% endfor %}
+
+          <div id="quiz-feedback-box" style="display: none; padding: 1rem; border-radius: var(--radius-sm); font-size: 0.88rem; line-height: 1.5; margin-top: 0.5rem;"></div>
+
+          <div style="margin-top: 0.75rem;">
+            {% if already_completed_quiz %}
+              <button type="button" class="btn btn-secondary btn-sm" style="width: 100%;" disabled>
+                <i class="fas fa-check"></i> Completed for Today
+              </button>
+            {% else %}
+              <button type="submit" id="quiz-submit-btn" class="btn btn-primary btn-sm" style="width: 100%;">
+                <i class="fas fa-paper-plane"></i> Submit Answer (Earn 50 XP)
+              </button>
+            {% endif %}
+          </div>
+        </form>
+      </div>
+
+      <!-- Upcoming Scheduled Live Classes -->
+      <div class="glass-panel" style="padding: 2rem;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.25rem;">
+          <h2 style="font-size: 1.2rem; font-weight: 800; color: var(--text-primary); margin: 0;">
+            <i class="fas fa-broadcast-tower" style="color: #ea4335; margin-right: 0.4rem;"></i> Upcoming Live
+          </h2>
+          <a href="/live/timetable/" style="font-size: 0.82rem; color: var(--google-blue); font-weight: 700; text-decoration: none;">View All</a>
+        </div>
+
+        {% if upcoming_classes %}
+          <div style="display: flex; flex-direction: column; gap: 1rem;">
+            {% for session in upcoming_classes %}
+              <div style="padding: 1.1rem; background: var(--bg-surface); border: 1px solid var(--border-light); border-radius: var(--radius-md);">
+                <div style="font-size: 0.8rem; font-weight: 700; color: var(--google-blue); text-transform: uppercase;">{{ session.course_title }}</div>
+                <h4 style="font-size: 0.98rem; font-weight: 700; color: var(--text-primary); margin: 0.25rem 0 0.5rem;">
+                  {{ session.title }}
+                </h4>
+                <div style="font-size: 0.82rem; color: var(--text-tertiary); margin-bottom: 0.75rem;">
+                  <i class="far fa-clock"></i> {{ session.scheduled_start|date:"M d, H:i" }} &bull; {{ session.instructor_name }}
+                </div>
+                <a href="/live/room/{{ session.room_id }}/" class="btn btn-primary btn-sm" style="width: 100%; text-align: center;">
+                  <i class="fas fa-video"></i> Join Classroom
+                </a>
+              </div>
+            {% endfor %}
+          </div>
+        {% else %}
+          <p style="color: var(--text-secondary); font-size: 0.88rem; margin: 0;">No upcoming live lectures scheduled right now.</p>
+        {% endif %}
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<script>
+document.addEventListener("DOMContentLoaded", function() {
+  const form = document.getElementById("daily-quiz-form");
+  const feedback = document.getElementById("quiz-feedback-box");
+  const submitBtn = document.getElementById("quiz-submit-btn");
+  const xpBadge = document.getElementById("user-xp-badge");
+
+  if (form) {
+    form.addEventListener("submit", async function(e) {
+      e.preventDefault();
+      if (!submitBtn) return;
+      submitBtn.disabled = true;
+      submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Checking Answer...';
+
+      const formData = new FormData(form);
+
+      try {
+        const resp = await fetch("/student/daily-quiz/submit/", {
+          method: "POST",
+          headers: {
+            "X-Requested-With": "XMLHttpRequest"
+          },
+          body: formData
+        });
+
+        const data = await resp.json();
+        feedback.style.display = "block";
+
+        if (data.success) {
+          if (data.correct) {
+            feedback.style.background = "#e6f4ea";
+            feedback.style.border = "1px solid #34a853";
+            feedback.style.color = "#137333";
+            feedback.innerHTML = `<strong><i class="fas fa-check-circle"></i> Correct!</strong> ${data.xp_awarded > 0 ? `+${data.xp_awarded} XP Awarded!` : 'Already awarded today.'}<br><p style="margin-top:0.4rem;font-size:0.85rem;">${data.explanation}</p>`;
+            if (xpBadge && data.total_xp) {
+              xpBadge.innerHTML = `⭐ ${data.total_xp} XP`;
+            }
+          } else {
+            feedback.style.background = "#fce8e6";
+            feedback.style.border = "1px solid #ea4335";
+            feedback.style.color = "#c5221f";
+            feedback.innerHTML = `<strong><i class="fas fa-times-circle"></i> Incorrect.</strong><br><p style="margin-top:0.4rem;font-size:0.85rem;">${data.explanation}</p>`;
+          }
+          submitBtn.innerHTML = '<i class="fas fa-check"></i> Answer Submitted';
+        } else {
+          feedback.style.background = "#fce8e6";
+          feedback.style.border = "1px solid #ea4335";
+          feedback.style.color = "#c5221f";
+          feedback.innerText = data.error || "Failed to submit answer.";
+          submitBtn.disabled = false;
+          submitBtn.innerHTML = 'Try Again';
+        }
+      } catch (err) {
+        feedback.style.display = "block";
+        feedback.style.background = "#fce8e6";
+        feedback.style.color = "#c5221f";
+        feedback.innerText = "Network error communicating with quiz engine.";
+        submitBtn.disabled = false;
+        submitBtn.innerHTML = 'Try Again';
+      }
+    });
+  }
+});
+</script>
+{% endblock %}
