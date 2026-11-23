@@ -1,0 +1,95 @@
+{% extends "base.html" %}
+
+{% block title %}Live Classes & Weekly Timetable | LearnSphere{% endblock %}
+
+{% block content %}
+<div class="container" style="padding-top: 2.5rem; max-width: 1200px;">
+  <!-- Header -->
+  <div style="display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 2rem; flex-wrap: wrap; gap: 1rem;">
+    <div>
+      <span class="pill pill-cyan"><i class="fas fa-satellite-dish"></i> Live Synchronous Learning</span>
+      <h1 style="font-size: 2.35rem; font-weight: 800; color: var(--text-primary); margin-top: 0.5rem;">
+        Live Classes & Master Timetable
+      </h1>
+      <p style="color: var(--text-secondary); font-size: 1.05rem; max-width: 780px;">
+        Join interactive real-time lectures, masterclasses, and mentor doubt-clearing sessions scheduled across all core learning tracks.
+      </p>
+    </div>
+
+    {% if user and user.role in "educator,super_admin,dept_admin" %}
+      <a href="/live/create/" class="btn btn-primary" style="padding: 0.75rem 1.75rem;">
+        <i class="fas fa-video"></i> Schedule Live Class
+      </a>
+    {% endif %}
+  </div>
+
+  <!-- Live Classes Cards Grid -->
+  <div class="cards-grid" style="grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));">
+    {% for cls in classes %}
+      <div class="card" style="padding: 0; overflow: hidden; border-radius: 20px;">
+        <div style="padding: 1.5rem; background: {% if cls.status == 'live' %}linear-gradient(135deg, #ea4335 0%, #b31412 100%){% else %}linear-gradient(135deg, #1a73e8 0%, #4285f4 100%){% endif %}; color: #fff;">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.75rem;">
+            {% if cls.status == 'live' %}
+              <span class="pill" style="background: rgba(255,255,255,0.25); color: #fff; font-weight: 700; animation: pulse 1.5s infinite;">
+                <i class="fas fa-circle" style="color: #fff; font-size: 0.65rem;"></i> LIVE BROADCAST
+              </span>
+            {% else %}
+              <span class="pill" style="background: rgba(0,0,0,0.25); color: #fff;">
+                <i class="far fa-calendar-alt"></i> SCHEDULED
+              </span>
+            {% endif %}
+            <span style="font-size: 0.85rem; font-weight: 500;"><i class="far fa-clock"></i> {{ cls.duration_minutes }}m</span>
+          </div>
+
+          <h3 style="font-size: 1.25rem; font-weight: 800; color: #fff; margin: 0 0 0.5rem 0;">
+            {{ cls.title }}
+          </h3>
+          <div style="font-size: 0.88rem; opacity: 0.9;">
+            {{ cls.course_title }}
+          </div>
+        </div>
+
+        <div style="padding: 1.5rem; flex: 1; display: flex; flex-direction: column; justify-content: space-between;">
+          <p style="font-size: 0.9rem; color: var(--text-secondary); line-height: 1.5; margin-bottom: 1.25rem;">
+            {{ cls.description|truncatewords:20 }}
+          </p>
+
+          <div style="border-top: 1px solid var(--border-light); padding-top: 1rem; margin-bottom: 1.25rem; font-size: 0.85rem; color: var(--text-tertiary);">
+            <div style="display: flex; justify-content: space-between; margin-bottom: 0.35rem;">
+              <span>Faculty:</span>
+              <strong style="color: var(--text-primary);">{{ cls.instructor_name }}</strong>
+            </div>
+            <div style="display: flex; justify-content: space-between;">
+              <span>Scheduled:</span>
+              <strong style="color: var(--text-primary);">{{ cls.scheduled_start|date:"M d, Y &bull; H:i" }} UTC</strong>
+            </div>
+          </div>
+
+          <div>
+            {% if cls.status == 'live' %}
+              <a href="/live/room/{{ cls.room_id }}/" class="btn btn-primary" style="width: 100%; text-align: center; background: #ea4335; border-color: #ea4335;">
+                <i class="fas fa-play"></i> Join Live Room Now
+              </a>
+            {% else %}
+              <a href="/live/room/{{ cls.room_id }}/" class="btn btn-secondary" style="width: 100%; text-align: center;">
+                <i class="fas fa-door-open"></i> Enter Class Waiting Room
+              </a>
+            {% endif %}
+          </div>
+        </div>
+      </div>
+    {% empty %}
+      <div class="glass-panel" style="grid-column: 1 / -1; padding: 3.5rem; text-align: center; border-radius: 24px;">
+        <div style="width: 64px; height: 64px; border-radius: 50%; background: #e8f0fe; display: flex; align-items: center; justify-content: center; color: var(--google-blue); font-size: 1.75rem; margin: 0 auto 1.25rem;">
+          <i class="fas fa-calendar-check"></i>
+        </div>
+        <h3 style="font-size: 1.35rem; font-weight: 700; margin-bottom: 0.5rem;">No Live Classes Scheduled Today</h3>
+        <p style="color: var(--text-secondary); max-width: 480px; margin: 0 auto 1.5rem;">
+          Faculty members schedule regular weekly live sessions. Check back shortly or review recorded course tracks.
+        </p>
+        <a href="/courses/" class="btn btn-primary">Browse Recorded Tracks</a>
+      </div>
+    {% endfor %}
+  </div>
+</div>
+{% endblock %}

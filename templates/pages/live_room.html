@@ -1,0 +1,193 @@
+{% extends "base.html" %}
+
+{% block title %}Live Broadcast: {{ room.title }} | LearnSphere{% endblock %}
+
+{% block content %}
+<div class="container" style="padding-top: 1.5rem; max-width: 1440px;">
+  <!-- Header Bar -->
+  <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.25rem; flex-wrap: wrap; gap: 1rem;">
+    <div style="display: flex; align-items: center; gap: 0.75rem;">
+      <a href="/live/" class="btn btn-secondary btn-sm"><i class="fas fa-arrow-left"></i> Timetable</a>
+      <span style="font-size: 1.15rem; font-weight: 700; color: var(--text-primary);">{{ room.title }}</span>
+      {% if room.status == 'live' %}
+        <span class="pill" style="background: #ea4335; color: #fff; font-weight: 700;"><i class="fas fa-circle" style="font-size: 0.6rem;"></i> LIVE</span>
+      {% else %}
+        <span class="pill pill-cyan">{{ room.status|upper }}</span>
+      {% endif %}
+    </div>
+
+    <div style="display: flex; align-items: center; gap: 1rem;">
+      <span style="font-size: 0.88rem; color: var(--text-tertiary);"><i class="fas fa-user-friends"></i> <span id="viewer-count">{{ room.active_viewers|length }}</span> Attendees</span>
+      <button class="btn btn-secondary btn-sm" onclick="raiseHand('{{ room.room_id }}')">
+        <i class="fas fa-hand-paper" style="color: #f59e0b;"></i> Raise Hand
+      </button>
+
+      {% if is_host %}
+        <div style="display: flex; gap: 0.5rem;">
+          {% if room.status != 'live' %}
+            <button class="btn btn-emerald btn-sm" onclick="toggleStreamStatus('{{ room.room_id }}', 'live')">
+              <i class="fas fa-broadcast-tower"></i> Start Broadcast
+            </button>
+          {% else %}
+            <button class="btn btn-sm" style="background: #ea4335; color: #fff;" onclick="toggleStreamStatus('{{ room.room_id }}', 'completed')">
+              <i class="fas fa-stop"></i> End Broadcast
+            </button>
+          {% endif %}
+        </div>
+      {% endif %}
+    </div>
+  </div>
+
+  <!-- Broadcast Stage Layout (2 Columns: Screen on Left, Live Chat on Right) -->
+  <div style="display: grid; grid-template-columns: 1fr 380px; gap: 1.5rem; align-items: start;">
+    <!-- Broadcast Screen -->
+    <div class="glass-panel" style="padding: 0; overflow: hidden; border-radius: 24px; box-shadow: 0 8px 32px rgba(60,64,67,0.1);">
+      <div style="background: #000; position: relative; width: 100%; padding-top: 56.25%;">
+        {% if room.stream_url %}
+          <iframe src="{{ room.stream_url }}" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; border: none;" allow="camera; microphone; fullscreen; display-capture"></iframe>
+        {% else %}
+          <!-- High-End Simulated WebRTC Classroom Stage -->
+          <div style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%); display: flex; flex-direction: column; align-items: center; justify-content: center; color: #fff; text-align: center; padding: 2rem;">
+            <div style="width: 80px; height: 80px; border-radius: 50%; background: {% if room.status == 'live' %}#ea4335{% else %}var(--google-blue){% endif %}; display: flex; align-items: center; justify-content: center; font-size: 2.2rem; margin-bottom: 1.25rem; box-shadow: 0 0 35px rgba(234,67,53,0.4);">
+              <i class="fas {% if room.status == 'live' %}fa-satellite-dish{% else %}fa-chalkboard-teacher{% endif %}"></i>
+            </div>
+            <h2 style="font-size: 1.6rem; font-weight: 800; color: #fff; margin-bottom: 0.5rem;">
+              {% if room.status == 'live' %}Live Broadcast In Session{% else %}Classroom Waiting Room{% endif %}
+            </h2>
+            <p style="color: #94a3b8; font-size: 0.95rem; max-width: 520px;">
+              Hosted by <strong>{{ room.instructor_name }}</strong> &bull; {{ room.course_title }}
+            </p>
+            {% if room.status != 'live' %}
+              <div style="margin-top: 1rem; background: rgba(255,255,255,0.1); padding: 0.6rem 1.25rem; border-radius: 999px; font-size: 0.85rem;">
+                Scheduled for: {{ room.scheduled_start|date:"M d, Y &bull; H:i" }} UTC
+              </div>
+            {% endif %}
+          </div>
+        {% endif %}
+      </div>
+
+      <!-- Under Video Information -->
+      <div style="padding: 1.75rem;">
+        <h3 style="font-size: 1.25rem; font-weight: 700; color: var(--text-primary); margin-bottom: 0.5rem;">About this Live Lecture</h3>
+        <p style="font-size: 0.95rem; color: var(--text-secondary); line-height: 1.6; margin: 0;">{{ room.description }}</p>
+      </div>
+    </div>
+
+    <!-- Live Chat & Real-Time Q&A Drawer -->
+    <div class="glass-panel" style="padding: 1.5rem; border-radius: 24px; height: 680px; display: flex; flex-direction: column;">
+      <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border-light); padding-bottom: 0.75rem; margin-bottom: 1rem;">
+        <div style="font-size: 1.05rem; font-weight: 700; color: var(--text-primary);">
+          <i class="fas fa-comments" style="color: var(--google-blue);"></i> Live Room Chat
+        </div>
+        <span class="pill pill-emerald" style="font-size: 0.75rem;">Connected</span>
+      </div>
+
+      <!-- Messages Stream -->
+      <div id="chat-messages-container" style="flex: 1; overflow-y: auto; display: flex; flex-direction: column; gap: 0.75rem; padding-right: 0.25rem;">
+        {% for m in messages %}
+          <div style="background: {% if m.is_question %}#fef7e0; border-left: 3px solid #b06000;{% else %}var(--bg-surface);{% endif %} padding: 0.65rem 0.85rem; border-radius: 12px; font-size: 0.88rem; border: 1px solid var(--border-light);">
+            <div style="display: flex; justify-content: space-between; font-size: 0.75rem; color: var(--text-tertiary); margin-bottom: 0.25rem;">
+              <strong style="color: {% if m.sender_role == 'educator' %}var(--google-blue){% else %}var(--text-primary){% endif %};">
+                {% if m.sender_role == 'educator' %}[Faculty] {% endif %}{{ m.sender_name }}
+              </strong>
+              <span>{{ m.timestamp|date:"H:i" }}</span>
+            </div>
+            <div style="color: var(--text-secondary); word-break: break-word;">{{ m.message }}</div>
+          </div>
+        {% empty %}
+          <div style="text-align: center; color: var(--text-tertiary); font-size: 0.85rem; margin: auto;">
+            Say hello to the faculty and fellow learners!
+          </div>
+        {% endfor %}
+      </div>
+
+      <!-- Chat Input Area -->
+      <div style="margin-top: 1rem; border-top: 1px solid var(--border-light); padding-top: 0.75rem;">
+        <div style="display: flex; gap: 0.5rem; margin-bottom: 0.5rem; font-size: 0.8rem; align-items: center;">
+          <input type="checkbox" id="check-is-question" style="cursor: pointer;">
+          <label for="check-is-question" style="color: var(--text-secondary); cursor: pointer;">Post as formal Doubt / Question</label>
+        </div>
+        <div style="display: flex; gap: 0.5rem;">
+          <input type="text" id="chat-input" placeholder="Type a message or doubt..." style="flex: 1; padding: 0.65rem 0.85rem; border-radius: 12px; border: 1px solid var(--border-light); font-size: 0.88rem;" onkeydown="if(event.key==='Enter') sendChatMessage('{{ room.room_id }}')">
+          <button class="btn btn-primary btn-sm" onclick="sendChatMessage('{{ room.room_id }}')">
+            <i class="fas fa-paper-plane"></i>
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+function sendChatMessage(roomId) {
+  const input = document.getElementById("chat-input");
+  const isQ = document.getElementById("check-is-question").checked;
+  const text = input.value.trim();
+  if (!text) return;
+
+  fetch(`/live/api/room/${roomId}/chat/`, {
+    method: "POST",
+    headers: {"Content-Type": "application/json", "X-Requested-With": "XMLHttpRequest"},
+    body: JSON.stringify({message: text, is_question: isQ})
+  })
+  .then(res => res.json())
+  .then(data => {
+    if (data.status === 201 || data.data) {
+      input.value = "";
+      document.getElementById("check-is-question").checked = false;
+      appendChatMessage(data.data);
+    }
+  });
+}
+
+function appendChatMessage(msg) {
+  const container = document.getElementById("chat-messages-container");
+  const el = document.createElement("div");
+  el.style.background = msg.is_question ? "#fef7e0" : "var(--bg-surface)";
+  if (msg.is_question) el.style.borderLeft = "3px solid #b06000";
+  el.style.padding = "0.65rem 0.85rem";
+  el.style.borderRadius = "12px";
+  el.style.fontSize = "0.88rem";
+  el.style.border = "1px solid var(--border-light)";
+
+  el.innerHTML = `
+    <div style="display: flex; justify-content: space-between; font-size: 0.75rem; color: var(--text-tertiary); margin-bottom: 0.25rem;">
+      <strong style="color: ${msg.sender_role === 'educator' ? 'var(--google-blue)' : 'var(--text-primary)'};">
+        ${msg.sender_role === 'educator' ? '[Faculty] ' : ''}${msg.sender_name}
+      </strong>
+      <span>Just now</span>
+    </div>
+    <div style="color: var(--text-secondary); word-break: break-word;">${msg.message}</div>
+  `;
+  container.appendChild(el);
+  container.scrollTop = container.scrollHeight;
+}
+
+function raiseHand(roomId) {
+  fetch(`/live/api/room/${roomId}/raise-hand/`, {
+    method: "POST",
+    headers: {"Content-Type": "application/json"}
+  })
+  .then(res => res.json())
+  .then(data => {
+    alert("✋ You raised your hand! The faculty member has been notified.");
+  });
+}
+
+function toggleStreamStatus(roomId, newStatus) {
+  fetch(`/live/api/room/${roomId}/status/`, {
+    method: "POST",
+    headers: {"Content-Type": "application/json"},
+    body: JSON.stringify({status: newStatus})
+  })
+  .then(res => res.json())
+  .then(data => {
+    if (data.status === 200) {
+      window.location.reload();
+    } else {
+      alert(data.message || "Action failed");
+    }
+  });
+}
+</script>
+{% endblock %}

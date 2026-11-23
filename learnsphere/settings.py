@@ -35,6 +35,7 @@ INSTALLED_APPS = [
     'apps.innovation',
     'apps.courses',
     'apps.analytics',
+    'apps.live',
 ]
 
 MIDDLEWARE = [
