@@ -1,0 +1,59 @@
+{% extends "base.html" %}
+
+{% block title %}Ask an Academic Doubt | LearnSphere{% endblock %}
+
+{% block content %}
+<div class="container" style="padding-top: 2.5rem; max-width: 760px;">
+  <div style="margin-bottom: 1.5rem;">
+    <a href="/doubts/" style="color: var(--text-secondary); text-decoration: none; font-size: 0.9rem; display: flex; align-items: center; gap: 0.4rem; font-weight: 500;">
+      <i class="fas fa-arrow-left"></i> Back to Doubts Forum
+    </a>
+  </div>
+
+  <div class="glass-panel" style="padding: 2.75rem; border-radius: 28px;">
+    <span class="pill pill-indigo" style="margin-bottom: 0.75rem;">Academic Inquiry</span>
+    <h1 style="font-size: 2rem; font-weight: 800; color: var(--text-primary); margin-bottom: 0.5rem;">
+      Ask a Doubt or Question
+    </h1>
+    <p style="color: var(--text-secondary); font-size: 0.95rem; margin-bottom: 2rem;">
+      Faculty and fellow learners will help you analyze the concept and achieve mastery.
+    </p>
+
+    {% if error_msg %}
+      <div style="background: #fde8e8; color: #c81e1e; border: 1px solid #f8b4b4; border-radius: 12px; padding: 0.85rem 1.25rem; margin-bottom: 1.5rem;">
+        <i class="fas fa-exclamation-circle"></i> {{ error_msg }}
+      </div>
+    {% endif %}
+
+    <form method="POST">
+      {% csrf_token %}
+      <div class="form-group" style="margin-bottom: 1.5rem;">
+        <label style="display: block; font-weight: 600; font-size: 0.92rem; margin-bottom: 0.5rem; color: var(--text-primary);">Specific Title / Question Summary</label>
+        <input type="text" name="title" class="form-control" required placeholder="e.g. Why does Python's GIL prevent multi-threaded CPU scaling?" style="width: 100%; padding: 0.75rem 1rem; border-radius: 12px; border: 1px solid var(--border-light);">
+      </div>
+
+      <div class="form-group" style="margin-bottom: 1.5rem;">
+        <label style="display: block; font-weight: 600; font-size: 0.92rem; margin-bottom: 0.5rem; color: var(--text-primary);">Course / Academic Domain</label>
+        <input type="text" name="course_title" class="form-control" placeholder="e.g. Computer Science Foundations" style="width: 100%; padding: 0.75rem 1rem; border-radius: 12px; border: 1px solid var(--border-light);">
+      </div>
+
+      <div class="form-group" style="margin-bottom: 1.5rem;">
+        <label style="display: block; font-weight: 600; font-size: 0.92rem; margin-bottom: 0.5rem; color: var(--text-primary);">Tags (Comma-separated)</label>
+        <input type="text" name="tags" placeholder="python, concurrency, memory" class="form-control" style="width: 100%; padding: 0.75rem 1rem; border-radius: 12px; border: 1px solid var(--border-light);">
+      </div>
+
+      <div class="form-group" style="margin-bottom: 2rem;">
+        <label style="display: block; font-weight: 600; font-size: 0.92rem; margin-bottom: 0.5rem; color: var(--text-primary);">Detailed Explanation & Code Snippet</label>
+        <textarea name="content" rows="6" required class="form-control" placeholder="Describe the specific roadblock, what you have attempted, and include error traces or code..." style="width: 100%; padding: 1rem; border-radius: 12px; border: 1px solid var(--border-light); font-family: inherit;"></textarea>
+      </div>
+
+      <div style="display: flex; justify-content: flex-end; gap: 1rem;">
+        <a href="/doubts/" class="btn btn-secondary">Cancel</a>
+        <button type="submit" class="btn btn-primary" style="padding: 0.75rem 2rem;">
+          <i class="fas fa-check"></i> Post Question
+        </button>
+      </div>
+    </form>
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,92 @@
+{% extends "base.html" %}
+
+{% block title %}Doubt Solving & Peer Learning Forum | LearnSphere{% endblock %}
+
+{% block content %}
+<div class="container" style="padding-top: 2.5rem; max-width: 1200px;">
+  <!-- Header Bar -->
+  <div style="display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 2rem; flex-wrap: wrap; gap: 1rem;">
+    <div>
+      <span class="pill pill-indigo"><i class="fas fa-question-circle"></i> Peer & Faculty Knowledge Commons</span>
+      <h1 style="font-size: 2.35rem; font-weight: 800; color: var(--text-primary); margin-top: 0.5rem;">
+        Doubt Solving & Academic Discussions
+      </h1>
+      <p style="color: var(--text-secondary); font-size: 1.05rem; max-width: 780px;">
+        Get unstuck fast. Post your questions to faculty mentors and peers, or consult the instant Smart Education AI Tutor.
+      </p>
+    </div>
+
+    <div style="display: flex; gap: 0.75rem;">
+      <a href="/doubts/ai/tutor/" class="btn btn-secondary" style="padding: 0.75rem 1.25rem;">
+        <i class="fas fa-robot" style="color: var(--google-blue);"></i> Launch AI Tutor
+      </a>
+      <a href="/doubts/ask/" class="btn btn-primary" style="padding: 0.75rem 1.5rem;">
+        <i class="fas fa-plus"></i> Ask a Doubt
+      </a>
+    </div>
+  </div>
+
+  <!-- Search & Filter Bar -->
+  <div class="filter-bar" style="margin-bottom: 2rem; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem;">
+    <div style="display: flex; gap: 0.5rem;">
+      <a href="/doubts/" class="btn {% if selected_status == 'all' %}btn-primary{% else %}btn-secondary{% endif %} btn-sm">All Doubts</a>
+      <a href="/doubts/?status=open" class="btn {% if selected_status == 'open' %}btn-primary{% else %}btn-secondary{% endif %} btn-sm">Unresolved</a>
+      <a href="/doubts/?status=resolved" class="btn {% if selected_status == 'resolved' %}btn-primary{% else %}btn-secondary{% endif %} btn-sm">Resolved</a>
+    </div>
+
+    <form method="GET" style="display: flex; gap: 0.5rem;">
+      <input type="text" name="q" value="{{ search_query }}" placeholder="Search questions..." style="padding: 0.45rem 1rem; border-radius: 999px; border: 1px solid var(--border-light); font-size: 0.88rem; width: 220px;">
+      <button type="submit" class="btn btn-secondary btn-sm"><i class="fas fa-search"></i></button>
+    </form>
+  </div>
+
+  <!-- Doubts List Grid -->
+  <div style="display: flex; flex-direction: column; gap: 1rem;">
+    {% for d in doubts %}
+      <div class="glass-panel" style="padding: 1.5rem 2rem; border-radius: 20px; display: flex; align-items: center; justify-content: space-between; gap: 1.5rem; transition: all 0.2s ease;">
+        <div style="display: flex; align-items: center; gap: 1.75rem; min-width: 0;">
+          <div style="text-align: center; min-width: 50px;">
+            <div style="font-size: 1.25rem; font-weight: 800; color: var(--text-primary);">{{ d.upvotes }}</div>
+            <div style="font-size: 0.75rem; color: var(--text-tertiary);">votes</div>
+          </div>
+
+          <div style="text-align: center; min-width: 60px; padding: 0.4rem 0.65rem; border-radius: 12px; background: {% if d.status == 'resolved' %}#e6f4ea{% else %}var(--bg-surface){% endif %}; border: 1px solid {% if d.status == 'resolved' %}#b7e1cd{% else %}var(--border-light){% endif %};">
+            <div style="font-size: 1.15rem; font-weight: 800; color: {% if d.status == 'resolved' %}var(--google-green){% else %}var(--text-secondary){% endif %};">{{ d.answers_count }}</div>
+            <div style="font-size: 0.72rem; color: {% if d.status == 'resolved' %}var(--google-green){% else %}var(--text-tertiary){% endif %};">answers</div>
+          </div>
+
+          <div style="min-width: 0;">
+            <h3 style="font-size: 1.15rem; font-weight: 700; margin-bottom: 0.35rem;">
+              <a href="/doubts/{{ d.id }}/" style="color: var(--text-primary); text-decoration: none;">{{ d.title }}</a>
+            </h3>
+            <div style="font-size: 0.85rem; color: var(--text-tertiary); display: flex; gap: 1rem; align-items: center; flex-wrap: wrap;">
+              <span>Asked by <strong>{{ d.author_name }}</strong></span>
+              <span>&bull;</span>
+              <span>{{ d.course_title }}</span>
+              <span>&bull;</span>
+              <span>{{ d.created_at|date:"M d, H:i" }}</span>
+            </div>
+          </div>
+        </div>
+
+        <div>
+          {% if d.status == 'resolved' %}
+            <span class="pill pill-emerald"><i class="fas fa-check-circle"></i> Resolved</span>
+          {% else %}
+            <span class="pill pill-cyan">Open</span>
+          {% endif %}
+        </div>
+      </div>
+    {% empty %}
+      <div class="glass-panel" style="padding: 3.5rem; text-align: center; border-radius: 24px;">
+        <i class="fas fa-comments" style="font-size: 2.5rem; color: var(--google-blue); margin-bottom: 1rem;"></i>
+        <h3 style="font-size: 1.35rem; font-weight: 700;">No Questions Found</h3>
+        <p style="color: var(--text-secondary); max-width: 460px; margin: 0 auto 1.5rem;">
+          Be the first to post a doubt or question to our faculty and community!
+        </p>
+        <a href="/doubts/ask/" class="btn btn-primary">Ask the First Question</a>
+      </div>
+    {% endfor %}
+  </div>
+</div>
+{% endblock %}

@@ -38,6 +38,7 @@ INSTALLED_APPS = [
     'apps.live',
     'apps.exams',
     'apps.labs',
+    'apps.doubts',
 ]
 
 MIDDLEWARE = [

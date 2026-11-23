@@ -1,0 +1,151 @@
+{% extends "base.html" %}
+
+{% block title %}{{ doubt.title }} | LearnSphere Doubts{% endblock %}
+
+{% block content %}
+<div class="container" style="padding-top: 2rem; max-width: 960px;">
+  <div style="margin-bottom: 1.5rem;">
+    <a href="/doubts/" style="color: var(--text-secondary); text-decoration: none; font-size: 0.9rem; display: flex; align-items: center; gap: 0.4rem; font-weight: 500;">
+      <i class="fas fa-arrow-left"></i> Back to Doubts Forum
+    </a>
+  </div>
+
+  <!-- Main Question Box -->
+  <div class="glass-panel" style="padding: 2.5rem; border-radius: 24px; margin-bottom: 2rem;">
+    <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 1rem;">
+      <div style="display: flex; gap: 0.5rem;">
+        {% if doubt.status == 'resolved' %}
+          <span class="pill pill-emerald"><i class="fas fa-check-circle"></i> Solved</span>
+        {% else %}
+          <span class="pill pill-cyan">Open Question</span>
+        {% endif %}
+        <span class="pill pill-indigo">{{ doubt.course_title }}</span>
+      </div>
+
+      <button class="btn btn-secondary btn-sm" onclick="upvoteDoubt('{{ doubt.id }}')">
+        <i class="fas fa-thumbs-up"></i> <span id="doubt-upvote-count">{{ doubt.upvotes }}</span> Upvotes
+      </button>
+    </div>
+
+    <h1 style="font-size: 2rem; font-weight: 800; color: var(--text-primary); margin-bottom: 0.8rem;">
+      {{ doubt.title }}
+    </h1>
+
+    <div style="font-size: 0.88rem; color: var(--text-tertiary); margin-bottom: 1.5rem; padding-bottom: 1rem; border-bottom: 1px solid var(--border-light);">
+      Asked by <strong style="color: var(--text-primary);">{{ doubt.author_name }}</strong> on {{ doubt.created_at|date:"M d, Y &bull; H:i" }}
+    </div>
+
+    <div style="font-size: 1.05rem; color: var(--text-secondary); line-height: 1.8; white-space: pre-wrap;">
+{{ doubt.content_markdown }}
+    </div>
+  </div>
+
+  <!-- Answers List -->
+  <h3 style="font-size: 1.4rem; font-weight: 700; color: var(--text-primary); margin-bottom: 1.25rem;">
+    {{ answers|length }} Answers & Solutions
+  </h3>
+
+  <div style="display: flex; flex-direction: column; gap: 1.5rem; margin-bottom: 3rem;">
+    {% for a in answers %}
+      <div class="glass-panel" style="padding: 2rem; border-radius: 20px; border-left: {% if a.is_accepted %}4px solid var(--google-green);{% elif a.is_faculty_verified %}4px solid var(--google-blue);{% else %}1px solid var(--border-light);{% endif %}">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; flex-wrap: wrap; gap: 0.5rem;">
+          <div style="display: flex; align-items: center; gap: 0.75rem;">
+            <strong style="font-size: 1.05rem; color: var(--text-primary);">{{ a.author_name }}</strong>
+            {% if a.author_role == 'educator' %}
+              <span class="pill pill-indigo"><i class="fas fa-chalkboard-teacher"></i> Faculty</span>
+            {% elif a.author_role == 'super_admin' %}
+              <span class="pill pill-purple">Administrator</span>
+            {% else %}
+              <span class="pill" style="background: var(--bg-surface); color: var(--text-tertiary);">Peer Student</span>
+            {% endif %}
+
+            {% if a.is_accepted %}
+              <span class="pill pill-emerald"><i class="fas fa-check-circle"></i> Accepted Solution</span>
+            {% endif %}
+          </div>
+
+          <div>
+            {% if user and doubt.author_id == user.id and not a.is_accepted %}
+              <button class="btn btn-emerald btn-sm" onclick="acceptSolution('{{ doubt.id }}', '{{ a.id }}')">
+                <i class="fas fa-check"></i> Accept as Solution
+              </button>
+            {% endif %}
+          </div>
+        </div>
+
+        <div style="font-size: 1rem; color: var(--text-secondary); line-height: 1.7; white-space: pre-wrap; margin-bottom: 1rem;">
+{{ a.content_markdown }}
+        </div>
+
+        <div style="font-size: 0.8rem; color: var(--text-tertiary);">
+          Answered on {{ a.created_at|date:"M d, Y &bull; H:i" }}
+        </div>
+      </div>
+    {% empty %}
+      <div class="glass-panel" style="padding: 2rem; text-align: center; color: var(--text-tertiary);">
+        No answers posted yet. Help fellow learners by sharing your solution!
+      </div>
+    {% endfor %}
+  </div>
+
+  <!-- Post Answer Form -->
+  <div class="glass-panel" style="padding: 2.25rem; border-radius: 24px; margin-bottom: 4rem;">
+    <h3 style="font-size: 1.25rem; font-weight: 700; color: var(--text-primary); margin-bottom: 0.5rem;">
+      Your Answer or Solution
+    </h3>
+    <p style="color: var(--text-secondary); font-size: 0.9rem; margin-bottom: 1.25rem;">
+      Provide clear step-by-step explanations, code examples, or mathematical formulations.
+    </p>
+
+    <textarea id="answer-input" rows="5" class="form-control" placeholder="Write your explanation here..." style="width: 100%; padding: 1rem; border-radius: 16px; border: 1px solid var(--border-light); font-family: inherit; margin-bottom: 1rem;"></textarea>
+
+    <button class="btn btn-primary" onclick="submitAnswer('{{ doubt.id }}')">
+      <i class="fas fa-paper-plane"></i> Post Solution
+    </button>
+  </div>
+</div>
+
+<script>
+function upvoteDoubt(doubtId) {
+  fetch(`/doubts/api/${doubtId}/upvote/`, { method: "POST" })
+  .then(res => res.json())
+  .then(data => {
+    window.location.reload();
+  });
+}
+
+function acceptSolution(doubtId, answerId) {
+  fetch(`/doubts/api/${doubtId}/accept/${answerId}/`, { method: "POST" })
+  .then(res => res.json())
+  .then(data => {
+    if (data.status === 200 || data.data) {
+      window.location.reload();
+    } else {
+      alert(data.message || "Failed to accept solution.");
+    }
+  });
+}
+
+function submitAnswer(doubtId) {
+  const text = document.getElementById("answer-input").value.trim();
+  if (!text) {
+    alert("Please write your answer before submitting.");
+    return;
+  }
+
+  fetch(`/doubts/api/${doubtId}/answer/`, {
+    method: "POST",
+    headers: {"Content-Type": "application/json"},
+    body: JSON.stringify({content: text})
+  })
+  .then(res => res.json())
+  .then(data => {
+    if (data.status === 201 || data.data) {
+      window.location.reload();
+    } else {
+      alert(data.message || "Failed to post answer.");
+    }
+  });
+}
+</script>
+{% endblock %}
