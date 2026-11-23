@@ -3,17 +3,25 @@
 {% block title %}{{ course.title }} | LearnSphere Curriculum{% endblock %}
 
 {% block content %}
-<div class="container" style="padding-top: 3rem; max-width: 960px;">
+<div class="container" style="padding-top: 3rem; max-width: 1000px;">
   <div style="margin-bottom: 1.5rem;">
     <a href="/courses/" style="color: var(--text-secondary); text-decoration: none; font-size: 0.9rem; display: flex; align-items: center; gap: 0.4rem; font-weight: 500;">
       <i class="fas fa-arrow-left"></i> Back to Courses
     </a>
   </div>
 
-  <div class="glass-panel" style="padding: 2.75rem; margin-bottom: 2rem;">
-    <div style="display: flex; gap: 0.5rem; margin-bottom: 1rem;">
+  {% if error_msg %}
+    <div style="background: #fde8e8; color: #c81e1e; border: 1px solid #f8b4b4; border-radius: 12px; padding: 1rem 1.5rem; margin-bottom: 1.5rem;">
+      <i class="fas fa-exclamation-circle"></i> {{ error_msg }}
+    </div>
+  {% endif %}
+
+  <!-- Course Hero Header -->
+  <div class="glass-panel" style="padding: 2.75rem; margin-bottom: 2rem; border-radius: 28px;">
+    <div style="display: flex; gap: 0.5rem; margin-bottom: 1rem; flex-wrap: wrap;">
       <span class="pill pill-emerald">{{ course.badge }}</span>
       <span class="pill pill-indigo">{{ course.level }} Level</span>
+      <span class="pill pill-cyan">{{ course.category }}</span>
     </div>
 
     <h1 style="font-size: 2.35rem; font-weight: 800; color: var(--text-primary); margin-bottom: 0.8rem;">
@@ -25,7 +33,8 @@
 
     <div style="display: flex; gap: 2rem; color: var(--text-tertiary); font-size: 0.9rem; border-top: 1px solid var(--border-light); border-bottom: 1px solid var(--border-light); padding: 1rem 0; margin-bottom: 1.75rem; flex-wrap: wrap;">
       <span><i class="far fa-clock"></i> Duration: <strong>{{ course.duration_hours }} hours</strong></span>
-      <span><i class="fas fa-book-open"></i> Syllabus: <strong>{{ course.modules_count }} modules</strong></span>
+      <span><i class="fas fa-layer-group"></i> Modules: <strong>{{ course.modules_count }} units</strong></span>
+      <span><i class="fas fa-play-circle"></i> Lessons: <strong>{{ course.lessons_count|default:course.modules_count }} lessons</strong></span>
       <span><i class="fas fa-user-graduate"></i> Enrolled: <strong>{{ course.enrolled_count }} students</strong></span>
       <span><i class="fas fa-star" style="color: #f59e0b;"></i> Rating: <strong>{{ course.rating }} / 5.0</strong></span>
     </div>
@@ -34,46 +43,133 @@
       {{ course.description }}
     </p>
 
-    <div>
+    {% if is_enrolled and progress %}
+      <div style="background: var(--bg-surface); border: 1px solid var(--border-light); border-radius: 16px; padding: 1.25rem 1.5rem; margin-bottom: 1.75rem;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
+          <span style="font-size: 0.9rem; font-weight: 600; color: var(--text-primary);">Your Track Progress</span>
+          <span style="font-size: 0.9rem; font-weight: 700; color: var(--google-green);">{{ progress.progress_percent }}%</span>
+        </div>
+        <div style="width: 100%; height: 8px; background: var(--border-light); border-radius: 999px; overflow: hidden;">
+          <div style="width: {{ progress.progress_percent }}%; height: 100%; background: linear-gradient(90deg, var(--google-blue), var(--google-green));"></div>
+        </div>
+      </div>
+    {% endif %}
+
+    <div style="display: flex; gap: 1rem; align-items: center; flex-wrap: wrap;">
       {% if is_enrolled %}
-        <button class="btn btn-emerald" disabled><i class="fas fa-check-circle"></i> Enrolled in this track</button>
+        {% if first_lesson_id %}
+          <a href="/courses/{{ course.id }}/lessons/{{ first_lesson_id }}/" class="btn btn-emerald" style="padding: 0.85rem 2rem; font-size: 1rem;">
+            <i class="fas fa-play"></i> Continue Learning
+          </a>
+        {% else %}
+          <button class="btn btn-emerald" disabled><i class="fas fa-check-circle"></i> Enrolled</button>
+        {% endif %}
       {% else %}
-        <button class="btn btn-primary" onclick="enrollCourse('{{ course.id }}', this)">
+        <button class="btn btn-primary" style="padding: 0.85rem 2.25rem; font-size: 1rem;" onclick="enrollCourse('{{ course.id }}', this)">
           <i class="fas fa-graduation-cap"></i> Enroll in Track Free
         </button>
+        {% if first_lesson_id %}
+          <a href="/courses/{{ course.id }}/lessons/{{ first_lesson_id }}/" class="btn btn-secondary" style="padding: 0.85rem 1.75rem; font-size: 1rem;">
+            <i class="fas fa-eye"></i> Free Preview
+          </a>
+        {% endif %}
       {% endif %}
     </div>
   </div>
 
-  <!-- Syllabus Curriculum Modules -->
-  <div class="glass-panel" style="padding: 2.75rem;">
-    <h3 style="font-size: 1.4rem; font-weight: 700; color: var(--text-primary); margin-bottom: 1.5rem;">
-      Interactive Curriculum & Syllabus
+  <!-- Syllabus Curriculum Modules Tree -->
+  <div class="glass-panel" style="padding: 2.75rem; border-radius: 28px; margin-bottom: 4rem;">
+    <h3 style="font-size: 1.45rem; font-weight: 700; color: var(--text-primary); margin-bottom: 0.5rem;">
+      Full Course Syllabus & Interactive Modules
     </h3>
+    <p style="color: var(--text-secondary); font-size: 0.95rem; margin-bottom: 2rem;">
+      Master concepts through high-yield video lectures, code walkthroughs, and practical comprehension checkpoints.
+    </p>
 
-    <div style="display: flex; flex-direction: column; gap: 1rem;">
+    <div style="display: flex; flex-direction: column; gap: 1.5rem;">
       {% for mod in course.modules %}
-        <div style="display: flex; align-items: center; justify-content: space-between; padding: 1.25rem; background: var(--bg-surface); border: 1px solid var(--border-light); border-radius: var(--radius-md); transition: all 0.2s ease;">
-          <div style="display: flex; align-items: center; gap: 1.25rem;">
-            <div style="width: 36px; height: 36px; border-radius: 50%; background: {% if mod.status == 'unlocked' %}var(--google-green-light){% else %}var(--border-light){% endif %}; color: {% if mod.status == 'unlocked' %}var(--google-green){% else %}var(--text-tertiary){% endif %}; display: flex; align-items: center; justify-content: center; font-size: 0.9rem;">
-              <i class="fas {% if mod.status == 'unlocked' %}fa-play{% else %}fa-lock{% endif %}"></i>
+        <div style="background: var(--bg-surface); border: 1px solid var(--border-light); border-radius: 20px; overflow: hidden;">
+          <div style="padding: 1.25rem 1.5rem; background: rgba(0,0,0,0.02); border-bottom: 1px solid var(--border-light); display: flex; justify-content: space-between; align-items: center;">
+            <div style="display: flex; align-items: center; gap: 0.75rem;">
+              <span class="pill pill-indigo" style="font-size: 0.8rem;">Unit {{ forloop.counter }}</span>
+              <h4 style="font-size: 1.1rem; font-weight: 700; color: var(--text-primary); margin: 0;">{{ mod.title }}</h4>
             </div>
-            <div>
-              <div style="font-size: 1.05rem; font-weight: 600; color: var(--text-primary);">{{ mod.title }}</div>
-              <div style="font-size: 0.82rem; color: var(--text-tertiary); margin-top: 0.15rem;"><i class="far fa-clock"></i> {{ mod.duration }}</div>
-            </div>
+            <span style="font-size: 0.85rem; color: var(--text-tertiary);">{{ mod.lessons|length }} Lessons</span>
           </div>
 
-          <div>
-            {% if mod.status == 'unlocked' %}
-              <span class="pill pill-emerald" style="font-size: 0.78rem;">Available</span>
-            {% else %}
-              <span class="pill" style="background: var(--border-light); color: var(--text-tertiary); font-size: 0.78rem;">Next Milestone</span>
-            {% endif %}
+          <div style="padding: 0.75rem 1rem; display: flex; flex-direction: column; gap: 0.5rem;">
+            {% for les in mod.lessons %}
+              <div style="display: flex; align-items: center; justify-content: space-between; padding: 0.85rem 1rem; border-radius: 12px; background: #fff; border: 1px solid var(--border-light); transition: all 0.2s ease;">
+                <div style="display: flex; align-items: center; gap: 1rem;">
+                  <div style="width: 32px; height: 32px; border-radius: 50%; background: {% if les.is_free_preview or is_enrolled %}#e8f0fe{% else %}var(--border-light){% endif %}; color: {% if les.is_free_preview or is_enrolled %}var(--google-blue){% else %}var(--text-tertiary){% endif %}; display: flex; align-items: center; justify-content: center; font-size: 0.85rem;">
+                    <i class="fas {% if les.is_free_preview or is_enrolled %}fa-play{% else %}fa-lock{% endif %}"></i>
+                  </div>
+                  <div>
+                    <div style="font-size: 0.95rem; font-weight: 600; color: var(--text-primary);">
+                      {% if is_enrolled or les.is_free_preview %}
+                        <a href="/courses/{{ course.id }}/lessons/{{ les.id }}/" style="color: inherit; text-decoration: none;">{{ les.title }}</a>
+                      {% else %}
+                        <span>{{ les.title }}</span>
+                      {% endif %}
+                    </div>
+                    <div style="font-size: 0.8rem; color: var(--text-tertiary);"><i class="far fa-clock"></i> {{ les.duration }} &bull; {{ les.type|title }}</div>
+                  </div>
+                </div>
+
+                <div>
+                  {% if is_enrolled or les.is_free_preview %}
+                    <a href="/courses/{{ course.id }}/lessons/{{ les.id }}/" class="btn btn-secondary btn-sm">
+                      {% if les.is_free_preview and not is_enrolled %}Preview{% else %}Watch{% endif %} <i class="fas fa-chevron-right"></i>
+                    </a>
+                  {% else %}
+                    <span class="pill" style="background: var(--border-light); color: var(--text-tertiary); font-size: 0.78rem;"><i class="fas fa-lock"></i> Enrolled Only</span>
+                  {% endif %}
+                </div>
+              </div>
+            {% empty %}
+              <!-- Fallback for legacy module with direct duration -->
+              <div style="display: flex; align-items: center; justify-content: space-between; padding: 0.85rem 1rem;">
+                <span style="color: var(--text-primary); font-weight: 600;">{{ mod.title }}</span>
+                <span style="color: var(--text-tertiary); font-size: 0.85rem;">{{ mod.duration }}</span>
+              </div>
+            {% endfor %}
           </div>
         </div>
       {% endfor %}
     </div>
   </div>
 </div>
+
+<script>
+function enrollCourse(courseId, btn) {
+  btn.disabled = true;
+  btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Enrolling...';
+
+  fetch(`/courses/api/${courseId}/enroll/`, {
+    method: "POST",
+    headers: {
+      "X-Requested-With": "XMLHttpRequest",
+      "Content-Type": "application/json"
+    }
+  })
+  .then(res => res.json())
+  .then(data => {
+    if (data.status === 200 || data.data) {
+      window.location.reload();
+    } else {
+      btn.disabled = false;
+      btn.innerHTML = '<i class="fas fa-graduation-cap"></i> Enroll in Track Free';
+      alert(data.message || "Failed to enroll. Please sign in first.");
+      if (data.status === 401) {
+        window.location.href = `/auth/login/?next=/courses/${courseId}/`;
+      }
+    }
+  })
+  .catch(err => {
+    btn.disabled = false;
+    btn.innerHTML = '<i class="fas fa-graduation-cap"></i> Enroll in Track Free';
+    console.error(err);
+  });
+}
+</script>
 {% endblock %}

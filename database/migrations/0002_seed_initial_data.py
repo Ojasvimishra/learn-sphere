@@ -240,8 +240,10 @@ def binary_search(arr, target):
     for b in seed_books:
         res_col.update_one({"url": b["url"]}, {"$setOnInsert": b}, upsert=True)
 
-    # 3. Seed Smart Education Courses (4 Core Tracks)
+    # 3. Seed Smart Education Courses (4 Core Tracks) with Rich Modules & Lessons
     courses_col = db["courses"]
+    courses_col.delete_many({})
+
     seed_courses = [
         {
             "title": "Smart Education & AI-Driven Digital Learning",
@@ -251,16 +253,72 @@ def binary_search(arr, target):
             "duration_hours": 14,
             "instructor_name": "Prof. Sarah Jenkins",
             "instructor_id": str(mentor_user["_id"]) if mentor_user else "educator_01",
+            "category": "Smart Education & Pedagogy",
             "badge": "Core Track",
             "rating": 4.98,
+            "status": "published",
             "thumbnail_gradient": "linear-gradient(135deg, #1a73e8 0%, #4285f4 100%)",
             "modules": [
-                {"title": "Foundations of Smart Education in the Digital Age", "duration": "45m", "status": "unlocked"},
-                {"title": "Cognitive Load Management & Effective Learning", "duration": "60m", "status": "unlocked"},
-                {"title": "Adaptive Feedback Loops & Real-Time Assessment", "duration": "90m", "status": "locked"},
-                {"title": "Designing Flexible & Comfortable Digital Interfaces", "duration": "75m", "status": "locked"}
+                {
+                    "id": "mod_1",
+                    "title": "Module 1: Foundations of Smart Education",
+                    "order": 1,
+                    "lessons": [
+                        {
+                            "id": "les_smart_1",
+                            "title": "1.1 Introduction to Smart Learning Paradigms",
+                            "type": "video",
+                            "duration": "25m",
+                            "duration_minutes": 25,
+                            "video_url": "",
+                            "content_markdown": "# What is Smart Education?\n\nSmart Education represents the fusion of digital technologies with cognitive science to create adaptive, highly personalized learning pathways. It enables learners to study:\n\n1. **Effectively**: Aligning tasks with long-term retention goals.\n2. **Efficiently**: Removing friction and cognitive overload.\n3. **Flexibly**: Learn anytime, anywhere, on any device.\n4. **Comfortably**: Ergonomic pacing and stress-free mastery.",
+                            "is_free_preview": True,
+                            "status": "unlocked",
+                            "order": 1
+                        },
+                        {
+                            "id": "les_smart_2",
+                            "title": "1.2 Cognitive Load Management in Digital Spaces",
+                            "type": "reading",
+                            "duration": "20m",
+                            "duration_minutes": 20,
+                            "content_markdown": "# Cognitive Load Management\n\nSweller's Cognitive Load Theory identifies three forms of load:\n\n- **Intrinsic Load**: Inherent difficulty of the material.\n- **Extraneous Load**: Friction introduced by poor interface or confusing explanations.\n- **Germane Load**: Mental processing devoted to processing information and constructing schemas.\n\nSmart Education platforms intentionally minimize extraneous load to maximize germane schema building.",
+                            "is_free_preview": True,
+                            "status": "unlocked",
+                            "order": 2
+                        }
+                    ]
+                },
+                {
+                    "id": "mod_2",
+                    "title": "Module 2: Adaptive Algorithms & Real-Time Feedback",
+                    "order": 2,
+                    "lessons": [
+                        {
+                            "id": "les_smart_3",
+                            "title": "2.1 Bayesian Knowledge Tracing & Student Models",
+                            "type": "video",
+                            "duration": "35m",
+                            "duration_minutes": 35,
+                            "is_free_preview": False,
+                            "status": "locked",
+                            "order": 1
+                        },
+                        {
+                            "id": "les_smart_4",
+                            "title": "2.2 Designing Comfortable Learning Interfaces",
+                            "type": "reading",
+                            "duration": "25m",
+                            "duration_minutes": 25,
+                            "is_free_preview": False,
+                            "status": "locked",
+                            "order": 2
+                        }
+                    ]
+                }
             ],
-            "modules_count": 4,
+            "modules_count": 2,
+            "lessons_count": 4,
             "enrolled_count": 412,
             "created_at": now,
             "updated_at": now
@@ -273,16 +331,42 @@ def binary_search(arr, target):
             "duration_hours": 18,
             "instructor_name": "Prof. Sarah Jenkins",
             "instructor_id": str(mentor_user["_id"]) if mentor_user else "educator_01",
+            "category": "Computer Science & Engineering",
             "badge": "Essential STEM",
             "rating": 4.96,
+            "status": "published",
             "thumbnail_gradient": "linear-gradient(135deg, #1e8e3e 0%, #34a853 100%)",
             "modules": [
-                {"title": "Computational Thinking & Big-O Notation", "duration": "40m", "status": "unlocked"},
-                {"title": "Lists, Trees, and Graph Traversal Algorithms", "duration": "85m", "status": "unlocked"},
-                {"title": "Dynamic Programming & Optimization Techniques", "duration": "100m", "status": "locked"},
-                {"title": "Practical System Architecture Design for Students", "duration": "90m", "status": "locked"}
+                {
+                    "id": "mod_cs_1",
+                    "title": "Module 1: Computational Complexity & Big-O",
+                    "order": 1,
+                    "lessons": [
+                        {
+                            "id": "les_cs_1",
+                            "title": "1.1 Understanding Asymptotic Growth Rates",
+                            "type": "video",
+                            "duration": "30m",
+                            "duration_minutes": 30,
+                            "is_free_preview": True,
+                            "status": "unlocked",
+                            "order": 1
+                        },
+                        {
+                            "id": "les_cs_2",
+                            "title": "1.2 Binary Search & Logarithmic Time Complexity",
+                            "type": "reading",
+                            "duration": "25m",
+                            "duration_minutes": 25,
+                            "is_free_preview": False,
+                            "status": "locked",
+                            "order": 2
+                        }
+                    ]
+                }
             ],
-            "modules_count": 4,
+            "modules_count": 1,
+            "lessons_count": 2,
             "enrolled_count": 523,
             "created_at": now,
             "updated_at": now
@@ -295,16 +379,32 @@ def binary_search(arr, target):
             "duration_hours": 24,
             "instructor_name": "LearnSphere System Administrator",
             "instructor_id": str(admin_user["_id"]) if admin_user else "admin_01",
+            "category": "Computer Science & Engineering",
             "badge": "Production Grade",
             "rating": 4.99,
+            "status": "published",
             "thumbnail_gradient": "linear-gradient(135deg, #9334e6 0%, #a855f7 100%)",
             "modules": [
-                {"title": "3-Tier Architecture Decoupling & Clean Repository Design", "duration": "60m", "status": "unlocked"},
-                {"title": "PyMongo Connection Pool Tuning & Index Optimization", "duration": "75m", "status": "unlocked"},
-                {"title": "Securing NoSQL: Operator Sanitization & Role-Based Access Control", "duration": "90m", "status": "locked"},
-                {"title": "Benchmarking & Concurrency Tuning for Active Users", "duration": "120m", "status": "locked"}
+                {
+                    "id": "mod_arch_1",
+                    "title": "Module 1: 3-Tier Layering & Separation of Concerns",
+                    "order": 1,
+                    "lessons": [
+                        {
+                            "id": "les_arch_1",
+                            "title": "1.1 Presentation, Service, and Repository Boundaries",
+                            "type": "video",
+                            "duration": "45m",
+                            "duration_minutes": 45,
+                            "is_free_preview": True,
+                            "status": "unlocked",
+                            "order": 1
+                        }
+                    ]
+                }
             ],
-            "modules_count": 4,
+            "modules_count": 1,
+            "lessons_count": 1,
             "enrolled_count": 645,
             "created_at": now,
             "updated_at": now

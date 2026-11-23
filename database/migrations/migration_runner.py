@@ -11,6 +11,9 @@ import time
 from datetime import datetime, timezone
 from typing import List, Dict, Any
 
+# Ensure project root is in sys.path
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "../..")))
+
 # Ensure Django settings are configured for hashers and utilities
 os.environ.setdefault("DJANGO_SETTINGS_MODULE", "learnsphere.settings")
 try:
@@ -109,3 +112,16 @@ class MongoMigrationRunner:
             else:
                 print(f"{m:<45} | {'PENDING':<10} | {'-':<25}")
         print("====================================================================\n")
+
+
+    def run(self):
+        return self.run_migrations()
+
+
+if __name__ == "__main__":
+    runner = MongoMigrationRunner()
+    if len(sys.argv) > 1 and sys.argv[1] == "status":
+        runner.status()
+    else:
+        runner.run()
+

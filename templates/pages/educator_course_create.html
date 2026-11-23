@@ -1,0 +1,79 @@
+{% extends "base.html" %}
+
+{% block title %}Create New Course | Educator Studio | LearnSphere{% endblock %}
+
+{% block content %}
+<div class="container" style="padding-top: 2.5rem; max-width: 760px;">
+  <div style="margin-bottom: 1.5rem;">
+    <a href="/courses/educator/studio/" style="color: var(--text-secondary); text-decoration: none; font-size: 0.9rem; display: flex; align-items: center; gap: 0.4rem; font-weight: 500;">
+      <i class="fas fa-arrow-left"></i> Back to Educator Studio
+    </a>
+  </div>
+
+  <div class="glass-panel" style="padding: 2.75rem; border-radius: 28px;">
+    <span class="pill pill-indigo" style="margin-bottom: 0.75rem;">New Course Track</span>
+    <h1 style="font-size: 2rem; font-weight: 800; color: var(--text-primary); margin-bottom: 0.5rem;">
+      Author a Smart Education Track
+    </h1>
+    <p style="color: var(--text-secondary); font-size: 0.95rem; margin-bottom: 2rem;">
+      Set up your course metadata. You will be able to add structured video lessons, reading material, and quizzes.
+    </p>
+
+    {% if error_msg %}
+      <div style="background: #fde8e8; color: #c81e1e; border: 1px solid #f8b4b4; border-radius: 12px; padding: 0.85rem 1.25rem; margin-bottom: 1.5rem;">
+        <i class="fas fa-exclamation-circle"></i> {{ error_msg }}
+      </div>
+    {% endif %}
+
+    <form method="POST">
+      {% csrf_token %}
+      <div class="form-group" style="margin-bottom: 1.5rem;">
+        <label style="display: block; font-weight: 600; font-size: 0.92rem; margin-bottom: 0.5rem; color: var(--text-primary);">Course Title</label>
+        <input type="text" name="title" class="form-control" required placeholder="e.g. Master Modern Deep Learning & Transformers" style="width: 100%; padding: 0.75rem 1rem; border-radius: 12px; border: 1px solid var(--border-light);">
+      </div>
+
+      <div class="form-group" style="margin-bottom: 1.5rem;">
+        <label style="display: block; font-weight: 600; font-size: 0.92rem; margin-bottom: 0.5rem; color: var(--text-primary);">Short Tagline</label>
+        <input type="text" name="tagline" class="form-control" required placeholder="e.g. Hands-on PyTorch architectures, attention mechanisms, and fine-tuning." style="width: 100%; padding: 0.75rem 1rem; border-radius: 12px; border: 1px solid var(--border-light);">
+      </div>
+
+      <div class="form-group" style="margin-bottom: 1.5rem;">
+        <label style="display: block; font-weight: 600; font-size: 0.92rem; margin-bottom: 0.5rem; color: var(--text-primary);">Category</label>
+        <select name="category" class="form-control" style="width: 100%; padding: 0.75rem 1rem; border-radius: 12px; border: 1px solid var(--border-light);">
+          <option value="Smart Education & Pedagogy">Smart Education & Pedagogy</option>
+          <option value="AI in Education">AI in Education</option>
+          <option value="Computer Science & Engineering" selected>Computer Science & Engineering</option>
+          <option value="Cloud & Infrastructure">Cloud & Infrastructure</option>
+        </select>
+      </div>
+
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; margin-bottom: 1.5rem;">
+        <div>
+          <label style="display: block; font-weight: 600; font-size: 0.92rem; margin-bottom: 0.5rem; color: var(--text-primary);">Difficulty Level</label>
+          <select name="level" class="form-control" style="width: 100%; padding: 0.75rem 1rem; border-radius: 12px; border: 1px solid var(--border-light);">
+            <option value="Beginner">Beginner</option>
+            <option value="Intermediate" selected>Intermediate</option>
+            <option value="Advanced">Advanced</option>
+          </select>
+        </div>
+        <div>
+          <label style="display: block; font-weight: 600; font-size: 0.92rem; margin-bottom: 0.5rem; color: var(--text-primary);">Estimated Duration (Hours)</label>
+          <input type="number" name="duration_hours" min="1" max="200" value="16" class="form-control" style="width: 100%; padding: 0.75rem 1rem; border-radius: 12px; border: 1px solid var(--border-light);">
+        </div>
+      </div>
+
+      <div class="form-group" style="margin-bottom: 2rem;">
+        <label style="display: block; font-weight: 600; font-size: 0.92rem; margin-bottom: 0.5rem; color: var(--text-primary);">Detailed Description & Syllabus Goals</label>
+        <textarea name="description" rows="5" required class="form-control" placeholder="Describe the course curriculum, target student cohort, prerequisites, and practical projects..." style="width: 100%; padding: 0.75rem 1rem; border-radius: 12px; border: 1px solid var(--border-light); font-family: inherit;"></textarea>
+      </div>
+
+      <div style="display: flex; justify-content: flex-end; gap: 1rem;">
+        <a href="/courses/educator/studio/" class="btn btn-secondary">Cancel</a>
+        <button type="submit" class="btn btn-primary" style="padding: 0.75rem 2rem;">
+          <i class="fas fa-check"></i> Create Course & Build Syllabus
+        </button>
+      </div>
+    </form>
+  </div>
+</div>
+{% endblock %}

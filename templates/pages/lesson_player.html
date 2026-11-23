@@ -1,0 +1,217 @@
+{% extends "base.html" %}
+
+{% block title %}{{ lesson.title }} | {{ course.title }} | LearnSphere{% endblock %}
+
+{% block content %}
+<div class="container" style="padding-top: 2rem; max-width: 1400px;">
+  <!-- Breadcrumb & Top Bar -->
+  <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; flex-wrap: wrap; gap: 1rem;">
+    <div style="display: flex; align-items: center; gap: 0.75rem;">
+      <a href="/courses/{{ course.id }}/" class="btn btn-secondary btn-sm" style="padding: 0.4rem 0.85rem;">
+        <i class="fas fa-arrow-left"></i> Course Overview
+      </a>
+      <span style="color: var(--text-tertiary);">&bull;</span>
+      <span style="font-size: 0.95rem; font-weight: 600; color: var(--text-secondary);">{{ course.title }}</span>
+    </div>
+
+    <div style="display: flex; align-items: center; gap: 1rem;">
+      <div style="font-size: 0.88rem; color: var(--text-secondary);">
+        Progress: <strong id="progress-percent-label">{{ progress_percent }}%</strong>
+      </div>
+      <div style="width: 120px; height: 8px; background: var(--border-light); border-radius: 999px; overflow: hidden;">
+        <div id="progress-bar-fill" style="width: {{ progress_percent }}%; height: 100%; background: linear-gradient(90deg, var(--google-blue), var(--google-green)); transition: width 0.4s ease;"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Main Player Layout (2 Columns: Media on Left, Syllabus on Right) -->
+  <div style="display: grid; grid-template-columns: 1fr 360px; gap: 2rem; align-items: start;" class="player-grid">
+    <!-- Left Column: Video / Reading Viewport -->
+    <div>
+      <div class="glass-panel" style="padding: 0; overflow: hidden; border-radius: 24px; margin-bottom: 1.5rem; box-shadow: 0 8px 32px rgba(60,64,67,0.08);">
+        {% if lesson.type == 'video' %}
+          <!-- Video Player Viewport -->
+          <div style="background: #000; position: relative; width: 100%; padding-top: 56.25%; border-radius: 24px 24px 0 0; overflow: hidden;">
+            {% if "youtube.com" in lesson.video_url or "youtu.be" in lesson.video_url %}
+              <iframe src="{{ lesson.video_url }}" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; border: none;" allowfullscreen allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"></iframe>
+            {% elif lesson.video_url %}
+              <video id="course-video-player" controls style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: contain;">
+                <source src="{{ lesson.video_url }}" type="video/mp4">
+                Your browser does not support HTML5 video streaming.
+              </video>
+            {% else %}
+              <!-- Fallback High-Quality Interactive Video Simulation -->
+              <div style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: linear-gradient(135deg, #111827 0%, #1f2937 100%); display: flex; flex-direction: column; align-items: center; justify-content: center; color: #fff; padding: 2rem; text-align: center;">
+                <div style="width: 72px; height: 72px; border-radius: 50%; background: var(--google-blue); display: flex; align-items: center; justify-content: center; font-size: 2rem; margin-bottom: 1rem; box-shadow: 0 0 30px rgba(66,133,244,0.5); cursor: pointer;" onclick="simulatePlayback()">
+                  <i class="fas fa-play" style="margin-left: 5px;"></i>
+                </div>
+                <h3 style="font-size: 1.35rem; font-weight: 700; margin-bottom: 0.5rem;">{{ lesson.title }}</h3>
+                <p style="font-size: 0.95rem; color: #9ca3af; max-width: 480px;">Stream recording &bull; High definition 1080p &bull; Adaptive cognitive pace</p>
+                <div style="margin-top: 1rem; display: flex; gap: 0.5rem;">
+                  <button class="btn btn-sm" style="background: rgba(255,255,255,0.15); color: #fff; border: 1px solid rgba(255,255,255,0.2);" onclick="changePlaybackSpeed(1)">1.0x</button>
+                  <button class="btn btn-sm" style="background: rgba(255,255,255,0.15); color: #fff; border: 1px solid rgba(255,255,255,0.2);" onclick="changePlaybackSpeed(1.25)">1.25x</button>
+                  <button class="btn btn-sm" style="background: rgba(255,255,255,0.15); color: #fff; border: 1px solid rgba(255,255,255,0.2);" onclick="changePlaybackSpeed(1.5)">1.5x</button>
+                </div>
+              </div>
+            {% endif %}
+          </div>
+        {% else %}
+          <!-- Reading / Lab / Article Viewport Banner -->
+          <div style="height: 180px; background: {{ course.thumbnail_gradient }}; padding: 2.5rem; display: flex; flex-direction: column; justify-content: flex-end; color: #fff;">
+            <span class="pill" style="background: rgba(0,0,0,0.3); color: #fff; width: fit-content; margin-bottom: 0.75rem;">
+              <i class="fas {% if lesson.type == 'lab' %}fa-flask{% elif lesson.type == 'quiz' %}fa-question-circle{% else %}fa-book-open{% endif %}"></i> {{ lesson.type|upper }} MODULE
+            </span>
+            <h2 style="font-size: 1.85rem; font-weight: 800; color: #fff; margin: 0;">{{ lesson.title }}</h2>
+          </div>
+        {% endif %}
+
+        <!-- Lesson Meta & Description Body -->
+        <div style="padding: 2.25rem;">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.25rem; flex-wrap: wrap; gap: 1rem;">
+            <div>
+              <div style="font-size: 0.85rem; font-weight: 600; color: var(--google-blue); text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 0.25rem;">
+                {{ lesson.module_title }}
+              </div>
+              <h1 style="font-size: 1.75rem; font-weight: 800; color: var(--text-primary); margin: 0;">
+                {{ lesson.title }}
+              </h1>
+            </div>
+
+            <div style="display: flex; gap: 0.75rem; align-items: center;">
+              <span class="pill pill-indigo"><i class="far fa-clock"></i> {{ lesson.duration }}</span>
+              {% if lesson.is_free_preview %}
+                <span class="pill pill-emerald"><i class="fas fa-lock-open"></i> Free Preview</span>
+              {% endif %}
+            </div>
+          </div>
+
+          <!-- Lesson Content / Markdown Notes -->
+          <div style="line-height: 1.8; color: var(--text-secondary); font-size: 1rem; border-top: 1px solid var(--border-light); padding-top: 1.5rem; margin-top: 1rem;">
+            {% if lesson.content_markdown %}
+              <div style="background: var(--bg-surface); border: 1px solid var(--border-light); border-radius: 16px; padding: 1.5rem; white-space: pre-wrap; font-family: inherit;">
+{{ lesson.content_markdown }}
+              </div>
+            {% else %}
+              <p>Welcome to <strong>{{ lesson.title }}</strong>. Follow through the recorded lecture, complete the inline comprehension checkpoints, and reinforce your conceptual understanding through the accompanying reading materials.</p>
+              <div class="callout-box" style="background: #e8f0fe; border-left: 4px solid var(--google-blue); padding: 1rem 1.25rem; border-radius: 0 12px 12px 0; margin-top: 1.25rem; color: #1a73e8;">
+                <strong><i class="fas fa-lightbulb"></i> Cognitive Focus Tip:</strong> Active recall and note taking during lesson playback increases long-term retention by over 35%. Use the completion checkmark once you have mastered this topic.
+              </div>
+            {% endif %}
+          </div>
+
+          <!-- Action & Navigation Bar -->
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 2rem; padding-top: 1.75rem; border-top: 1px solid var(--border-light); flex-wrap: wrap; gap: 1rem;">
+            <div>
+              {% if prev_lesson %}
+                <a href="/courses/{{ course.id }}/lessons/{{ prev_lesson.id }}/" class="btn btn-secondary">
+                  <i class="fas fa-chevron-left"></i> Previous Lesson
+                </a>
+              {% else %}
+                <button class="btn btn-secondary" disabled style="opacity: 0.5;"><i class="fas fa-chevron-left"></i> First Lesson</button>
+              {% endif %}
+            </div>
+
+            <div style="display: flex; gap: 0.75rem;">
+              <button id="btn-complete-lesson" class="btn btn-emerald" onclick="markCompleted('{{ course.id }}', '{{ lesson.id }}')">
+                <i class="fas fa-check-circle"></i> <span id="complete-btn-text">{% if lesson.id in completed_lessons %}Completed &bull; Review{% else %}Mark as Complete{% endif %}</span>
+              </button>
+
+              {% if next_lesson %}
+                <a href="/courses/{{ course.id }}/lessons/{{ next_lesson.id }}/" class="btn btn-primary">
+                  Next Lesson <i class="fas fa-chevron-right"></i>
+                </a>
+              {% else %}
+                <a href="/courses/{{ course.id }}/" class="btn btn-primary">
+                  Finish Track <i class="fas fa-award"></i>
+                </a>
+              {% endif %}
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Right Column: Sticky Syllabus Drawer -->
+    <div class="glass-panel" style="padding: 1.75rem; border-radius: 24px; position: sticky; top: 90px; max-height: calc(100vh - 120px); display: flex; flex-direction: column;">
+      <div style="margin-bottom: 1.25rem; border-bottom: 1px solid var(--border-light); padding-bottom: 1rem;">
+        <h3 style="font-size: 1.25rem; font-weight: 700; color: var(--text-primary); margin-bottom: 0.25rem;">
+          Course Syllabus
+        </h3>
+        <p style="font-size: 0.85rem; color: var(--text-tertiary); margin: 0;">{{ course.lessons_count }} Lessons &bull; {{ course.duration_hours }} Hours</p>
+      </div>
+
+      <div style="overflow-y: auto; flex: 1; padding-right: 0.25rem;">
+        {% for mod in course.modules %}
+          <div style="margin-bottom: 1.25rem;">
+            <div style="font-size: 0.88rem; font-weight: 700; color: var(--text-primary); margin-bottom: 0.65rem; display: flex; justify-content: space-between;">
+              <span>{{ mod.title }}</span>
+              <span style="font-size: 0.78rem; color: var(--text-tertiary);">{{ mod.lessons|length }} lessons</span>
+            </div>
+
+            <div style="display: flex; flex-direction: column; gap: 0.4rem;">
+              {% for les in mod.lessons %}
+                <a href="/courses/{{ course.id }}/lessons/{{ les.id }}/" style="display: flex; align-items: center; justify-content: space-between; padding: 0.65rem 0.85rem; border-radius: 12px; text-decoration: none; font-size: 0.88rem; transition: all 0.2s ease; {% if les.id == lesson.id %}background: #e8f0fe; color: var(--google-blue); font-weight: 700; border: 1px solid #c2e7ff;{% else %}background: var(--bg-surface); color: var(--text-secondary); border: 1px solid var(--border-light);{% endif %}">
+                  <div style="display: flex; align-items: center; gap: 0.65rem; min-width: 0;">
+                    <i class="fas {% if les.id in completed_lessons %}fa-check-circle" style="color: var(--google-green);{% elif les.type == 'video' %}fa-play-circle{% elif les.type == 'lab' %}fa-flask{% elif les.type == 'quiz' %}fa-question-circle{% else %}fa-file-alt{% endif %}"></i>
+                    <span style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">{{ les.title }}</span>
+                  </div>
+                  <span style="font-size: 0.75rem; color: var(--text-tertiary); margin-left: 0.5rem;">{{ les.duration }}</span>
+                </a>
+              {% empty %}
+                <div style="font-size: 0.82rem; color: var(--text-tertiary); padding: 0.5rem;">No lessons added yet.</div>
+              {% endfor %}
+            </div>
+          </div>
+        {% endfor %}
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+function markCompleted(courseId, lessonId) {
+  const btn = document.getElementById("btn-complete-lesson");
+  const btnText = document.getElementById("complete-btn-text");
+  btn.disabled = true;
+  btnText.textContent = "Updating...";
+
+  fetch(`/courses/api/${courseId}/lessons/${lessonId}/complete/`, {
+    method: "POST",
+    headers: {
+      "X-Requested-With": "XMLHttpRequest",
+      "Content-Type": "application/json"
+    }
+  })
+  .then(res => res.json())
+  .then(data => {
+    btn.disabled = false;
+    if (data.status === 200 || data.data) {
+      btnText.textContent = "Completed \u2022 Done";
+      const progress = data.data.progress_percent;
+      document.getElementById("progress-percent-label").textContent = `${progress}%`;
+      document.getElementById("progress-bar-fill").style.width = `${progress}%`;
+
+      if (progress >= 100) {
+        alert("🎉 Congratulations! You have completed 100% of this course track!");
+      }
+    } else {
+      btnText.textContent = "Mark as Complete";
+      alert(data.message || "Failed to update progress.");
+    }
+  })
+  .catch(err => {
+    btn.disabled = false;
+    btnText.textContent = "Mark as Complete";
+    console.error(err);
+  });
+}
+
+function simulatePlayback() {
+  alert("Interactive playback started: Audio/video stream buffer initialized.");
+}
+
+function changePlaybackSpeed(speed) {
+  alert(`Playback speed adjusted to ${speed}x`);
+}
+</script>
+{% endblock %}
