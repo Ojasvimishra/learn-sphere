@@ -1,7 +1,7 @@
 """
 LearnSphere - Database Connection Layer (Tier 3)
 High-performance MongoDB connection pooling using PyMongo.
-Tuned for 500+ concurrent requests.
+Configured with sensible dev/production connection pool limits.
 """
 
 import os
@@ -11,6 +11,7 @@ from pymongo import MongoClient
 from pymongo.errors import ConnectionFailure, ServerSelectionTimeoutError
 
 load_dotenv()
+
 
 class MongoConnectionManager:
     """
@@ -23,11 +24,12 @@ class MongoConnectionManager:
     def __init__(self):
         if MongoConnectionManager._instance is not None:
             raise RuntimeError("Use MongoConnectionManager.get_instance() instead.")
-        
+
         self.uri = os.getenv("MONGODB_URI", "mongodb://127.0.0.1:27017/")
         self.db_name = os.getenv("MONGODB_NAME", "learnsphere_db")
-        self.max_pool_size = int(os.getenv("MONGODB_MAX_POOL_SIZE", "200"))
-        self.min_pool_size = int(os.getenv("MONGODB_MIN_POOL_SIZE", "20"))
+        # Sensible dev defaults: max 20, min 2; override via env in high-concurrency production
+        self.max_pool_size = int(os.getenv("MONGODB_MAX_POOL_SIZE", "20"))
+        self.min_pool_size = int(os.getenv("MONGODB_MIN_POOL_SIZE", "2"))
         self.timeout_ms = int(os.getenv("MONGODB_TIMEOUT_MS", "5000"))
 
         self._client = None
@@ -35,7 +37,7 @@ class MongoConnectionManager:
         self._init_client()
 
     def _init_client(self):
-        """Initializes PyMongo client with high-concurrency connection pooling."""
+        """Initializes PyMongo client with optimized connection pooling."""
         try:
             self._client = MongoClient(
                 self.uri,
@@ -93,10 +95,12 @@ class MongoConnectionManager:
             self._client = None
             self._db = None
 
+
 # Global helper functions
 def get_db():
     """Convenience accessor for database instance."""
     return MongoConnectionManager.get_instance().db
+
 
 def get_collection(name: str):
     """Convenience accessor for specific collection."""

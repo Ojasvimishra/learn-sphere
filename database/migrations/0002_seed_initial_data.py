@@ -1,74 +1,111 @@
 """
 Migration 0002: Seed EdTech Initial Data
-Seeds initial administrative/educator/student accounts,
-curated digital library textbooks & smart study guides (Google Books inspired),
+Safely seeds digital library textbooks & smart study guides,
 smart education course tracks, and student innovation showcase projects.
+SECURITY COMPLIANCE:
+Demo user accounts are ONLY seeded when DEBUG=True or SEED_DEMO_DATA=1.
+Passwords are read strictly from environment variables (DEMO_ADMIN_PASSWORD, etc.)
+and are never hardcoded. In production, user seeding is completely bypassed.
 """
 
+import os
+import secrets
+import string
 from datetime import datetime, timezone
 from django.contrib.auth.hashers import make_password
 
+
+def generate_secure_password(length: int = 16) -> str:
+    alphabet = string.ascii_letters + string.digits + "!@#$%^&*"
+    return "".join(secrets.choice(alphabet) for _ in range(length))
+
+
 def up(db):
-    print(" -> Seeding initial EdTech accounts, digital books, and learning tracks...")
+    print(" -> Seeding initial EdTech digital books and learning tracks...")
     now = datetime.now(timezone.utc)
 
-    # 1. Seed Initial Users
-    users_col = db["users"]
-    seed_users = [
-        {
-            "username": "admin",
-            "email": "admin@learnsphere.io",
-            "password_hash": make_password("Admin@LearnSphere2026!"),
-            "role": "admin",
-            "full_name": "LearnSphere System Administrator",
-            "bio": "Lead Infrastructure Architect for LearnSphere Smart Education Portal.",
-            "is_active": True,
-            "enrolled_courses": [],
-            "bookmarked_resources": [],
-            "created_at": now,
-            "updated_at": now,
-            "last_login": None
-        },
-        {
-            "username": "sarah_mentor",
-            "email": "mentor@learnsphere.io",
-            "password_hash": make_password("Mentor@LearnSphere2026!"),
-            "role": "educator",
-            "full_name": "Prof. Sarah Jenkins",
-            "bio": "Dean of Digital Learning & Senior Mentor in Smart Educational Technologies.",
-            "is_active": True,
-            "enrolled_courses": [],
-            "bookmarked_resources": [],
-            "created_at": now,
-            "updated_at": now,
-            "last_login": None
-        },
-        {
-            "username": "alex_student",
-            "email": "student@learnsphere.io",
-            "password_hash": make_password("Student@LearnSphere2026!"),
-            "role": "student",
-            "full_name": "Alex Chen",
-            "bio": "Undergraduate Student Researcher in Smart Education & Adaptive Learning.",
-            "is_active": True,
-            "enrolled_courses": [],
-            "bookmarked_resources": [],
-            "created_at": now,
-            "updated_at": now,
-            "last_login": None
-        }
-    ]
-    for u in seed_users:
-        users_col.update_one({"email": u["email"]}, {"$setOnInsert": u}, upsert=True)
+    # 1. Seed Initial Users ONLY if DEBUG or SEED_DEMO_DATA is enabled
+    is_debug = os.getenv("DEBUG", "False").lower() in ("true", "1", "t")
+    seed_demo = os.getenv("SEED_DEMO_DATA", "0") == "1"
 
-    admin_user = users_col.find_one({"email": "admin@learnsphere.io"})
-    student_user = users_col.find_one({"email": "student@learnsphere.io"})
-    mentor_user = users_col.find_one({"email": "mentor@learnsphere.io"})
+    users_col = db["users"]
+    admin_user = None
+    mentor_user = None
+    student_user = None
+
+    if is_debug or seed_demo:
+        admin_pass = os.getenv("DEMO_ADMIN_PASSWORD") or generate_secure_password()
+        educator_pass = os.getenv("DEMO_EDUCATOR_PASSWORD") or generate_secure_password()
+        student_pass = os.getenv("DEMO_STUDENT_PASSWORD") or generate_secure_password()
+
+        print(" [SECURITY] Seeding demo accounts (DEBUG / SEED_DEMO_DATA enabled):")
+        if not os.getenv("DEMO_ADMIN_PASSWORD"):
+            print(f"   -> Generated Admin Password: {admin_pass}")
+
+        seed_users = [
+            {
+                "username": "admin",
+                "email": "admin@learnsphere.io",
+                "password_hash": make_password(admin_pass),
+                "role": "super_admin",
+                "full_name": "LearnSphere System Administrator",
+                "bio": "Lead Infrastructure Architect for LearnSphere Smart Education Portal.",
+                "is_active": True,
+                "is_approved": True,
+                "failed_login_attempts": 0,
+                "locked_until": None,
+                "enrolled_courses": [],
+                "bookmarked_resources": [],
+                "created_at": now,
+                "updated_at": now,
+                "last_login": None
+            },
+            {
+                "username": "sarah_mentor",
+                "email": "mentor@learnsphere.io",
+                "password_hash": make_password(educator_pass),
+                "role": "educator",
+                "full_name": "Prof. Sarah Jenkins",
+                "bio": "Dean of Digital Learning & Senior Mentor in Smart Educational Technologies.",
+                "is_active": True,
+                "is_approved": True,
+                "failed_login_attempts": 0,
+                "locked_until": None,
+                "enrolled_courses": [],
+                "bookmarked_resources": [],
+                "created_at": now,
+                "updated_at": now,
+                "last_login": None
+            },
+            {
+                "username": "alex_student",
+                "email": "student@learnsphere.io",
+                "password_hash": make_password(student_pass),
+                "role": "student",
+                "full_name": "Alex Chen",
+                "bio": "Undergraduate Student Researcher in Smart Education & Adaptive Learning.",
+                "is_active": True,
+                "is_approved": True,
+                "failed_login_attempts": 0,
+                "locked_until": None,
+                "enrolled_courses": [],
+                "bookmarked_resources": [],
+                "created_at": now,
+                "updated_at": now,
+                "last_login": None
+            }
+        ]
+        for u in seed_users:
+            users_col.update_one({"email": u["email"]}, {"$setOnInsert": u}, upsert=True)
+
+        admin_user = users_col.find_one({"email": "admin@learnsphere.io"})
+        student_user = users_col.find_one({"email": "student@learnsphere.io"})
+        mentor_user = users_col.find_one({"email": "mentor@learnsphere.io"})
+    else:
+        print(" [SECURITY] Production migration: skipping demo user account seeding.")
 
     # 2. Seed Digital Books & Smart Study Resources (Google Books Inspired EdTech Library)
     res_col = db["resources"]
-    # Clear old scraping items
-    res_col.delete_many({})
 
     seed_books = [
         {
@@ -119,16 +156,16 @@ def update_mastery(prior_mastery, student_correct, slip=0.1, guess=0.2):
         {
             "url": "https://books.google.com/modern-python-full-stack",
             "title": "High-Performance Full Stack Engineering with Python & MongoDB",
-            "description": "A comprehensive textbook on architecting enterprise-grade 3-Tier web platforms capable of serving 500+ concurrent requests with sub-50ms latency using Django, REST APIs, and connection-pooled MongoDB.",
+            "description": "A comprehensive textbook on architecting enterprise-grade 3-Tier web platforms with low latency using Django, REST APIs, and connection-pooled MongoDB.",
             "relevance": "high",
-            "tags": ["django", "mongodb", "3-tier-architecture", "concurrency"],
+            "tags": ["django", "mongodb", "3-tier-architecture"],
             "category": "Computer Science & Engineering",
             "source": "O'Reilly Media",
             "markdown": """# 3-Tier Architecture Pattern
 - **Tier 1 (Presentation)**: Material Design 3 UI, templates, and asynchronous AJAX interactions.
 - **Tier 2 (Logic)**: Decoupled Python services, RBAC authorization, and sliding window rate limiting.
 - **Tier 3 (Data)**: Connection-pooled MongoDB with compound indexes and query sanitization.""",
-            "highlights": "Real-world connection pool tuning (maxPoolSize=200), B-tree index strategies, and memory optimization.",
+            "highlights": "Real-world connection pool tuning, B-tree index strategies, and memory optimization.",
             "views": 780,
             "bookmarks_count": 215,
             "created_at": now,
@@ -197,57 +234,6 @@ def binary_search(arr, target):
             "bookmarks_count": 104,
             "created_at": now,
             "updated_at": now
-        },
-        {
-            "url": "https://books.google.com/cloud-distributed-systems",
-            "title": "Distributed Cloud Systems for Massive Scale E-Learning",
-            "description": "How top EdTech platforms scale to support thousands of concurrent students during exam periods: load balancing, microservices, connection multiplexing, and zero-downtime database migrations.",
-            "relevance": "high",
-            "tags": ["distributed-systems", "scalability", "cloud-computing"],
-            "category": "Cloud & Infrastructure",
-            "source": "Springer Verlag",
-            "markdown": """```yaml
-# Kubernetes deployment for high-concurrency student workload
-spec:
-  replicas: 10
-  strategy:
-    rollingUpdate:
-      maxSurge: 2
-      maxUnavailable: 0
-  template:
-    spec:
-      containers:
-      - name: edtech-app
-        resources:
-          limits:
-            memory: "1Gi"
-            cpu: "1000m"
-```""",
-            "highlights": "Zero-downtime deployment strategies during high-volume national testing periods.",
-            "views": 590,
-            "bookmarks_count": 133,
-            "created_at": now,
-            "updated_at": now
-        },
-        {
-            "url": "https://books.google.com/creative-coding-for-learners",
-            "title": "Creative Computing: Student Innovation Through Code",
-            "description": "A beginner-friendly project handbook teaching creative programming, interactive digital art, data visualization, and web applications for high school and university students.",
-            "relevance": "high",
-            "tags": ["creative-coding", "student-projects", "python", "javascript"],
-            "category": "Student Innovation & Research",
-            "source": "No Starch Press",
-            "markdown": """# 5 Engaging Student Project Ideas
-1. **Interactive Audio Visualizer**: Synthesize sound waves using HTML5 Canvas.
-2. **Campus Transit Tracker**: Live map showing real-time student shuttle arrivals.
-3. **Adaptive Flashcard Spaced Repetition**: Maximize memory retention algorithmically.
-4. **Carbon Footprint Calculator**: Environmental impact tracking for student dorms.
-5. **Collaborative Whiteboard**: Real-time study canvas using WebSockets.""",
-            "highlights": "Complete starter kits and architectural blueprints for student hackathons.",
-            "views": 670,
-            "bookmarks_count": 162,
-            "created_at": now,
-            "updated_at": now
         }
     ]
 
@@ -256,8 +242,6 @@ spec:
 
     # 3. Seed Smart Education Courses (4 Core Tracks)
     courses_col = db["courses"]
-    courses_col.delete_many({})
-
     seed_courses = [
         {
             "title": "Smart Education & AI-Driven Digital Learning",
@@ -304,8 +288,8 @@ spec:
             "updated_at": now
         },
         {
-            "title": "High-Concurrency 3-Tier Enterprise Systems in Django & MongoDB",
-            "tagline": "Build mission-critical platforms capable of serving 500+ concurrent student sessions with sub-5ms latency.",
+            "title": "High-Performance 3-Tier Enterprise Systems in Django & MongoDB",
+            "tagline": "Build mission-critical platforms capable of serving high-concurrency student workloads with low latency.",
             "description": "Learn how to architect high-throughput educational web applications with strict separation of Presentation, Business Logic, and MongoDB data tiers. Includes connection pooling, indexing, caching, and rate limiting.",
             "level": "Advanced",
             "duration_hours": 24,
@@ -318,7 +302,7 @@ spec:
                 {"title": "3-Tier Architecture Decoupling & Clean Repository Design", "duration": "60m", "status": "unlocked"},
                 {"title": "PyMongo Connection Pool Tuning & Index Optimization", "duration": "75m", "status": "unlocked"},
                 {"title": "Securing NoSQL: Operator Sanitization & Role-Based Access Control", "duration": "90m", "status": "locked"},
-                {"title": "Benchmarking & Concurrency Tuning for 500+ Active Users", "duration": "120m", "status": "locked"}
+                {"title": "Benchmarking & Concurrency Tuning for Active Users", "duration": "120m", "status": "locked"}
             ],
             "modules_count": 4,
             "enrolled_count": 645,
@@ -332,8 +316,6 @@ spec:
 
     # 4. Seed Student Innovation Showcase Projects
     proj_col = db["projects"]
-    proj_col.delete_many({})
-
     seed_projects = [
         {
             "title": "NeuroPulse: Adaptive Learning Assistant for Neurodiverse Students",
@@ -360,7 +342,7 @@ spec:
         },
         {
             "title": "ClassSphere: Real-Time Collaborative Study Canvas & Whiteboard",
-            "abstract": "A distributed vector whiteboard allowing remote student study groups to brainstorm, sketch math proofs, and share interactive Python code snippets simultaneously with sub-10ms synchronization.",
+            "abstract": "A distributed vector whiteboard allowing remote student study groups to brainstorm, sketch math proofs, and share interactive Python code snippets simultaneously with low latency synchronization.",
             "author_id": str(student_user["_id"]) if student_user else "student_01",
             "author_name": "Alex Chen & Team",
             "tech_stack": ["WebSockets", "Django Channels", "MongoDB", "Canvas API"],
@@ -374,7 +356,7 @@ spec:
                 {
                     "user_id": str(admin_user["_id"]) if admin_user else "admin_01",
                     "user_name": "LearnSphere System Administrator",
-                    "text": "Excellent WebSocket optimization. Connection memory footprint stayed under 4MB per 50 concurrent students.",
+                    "text": "Excellent WebSocket optimization. Connection memory footprint stayed minimal.",
                     "created_at": now.isoformat()
                 }
             ],
@@ -386,7 +368,8 @@ spec:
     for p in seed_projects:
         proj_col.update_one({"title": p["title"]}, {"$setOnInsert": p}, upsert=True)
 
-    print(" -> Seeding complete: Users, Digital Books Library, Courses, and Innovation Projects are active.")
+    print(" -> Seeding complete: Digital Books Library, Courses, and Innovation Projects are active.")
+
 
 def down(db):
     print(" -> Clearing seeded data...")

@@ -8,12 +8,13 @@ from typing import Any, Dict, List, Optional
 from bson import ObjectId
 from pymongo.collection import Collection
 from database.connection import get_collection
+from core.validation import assert_no_mongo_operators, ValidationError
 
 
 class BaseRepository:
     """
     Base Repository implementing Data Access Object pattern.
-    Provides sanitization and security against NoSQL injection.
+    Provides schema type boundary validation and protection against NoSQL injection.
     """
 
     def __init__(self, collection_name: str):
@@ -30,6 +31,8 @@ class BaseRepository:
     def to_object_id(id_str: str) -> Optional[ObjectId]:
         """Safely parses string to BSON ObjectId."""
         try:
+            if isinstance(id_str, ObjectId):
+                return id_str
             return ObjectId(str(id_str))
         except Exception:
             return None
@@ -54,14 +57,32 @@ class BaseRepository:
     def sanitize_query(query: Dict[str, Any]) -> Dict[str, Any]:
         """
         Sanitizes search query to prevent NoSQL operator injection in user inputs.
-        Ensures keys do not begin with '$' unless authorized.
+        Disallows dangerous operators from untrusted input keys.
         """
+        if not query or not isinstance(query, dict):
+            return {}
+
         clean_query = {}
         for key, val in query.items():
-            # Disallow arbitrary top-level MongoDB operators from raw input
-            if isinstance(key, str) and key.startswith("$") and key not in ["$or", "$and", "$text"]:
+            if not isinstance(key, str):
                 continue
-            clean_query[key] = val
+            # Allow legitimate root query combinators ($or, $and, $text, $in)
+            if key.startswith("$") and key not in ["$or", "$and", "$text", "$in", "$nin"]:
+                continue
+
+            # If value is a nested dictionary, verify no unauthorized operators
+            if isinstance(val, dict):
+                clean_sub = {}
+                for sub_k, sub_v in val.items():
+                    if isinstance(sub_k, str) and sub_k.startswith("$") and sub_k not in [
+                        "$eq", "$ne", "$gt", "$gte", "$lt", "$lte", "$in", "$nin", "$regex", "$options", "$exists"
+                    ]:
+                        continue
+                    clean_sub[sub_k] = sub_v
+                clean_query[key] = clean_sub
+            else:
+                clean_query[key] = val
+
         return clean_query
 
     def find_one(self, query: Dict[str, Any], projection: Optional[Dict[str, int]] = None) -> Optional[Dict[str, Any]]:
@@ -104,7 +125,6 @@ class BaseRepository:
 
     def update_one(self, query: Dict[str, Any], update_data: Dict[str, Any]) -> bool:
         clean_query = self.sanitize_query(query)
-        # Ensure updates use $set if not specified
         if not any(k.startswith("$") for k in update_data.keys()):
             update_body = {"$set": update_data}
         else:
@@ -128,7 +148,7 @@ class BaseRepository:
         page = max(1, page)
         per_page = max(1, min(per_page, 100))
         skip = (page - 1) * per_page
-        
+
         total = self.count(query)
         items = self.find_many(query, sort=sort, skip=skip, limit=per_page)
         total_pages = (total + per_page - 1) // per_page if total > 0 else 1

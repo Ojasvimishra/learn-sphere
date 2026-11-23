@@ -28,6 +28,7 @@ INSTALLED_APPS = [
     # Third-party
     'rest_framework',
     'corsheaders',
+    'drf_spectacular',
     # LearnSphere Apps (3-Tier Layering)
     'apps.authentication',
     'apps.resources',
@@ -39,7 +40,7 @@ INSTALLED_APPS = [
 MIDDLEWARE = [
     # High-concurrency metrics & timing (outermost)
     'core.middleware.ConcurrencyAndPerformanceMiddleware',
-    # Rate Limiting Protection (1000 req/min)
+    # Granular Redis-backed Rate Limiter
     'core.middleware.RateLimiterMiddleware',
     # Enterprise Security Headers (CSP, X-Frame, X-Content-Type)
     'core.middleware.SecurityHeadersMiddleware',
@@ -86,10 +87,18 @@ DATABASES = {
     }
 }
 
+# Modern Argon2id Password Hashing (Fallback to PBKDF2)
+PASSWORD_HASHERS = [
+    'django.contrib.auth.hashers.Argon2PasswordHasher',
+    'django.contrib.auth.hashers.PBKDF2PasswordHasher',
+    'django.contrib.auth.hashers.PBKDF2SHA1PasswordHasher',
+    'django.contrib.auth.hashers.BCryptSHA256PasswordHasher',
+]
+
 # Password validation
 AUTH_PASSWORD_VALIDATORS = [
     {'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator'},
-    {'NAME': 'django.contrib.auth.password_validation.MinimumLengthValidator', 'OPTIONS': {'min_length': 6}},
+    {'NAME': 'django.contrib.auth.password_validation.MinimumLengthValidator', 'OPTIONS': {'min_length': 8}},
     {'NAME': 'django.contrib.auth.password_validation.CommonPasswordValidator'},
     {'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator'},
 ]
@@ -113,8 +122,9 @@ SESSION_COOKIE_AGE = 86400 * 7  # 7 days
 CSRF_COOKIE_HTTPONLY = False
 CSRF_COOKIE_SAMESITE = 'Lax'
 
-# REST Framework Configuration
+# REST Framework Configuration & OpenAPI Schema
 REST_FRAMEWORK = {
+    'DEFAULT_SCHEMA_CLASS': 'drf_spectacular.openapi.AutoSchema',
     'DEFAULT_RENDERER_CLASSES': [
         'rest_framework.renderers.JSONRenderer',
     ],
@@ -124,6 +134,22 @@ REST_FRAMEWORK = {
         'rest_framework.parsers.MultiPartParser',
     ]
 }
+
+SPECTACULAR_SETTINGS = {
+    'TITLE': 'LearnSphere EdTech Platform API',
+    'DESCRIPTION': 'High-performance learning platform with 5-role RBAC, short-lived JWT, and courses, exams, live classes, and labs.',
+    'VERSION': '2.0.0',
+    'SERVE_INCLUDE_SCHEMA': False,
+}
+
+# Celery & Redis Configuration
+REDIS_URL = os.getenv("REDIS_URL", "redis://localhost:6379/0")
+CELERY_BROKER_URL = os.getenv("CELERY_BROKER_URL", "redis://localhost:6379/1")
+CELERY_RESULT_BACKEND = os.getenv("CELERY_RESULT_BACKEND", "redis://localhost:6379/2")
+CELERY_ACCEPT_CONTENT = ['json']
+CELERY_TASK_SERIALIZER = 'json'
+CELERY_RESULT_SERIALIZER = 'json'
+CELERY_TIMEZONE = 'UTC'
 
 # CORS Configuration
 CORS_ALLOW_ALL_ORIGINS = True
