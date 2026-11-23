@@ -1,0 +1,553 @@
+{% extends "base.html" %}
+
+{% block title %}LearnSphere | Smart Education for the Digital Age{% endblock %}
+
+{% block content %}
+<!-- Ambient Container -->
+<div class="ambient-sparkle-container">
+
+  <!-- Google-Style Hero Section -->
+  <section class="hero-section" style="background: linear-gradient(180deg, rgba(255,255,255,0.85) 0%, rgba(248,250,253,0.92) 100%); padding: 5rem 0 3.5rem; border-bottom: 1px solid var(--border-light);">
+    <div class="container" style="max-width: 1080px;">
+      
+      <!-- Vision Concept Badge (From user image) -->
+      <div class="hero-badge">
+        <span style="display: flex; gap: 2.5px;">
+          <span style="width: 8px; height: 8px; border-radius: 50%; background: #4285f4;"></span>
+          <span style="width: 8px; height: 8px; border-radius: 50%; background: #ea4335;"></span>
+          <span style="width: 8px; height: 8px; border-radius: 50%; background: #fbbc05;"></span>
+          <span style="width: 8px; height: 8px; border-radius: 50%; background: #34a853;"></span>
+        </span>
+        <span class="hero-badge-text">STUDENT INNOVATION &bull; SMART EDUCATION</span>
+      </div>
+
+      <!-- Main Headline inspired by chromebook.google showcase -->
+      <h1 class="hero-title">
+        Student Innovation &mdash; <br>
+        <span class="gradient-text">Smart Education</span>
+      </h1>
+
+      <!-- Elegant Vision Quote Card verbatim from user prompt -->
+      <div class="vision-quote-card">
+        <p class="vision-quote-text">
+          &ldquo;<strong style="color: #1a73e8; font-weight: 700;">Student Innovation &ndash; Smart education</strong>, a concept that describes learning in digital age. It enables learners to learn <span style="color: #1a73e8; font-weight: 700; background: #e8f0fe; padding: 0.15rem 0.45rem; border-radius: 6px; white-space: nowrap;">more effectively</span>, <span style="color: #1e8e3e; font-weight: 700; background: #e6f4ea; padding: 0.15rem 0.45rem; border-radius: 6px; white-space: nowrap;">efficiently</span>, <span style="color: #b06000; font-weight: 700; background: #fef7e0; padding: 0.15rem 0.45rem; border-radius: 6px; white-space: nowrap;">flexibly</span> and <span style="color: var(--google-purple); font-weight: 700; background: #f3e8fd; padding: 0.15rem 0.45rem; border-radius: 6px; white-space: nowrap;">comfortably</span>.&rdquo;
+        </p>
+      </div>
+
+      <!-- Pill CTAs -->
+      <div class="hero-cta" style="margin-bottom: 3.5rem;">
+        <a href="/courses/" class="btn btn-primary" style="padding: 0.85rem 2rem; font-size: 1rem;">
+          Explore Smart Courses <i class="fas fa-arrow-right" style="margin-left: 0.4rem;"></i>
+        </a>
+        <a href="/resources/" class="btn btn-secondary" style="padding: 0.85rem 2rem; font-size: 1rem;">
+          <i class="fas fa-book-open" style="color: var(--google-blue);"></i> Digital Books & Library
+        </a>
+        <a href="/innovation/" class="btn btn-emerald" style="padding: 0.85rem 1.75rem; font-size: 1rem;">
+          <i class="fas fa-lightbulb"></i> Student Innovation Hub
+        </a>
+      </div>
+
+      <!-- Interactive Chromebook Frame with Accessible Looping Preview -->
+      <div style="max-width: 960px; margin: 0 auto; background: #ffffff; border-radius: 28px; box-shadow: 0 16px 48px rgba(60,64,67,0.12); border: 1px solid var(--border-light); overflow: hidden;">
+        <!-- Browser Frame Header -->
+        <div style="background: #f1f3f4; padding: 0.75rem 1.5rem; display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid #e0e3e7;">
+          <div style="display: flex; align-items: center; gap: 0.5rem;">
+            <span style="width: 11px; height: 11px; border-radius: 50%; background: #ea4335;"></span>
+            <span style="width: 11px; height: 11px; border-radius: 50%; background: #fbbc05;"></span>
+            <span style="width: 11px; height: 11px; border-radius: 50%; background: #34a853;"></span>
+          </div>
+          <div style="background: #ffffff; padding: 0.35rem 1.75rem; border-radius: var(--radius-pill); font-size: 0.85rem; color: #5f6368; width: 55%; display: flex; align-items: center; justify-content: center; gap: 0.5rem; border: 1px solid #dadce0;">
+            <i class="fas fa-lock" style="color: #1e8e3e; font-size: 0.75rem;"></i>
+            <span>learnsphere.edu/smart-education/overview</span>
+          </div>
+          <div>
+            <button class="play-pause-btn" onclick="toggleDemoPlayback(this)" aria-pressed="false" aria-label="Pause or play interactive preview animation">
+              <i class="fas fa-pause"></i> <span>Pause Preview</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- Four Smart Education Pillars inside Mockup -->
+        <div style="padding: 2.5rem; text-align: left; background: #fafcff;">
+          <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1.25rem;">
+            <!-- Effectively -->
+            <div style="background: #ffffff; padding: 1.5rem; border-radius: 20px; border: 1px solid #e8eaed; box-shadow: 0 1px 3px rgba(60,64,67,0.06);">
+              <div style="width: 40px; height: 40px; border-radius: 50%; background: #e8f0fe; display: flex; align-items: center; justify-content: center; color: var(--google-blue); font-size: 1.1rem; margin-bottom: 0.85rem;">
+                <i class="fas fa-bullseye"></i>
+              </div>
+              <h4 style="font-size: 1.1rem; font-weight: 700; color: #1f1f1f; margin-bottom: 0.25rem;">Learn Effectively</h4>
+              <p style="font-size: 0.85rem; color: #5f6368; line-height: 1.5;">Mastery-driven modular curriculum and cognitive reinforcement.</p>
+              <div class="metric-gauge-bar" style="height:6px; margin-top:0.75rem;">
+                <div class="metric-gauge-fill looping-progress-bar" style="width: 85%; background: var(--google-blue);"></div>
+              </div>
+            </div>
+
+            <!-- Efficiently -->
+            <div style="background: #ffffff; padding: 1.5rem; border-radius: 20px; border: 1px solid #e8eaed; box-shadow: 0 1px 3px rgba(60,64,67,0.06);">
+              <div style="width: 40px; height: 40px; border-radius: 50%; background: #e6f4ea; display: flex; align-items: center; justify-content: center; color: var(--google-green); font-size: 1.1rem; margin-bottom: 0.85rem;">
+                <i class="fas fa-tachometer-alt"></i>
+              </div>
+              <h4 style="font-size: 1.1rem; font-weight: 700; color: #1f1f1f; margin-bottom: 0.25rem;">Learn Efficiently</h4>
+              <p style="font-size: 0.85rem; color: #5f6368; line-height: 1.5;">High-yield digital books, smart summaries, and zero friction.</p>
+              <div class="metric-gauge-bar" style="height:6px; margin-top:0.75rem;">
+                <div class="metric-gauge-fill looping-progress-bar" style="width: 92%; background: var(--google-green);"></div>
+              </div>
+            </div>
+
+            <!-- Flexibly -->
+            <div style="background: #ffffff; padding: 1.5rem; border-radius: 20px; border: 1px solid #e8eaed; box-shadow: 0 1px 3px rgba(60,64,67,0.06);">
+              <div style="width: 40px; height: 40px; border-radius: 50%; background: #fef7e0; display: flex; align-items: center; justify-content: center; color: #b06000; font-size: 1.1rem; margin-bottom: 0.85rem;">
+                <i class="fas fa-clock"></i>
+              </div>
+              <h4 style="font-size: 1.1rem; font-weight: 700; color: #1f1f1f; margin-bottom: 0.25rem;">Learn Flexibly</h4>
+              <p style="font-size: 0.85rem; color: #5f6368; line-height: 1.5;">Self-paced study pathways accessible anywhere across devices.</p>
+              <div class="metric-gauge-bar" style="height:6px; margin-top:0.75rem;">
+                <div class="metric-gauge-fill looping-progress-bar" style="width: 78%; background: var(--google-yellow);"></div>
+              </div>
+            </div>
+
+            <!-- Comfortably -->
+            <div style="background: #ffffff; padding: 1.5rem; border-radius: 20px; border: 1px solid #e8eaed; box-shadow: 0 1px 3px rgba(60,64,67,0.06);">
+              <div style="width: 40px; height: 40px; border-radius: 50%; background: #f3e8fd; display: flex; align-items: center; justify-content: center; color: var(--google-purple); font-size: 1.1rem; margin-bottom: 0.85rem;">
+                <i class="fas fa-couch"></i>
+              </div>
+              <h4 style="font-size: 1.1rem; font-weight: 700; color: #1f1f1f; margin-bottom: 0.25rem;">Learn Comfortably</h4>
+              <p style="font-size: 0.85rem; color: #5f6368; line-height: 1.5;">Accessible typography, eye-strain protection, and wellness pacing.</p>
+              <div class="metric-gauge-bar" style="height:6px; margin-top:0.75rem;">
+                <div class="metric-gauge-fill looping-progress-bar" style="width: 88%; background: var(--google-purple);"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Main Container Content -->
+  <div class="container" style="padding-top: 4rem;">
+
+    <!-- SECTION 1: Multi-Column Bento Grid Showcase -->
+    <section style="margin-bottom: 6rem;">
+      <div style="text-align: center; margin-bottom: 2.5rem;">
+        <span class="pill pill-cyan">Architecture & Performance</span>
+        <h2 style="font-size: 2.35rem; font-weight: 800; color: var(--text-primary); margin-top: 0.5rem;">
+          Everything you need for next-gen education.
+        </h2>
+        <p style="color: var(--text-secondary); font-size: 1.05rem;">Integrated into a single cohesive, high-concurrency 3-Tier platform.</p>
+      </div>
+
+      <div class="bento-grid">
+        <!-- Bento Card 1: Adaptive Mastery (Span 8) -->
+        <div class="bento-card bento-span-8" style="background: linear-gradient(135deg, #ffffff 0%, #f8fafd 100%);">
+          <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 1.5rem;">
+            <span class="pill pill-indigo"><i class="fas fa-brain"></i> Adaptive Learning Engine</span>
+            <span class="pill pill-emerald">Live Telemetry</span>
+          </div>
+          <div style="margin-bottom: 2rem;">
+            <h3 style="font-size: 1.75rem; font-weight: 800; color: #1f1f1f; line-height: 1.25; margin-bottom: 0.75rem;">
+              Dynamic cognitive pathways tailored to each student.
+            </h3>
+            <p style="color: #444746; font-size: 1.05rem; line-height: 1.6;">
+              LearnSphere continuously analyzes learning pace and quiz performance to suggest high-yield micro-lessons, avoiding cognitive overload while maximizing retention.
+            </p>
+          </div>
+          <div style="background: #ffffff; border-radius: 18px; border: 1px solid var(--border-light); padding: 1.25rem; display: flex; align-items: center; justify-content: space-around; flex-wrap: wrap; gap: 1rem;">
+            <div style="text-align: center;">
+              <div style="font-size: 1.85rem; font-weight: 800; color: var(--google-blue);">4 Tracks</div>
+              <div style="font-size: 0.8rem; color: var(--text-tertiary);">Curated Curricula</div>
+            </div>
+            <div style="text-align: center;">
+              <div style="font-size: 1.85rem; font-weight: 800; color: var(--google-green);">{{ stats.courses_count }} Modules</div>
+              <div style="font-size: 0.8rem; color: var(--text-tertiary);">Interactive Lessons</div>
+            </div>
+            <div style="text-align: center;">
+              <div style="font-size: 1.85rem; font-weight: 800; color: var(--google-purple);">98.4%</div>
+              <div style="font-size: 0.8rem; color: var(--text-tertiary);">Mastery Rate</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Bento Card 2: Educator Mentorship Studio (Span 4) -->
+        <div class="bento-card bento-span-4" style="background: #ffffff; border-top: 4px solid var(--google-blue);">
+          <div style="margin-bottom: 1.5rem;">
+            <span class="pill pill-emerald"><i class="fas fa-chalkboard-teacher"></i> Educator Studio</span>
+          </div>
+          <div style="margin-bottom: 1.5rem;">
+            <div style="font-size: 2.75rem; font-weight: 800; color: var(--google-blue); line-height: 1;">Mentorship</div>
+            <div style="font-size: 1rem; font-weight: 700; color: #1f1f1f; margin-top: 0.5rem;">Educator & Mentor Guidance</div>
+            <p style="color: #5f6368; font-size: 0.92rem; margin-top: 0.5rem; line-height: 1.5;">
+              Educators review student prototypes, grant verified endorsement badges, and author adaptive curricula for digital learners.
+            </p>
+          </div>
+          <a href="/dashboard/" class="btn btn-secondary btn-sm" style="width: 100%;">
+            Enter Educator Studio <i class="fas fa-arrow-right"></i>
+          </a>
+        </div>
+
+        <!-- Bento Card 3: Google Books Library (Span 4) -->
+        <div class="bento-card bento-span-4" style="background: #ffffff; border-top: 4px solid var(--google-green);">
+          <div style="margin-bottom: 1.5rem;">
+            <span class="pill pill-indigo"><i class="fas fa-book-open"></i> Google Books Inspired</span>
+          </div>
+          <div style="margin-bottom: 1.5rem;">
+            <div style="font-size: 2.75rem; font-weight: 800; color: var(--google-green); line-height: 1;">{{ stats.resources_count }} Textbooks</div>
+            <div style="font-size: 1rem; font-weight: 700; color: #1f1f1f; margin-top: 0.5rem;">Curated E-Books & Guides</div>
+            <p style="color: #5f6368; font-size: 0.92rem; margin-top: 0.5rem; line-height: 1.5;">
+              Academic publications from Oxford, MIT, Cambridge, and O'Reilly with bookmarking and chapter highlights.
+            </p>
+          </div>
+          <a href="/resources/" class="btn btn-secondary btn-sm" style="width: 100%;">
+            Browse Digital Library <i class="fas fa-book"></i>
+          </a>
+        </div>
+
+        <!-- Bento Card 4: Student Innovation Hub (Span 8) -->
+        <div class="bento-card bento-span-8" style="background: linear-gradient(135deg, #ffffff 0%, #fef7e0 100%);">
+          <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 1.5rem;">
+            <span class="pill pill-amber"><i class="fas fa-lightbulb"></i> Student Innovation Hub</span>
+            <span class="pill pill-indigo">Community Incubator</span>
+          </div>
+          <div style="margin-bottom: 1.5rem;">
+            <h3 style="font-size: 1.75rem; font-weight: 800; color: #1f1f1f; line-height: 1.25; margin-bottom: 0.75rem;">
+              Where student research prototypes come to life.
+            </h3>
+            <p style="color: #444746; font-size: 1.05rem; line-height: 1.6;">
+              Students can publish coding projects, study tools, and research abstracts. Collect atomic community upvotes and participate in collaborative peer review discussions with mentors.
+            </p>
+          </div>
+          <div style="display: flex; gap: 1rem; flex-wrap: wrap;">
+            <a href="/innovation/" class="btn btn-primary btn-sm">Explore Student Projects</a>
+            <button class="btn btn-secondary btn-sm" onclick="openModal('project-modal')">Submit Your Innovation</button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- SECTION 2: Scroll-Driven Vertical Sequencer (Google Hardware / Product Showcase Style) -->
+    <section class="sequencer-section">
+      <div style="text-align: center; margin-bottom: 3.5rem;">
+        <span class="pill pill-indigo">Step-By-Step Walkthrough</span>
+        <h2 style="font-size: 2.35rem; font-weight: 800; color: var(--text-primary); margin-top: 0.5rem;">
+          How LearnSphere powers smart education.
+        </h2>
+        <p style="color: var(--text-secondary); font-size: 1.05rem;">Scroll down to experience the platform flow in action.</p>
+      </div>
+
+      <div class="sequencer-layout">
+        <!-- Left: Progressive Steps Narrative -->
+        <div class="sequencer-steps">
+          
+          <!-- Step 1 -->
+          <div class="sequencer-step active" data-step="1" onclick="activateSequencerStep('1')">
+            <div class="sequencer-step-badge">01</div>
+            <h3 style="font-size: 1.4rem; font-weight: 800; color: #1f1f1f; margin-bottom: 0.5rem;">
+              Adaptive Cognitive Curriculum
+            </h3>
+            <p style="color: #444746; font-size: 0.95rem; line-height: 1.6;">
+              Students begin by taking an initial milestone assessment. The curriculum dynamically scales difficulty so that beginners feel supported while advanced learners stay challenged.
+            </p>
+          </div>
+
+          <!-- Step 2 -->
+          <div class="sequencer-step" data-step="2" onclick="activateSequencerStep('2')">
+            <div class="sequencer-step-badge">02</div>
+            <h3 style="font-size: 1.4rem; font-weight: 800; color: #1f1f1f; margin-bottom: 0.5rem;">
+              Curated Academic Digital Library
+            </h3>
+            <p style="color: #444746; font-size: 0.95rem; line-height: 1.6;">
+              Inspired by Google Books, students access full-text textbooks, algorithmic outlines, and key insights. Save references directly to your personal digital study shelf.
+            </p>
+          </div>
+
+          <!-- Step 3 -->
+          <div class="sequencer-step" data-step="3" onclick="activateSequencerStep('3')">
+            <div class="sequencer-step-badge">03</div>
+            <h3 style="font-size: 1.4rem; font-weight: 800; color: #1f1f1f; margin-bottom: 0.5rem;">
+              Student Innovation Incubator
+            </h3>
+            <p style="color: #444746; font-size: 0.95rem; line-height: 1.6;">
+              Apply knowledge to build tangible software prototypes. Publish them to the community showcase, link live demos and GitHub repos, and gather peer feedback.
+            </p>
+          </div>
+
+          <!-- Step 4 -->
+          <div class="sequencer-step" data-step="4" onclick="activateSequencerStep('4')">
+            <div class="sequencer-step-badge">04</div>
+            <h3 style="font-size: 1.4rem; font-weight: 800; color: #1f1f1f; margin-bottom: 0.5rem;">
+              Educator Mentorship & Peer Review
+            </h3>
+            <p style="color: #444746; font-size: 0.95rem; line-height: 1.6;">
+              Experienced educators evaluate student prototypes with rubric assessments, grant verified endorsement badges, and facilitate collaborative feedback to turn ideas into reality.
+            </p>
+          </div>
+
+        </div>
+
+        <!-- Right: Sticky Interactive Visual Preview Display -->
+        <div class="sequencer-preview-sticky">
+          <div class="sequencer-preview-header">
+            <div style="display: flex; align-items: center; gap: 0.5rem;">
+              <span style="width: 10px; height: 10px; border-radius: 50%; background: #ea4335;"></span>
+              <span style="width: 10px; height: 10px; border-radius: 50%; background: #fbbc05;"></span>
+              <span style="width: 10px; height: 10px; border-radius: 50%; background: #34a853;"></span>
+              <span style="font-size: 0.8rem; color: #5f6368; font-weight: 600; margin-left: 0.5rem;">Platform State Preview</span>
+            </div>
+            <span class="pill pill-indigo" style="font-size: 0.72rem;">Live Interactive</span>
+          </div>
+
+          <div class="sequencer-preview-body">
+            
+            <!-- Panel 1: Curriculum -->
+            <div class="sequencer-panel active" data-panel="1">
+              <div style="text-align: center; max-width: 360px; margin: 0 auto;">
+                <div style="width: 64px; height: 64px; border-radius: 50%; background: #e8f0fe; display: flex; align-items: center; justify-content: center; color: var(--google-blue); font-size: 1.75rem; margin: 0 auto 1.25rem;">
+                  <i class="fas fa-graduation-cap"></i>
+                </div>
+                <h4 style="font-size: 1.35rem; font-weight: 800; color: #1f1f1f; margin-bottom: 0.5rem;">Smart Education Track</h4>
+                <p style="font-size: 0.92rem; color: #5f6368; margin-bottom: 1.25rem;">Module 2 of 4 &bull; Cognitive Load Optimization</p>
+                <div class="metric-gauge-bar" style="height: 10px; margin-bottom: 1rem;">
+                  <div class="metric-gauge-fill" style="width: 65%;"></div>
+                </div>
+                <a href="/courses/" class="btn btn-primary btn-sm">Explore Curriculum</a>
+              </div>
+            </div>
+
+            <!-- Panel 2: Digital Books -->
+            <div class="sequencer-panel" data-panel="2">
+              <div style="text-align: center; max-width: 360px; margin: 0 auto;">
+                <div style="width: 64px; height: 64px; border-radius: 50%; background: #e6f4ea; display: flex; align-items: center; justify-content: center; color: var(--google-green); font-size: 1.75rem; margin: 0 auto 1.25rem;">
+                  <i class="fas fa-book-reader"></i>
+                </div>
+                <h4 style="font-size: 1.35rem; font-weight: 800; color: #1f1f1f; margin-bottom: 0.5rem;">Digital E-Book Library</h4>
+                <p style="font-size: 0.92rem; color: #5f6368; margin-bottom: 1.25rem;">Curated academic texts with chapter study notes.</p>
+                <div style="background: var(--bg-surface); border: 1px solid var(--border-light); border-radius: 12px; padding: 0.75rem 1rem; font-size: 0.85rem; color: #1f1f1f; text-align: left; margin-bottom: 1rem;">
+                  <i class="fas fa-check" style="color:var(--google-green); margin-right:0.4rem;"></i> Chapter 1: Effective Pedagogy
+                </div>
+                <a href="/resources/" class="btn btn-secondary btn-sm">Browse All Books</a>
+              </div>
+            </div>
+
+            <!-- Panel 3: Innovation -->
+            <div class="sequencer-panel" data-panel="3">
+              <div style="text-align: center; max-width: 360px; margin: 0 auto;">
+                <div style="width: 64px; height: 64px; border-radius: 50%; background: #fef7e0; display: flex; align-items: center; justify-content: center; color: #b06000; font-size: 1.75rem; margin: 0 auto 1.25rem;">
+                  <i class="fas fa-lightbulb"></i>
+                </div>
+                <h4 style="font-size: 1.35rem; font-weight: 800; color: #1f1f1f; margin-bottom: 0.5rem;">Student Innovation Hub</h4>
+                <p style="font-size: 0.92rem; color: #5f6368; margin-bottom: 1.25rem;">NeuroPulse: Adaptive Learning Assistant</p>
+                <div style="display: flex; justify-content: center; gap: 0.5rem; margin-bottom: 1.25rem;">
+                  <span class="pill pill-indigo">Python</span>
+                  <span class="pill pill-cyan">TensorFlow</span>
+                  <span class="pill pill-emerald">58 Upvotes</span>
+                </div>
+                <a href="/innovation/" class="btn btn-primary btn-sm">View Innovation Hub</a>
+              </div>
+            </div>
+
+            <!-- Panel 4: Educator Mentorship -->
+            <div class="sequencer-panel" data-panel="4">
+              <div style="text-align: center; max-width: 360px; margin: 0 auto;">
+                <div style="width: 64px; height: 64px; border-radius: 50%; background: #f3e8fd; display: flex; align-items: center; justify-content: center; color: var(--google-purple); font-size: 1.75rem; margin: 0 auto 1.25rem;">
+                  <i class="fas fa-chalkboard-teacher"></i>
+                </div>
+                <h4 style="font-size: 1.35rem; font-weight: 800; color: #1f1f1f; margin-bottom: 0.5rem;">Educator Mentorship</h4>
+                <div style="background: var(--bg-surface); border: 1px solid var(--border-light); border-radius: 14px; padding: 1rem; text-align: left; margin-bottom: 1.25rem;">
+                  <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 0.4rem;">
+                    <span class="pill pill-emerald" style="font-size: 0.72rem;"><i class="fas fa-check-circle"></i> Mentor Endorsed</span>
+                    <span style="font-size: 0.75rem; color: #5f6368;">Score: 96/100</span>
+                  </div>
+                  <div style="font-size: 0.85rem; font-weight: 600; color: #1f1f1f;">"Pioneering adaptive UI for digital students."</div>
+                </div>
+                <a href="/dashboard/" class="btn btn-primary btn-sm">Open Learning Studio</a>
+              </div>
+            </div>
+
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- SECTION 3: Accessible Interactive Category Switcher Tabs -->
+    <section style="margin-bottom: 6rem;">
+      <div style="text-align: center; margin-bottom: 2.5rem;">
+        <span class="pill pill-emerald">Interactive Category Explorer</span>
+        <h2 style="font-size: 2.25rem; font-weight: 800; color: #1f1f1f; margin-top: 0.5rem;">
+          Explore platform services by domain.
+        </h2>
+        <p style="color: #5f6368; font-size: 1.05rem;">Seamlessly switch between study tracks, AI tools, digital library, and educator features.</p>
+      </div>
+
+      <!-- Tab Buttons Header -->
+      <div style="display: flex; justify-content: center; gap: 0.75rem; margin-bottom: 2.5rem; flex-wrap: wrap;" role="tablist">
+        <button class="category-tab-btn active" role="tab" aria-selected="true" onclick="switchCategoryTab('courses', this)">
+          <i class="fas fa-graduation-cap"></i> Smart Courses
+        </button>
+        <button class="category-tab-btn" role="tab" aria-selected="false" onclick="switchCategoryTab('aitools', this)">
+          <i class="fas fa-robot"></i> AI Study Tools
+        </button>
+        <button class="category-tab-btn" role="tab" aria-selected="false" onclick="switchCategoryTab('library', this)">
+          <i class="fas fa-book-open"></i> Digital Library
+        </button>
+        <button class="category-tab-btn" role="tab" aria-selected="false" onclick="switchCategoryTab('educator', this)">
+          <i class="fas fa-chalkboard-teacher"></i> Educator Studio
+        </button>
+      </div>
+
+      <!-- Panel: Courses -->
+      <div id="category-panel-courses" class="category-content-panel glass-panel" style="padding: 2.5rem; border-radius: 28px;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; flex-wrap: wrap; gap: 1rem;">
+          <div>
+            <h3 style="font-size: 1.45rem; font-weight: 700; color: #1f1f1f;">Core Smart Education Tracks</h3>
+            <p style="color: #5f6368; font-size: 0.95rem;">Empowering learners to master skills flexibly and comfortably.</p>
+          </div>
+          <a href="/courses/" class="btn btn-primary btn-sm">View All Courses</a>
+        </div>
+        <div class="cards-grid" style="margin: 0;">
+          {% for course in courses %}
+            <div class="card" style="padding: 1.5rem;">
+              <span class="pill pill-indigo" style="width: fit-content; margin-bottom: 0.75rem;">{{ course.badge }}</span>
+              <h4 style="font-size: 1.15rem; font-weight: 700; color: #1f1f1f; margin-bottom: 0.5rem;">
+                <a href="/courses/{{ course.id }}/">{{ course.title }}</a>
+              </h4>
+              <p style="color: #5f6368; font-size: 0.88rem; line-height: 1.5; margin-bottom: 1rem;">{{ course.description|truncatewords:18 }}</p>
+              <div style="display: flex; justify-content: space-between; align-items: center; font-size: 0.85rem; color: #5f6368;">
+                <span><i class="far fa-clock"></i> {{ course.duration_hours }} hrs</span>
+                <span style="font-weight: 600; color: var(--google-blue);">Level: {{ course.level }}</span>
+              </div>
+            </div>
+          {% endfor %}
+        </div>
+      </div>
+
+      <!-- Panel: AI Tools -->
+      <div id="category-panel-aitools" class="category-content-panel glass-panel" style="display: none; padding: 2.5rem; border-radius: 28px;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; flex-wrap: wrap; gap: 1rem;">
+          <div>
+            <h3 style="font-size: 1.45rem; font-weight: 700; color: #1f1f1f;">AI & Adaptive Study Tools</h3>
+            <p style="color: #5f6368; font-size: 0.95rem;">Intelligent cognitive aids designed to reduce study fatigue.</p>
+          </div>
+          <a href="/innovation/" class="btn btn-secondary btn-sm">Explore Innovation Hub</a>
+        </div>
+        <div class="cards-grid" style="margin: 0;">
+          <div class="card" style="padding: 1.5rem;">
+            <div style="font-size: 1.5rem; color: var(--google-blue); margin-bottom: 0.75rem;"><i class="fas fa-eye"></i></div>
+            <h4 style="font-size: 1.15rem; font-weight: 700; color: #1f1f1f; margin-bottom: 0.5rem;">NeuroPulse Dyslexia Reader</h4>
+            <p style="color: #5f6368; font-size: 0.88rem; line-height: 1.5;">Dynamically adjusts text kerning, contrast, and sentence complexity using lightweight AI.</p>
+          </div>
+          <div class="card" style="padding: 1.5rem;">
+            <div style="font-size: 1.5rem; color: var(--google-green); margin-bottom: 0.75rem;"><i class="fas fa-chalkboard"></i></div>
+            <h4 style="font-size: 1.15rem; font-weight: 700; color: #1f1f1f; margin-bottom: 0.5rem;">ClassSphere Study Canvas</h4>
+            <p style="color: #5f6368; font-size: 0.88rem; line-height: 1.5;">Distributed vector whiteboard for real-time remote student study groups.</p>
+          </div>
+          <div class="card" style="padding: 1.5rem;">
+            <div style="font-size: 1.5rem; color: var(--google-purple); margin-bottom: 0.75rem;"><i class="fas fa-chart-pie"></i></div>
+            <h4 style="font-size: 1.15rem; font-weight: 700; color: #1f1f1f; margin-bottom: 0.5rem;">Cognitive Load Analyzer</h4>
+            <p style="color: #5f6368; font-size: 0.88rem; line-height: 1.5;">Monitors session study duration and recommends ergonomic breaks.</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Panel: Digital Library -->
+      <div id="category-panel-library" class="category-content-panel glass-panel" style="display: none; padding: 2.5rem; border-radius: 28px;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; flex-wrap: wrap; gap: 1rem;">
+          <div>
+            <h3 style="font-size: 1.45rem; font-weight: 700; color: #1f1f1f;">Digital E-Book Library</h3>
+            <p style="color: #5f6368; font-size: 0.95rem;">Curated academic textbooks and research papers.</p>
+          </div>
+          <a href="/resources/" class="btn btn-secondary btn-sm">Open Full Library</a>
+        </div>
+        <div class="cards-grid" style="margin: 0;">
+          {% for book in featured_resources %}
+            <div class="card" style="padding: 1.5rem;">
+              <span class="pill pill-emerald" style="width: fit-content; margin-bottom: 0.75rem;">{{ book.category }}</span>
+              <h4 style="font-size: 1.15rem; font-weight: 700; color: #1f1f1f; margin-bottom: 0.5rem;">
+                <a href="/resources/{{ book.id }}/">{{ book.title }}</a>
+              </h4>
+              <p style="color: #5f6368; font-size: 0.88rem; line-height: 1.5; margin-bottom: 1rem;">{{ book.description|truncatewords:18 }}</p>
+              <div style="font-size: 0.82rem; color: var(--google-blue); font-weight: 600;">{{ book.source }}</div>
+            </div>
+          {% endfor %}
+        </div>
+      </div>
+
+      <!-- Panel: Educator Studio -->
+      <div id="category-panel-educator" class="category-content-panel glass-panel" style="display: none; padding: 2.5rem; border-radius: 28px;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; flex-wrap: wrap; gap: 1rem;">
+          <div>
+            <h3 style="font-size: 1.45rem; font-weight: 700; color: #1f1f1f;">Educator Studio & Mentorship Hub</h3>
+            <p style="color: #5f6368; font-size: 0.95rem;">Empowering educators to mentor student innovators, assess prototypes, and author curriculum.</p>
+          </div>
+          <a href="/dashboard/" class="btn btn-primary btn-sm">Enter Learning Studio</a>
+        </div>
+        <div class="cards-grid" style="margin: 0;">
+          <div class="card" style="padding: 1.5rem;">
+            <div style="font-size: 1.5rem; color: var(--google-blue); margin-bottom: 0.75rem;"><i class="fas fa-award"></i></div>
+            <h4 style="font-size: 1.15rem; font-weight: 700; color: #1f1f1f; margin-bottom: 0.5rem;">Prototype Endorsements</h4>
+            <p style="color: #5f6368; font-size: 0.88rem; line-height: 1.5;">Award verified mentor badges and academic accreditation directly to student innovation projects.</p>
+          </div>
+          <div class="card" style="padding: 1.5rem;">
+            <div style="font-size: 1.5rem; color: var(--google-green); margin-bottom: 0.75rem;"><i class="fas fa-layer-group"></i></div>
+            <h4 style="font-size: 1.15rem; font-weight: 700; color: #1f1f1f; margin-bottom: 0.5rem;">Modular Course Authoring</h4>
+            <p style="color: #5f6368; font-size: 0.88rem; line-height: 1.5;">Structure adaptive tracks with chapter checkpoints, cognitive difficulty scaling, and reading links.</p>
+          </div>
+          <div class="card" style="padding: 1.5rem;">
+            <div style="font-size: 1.5rem; color: var(--google-purple); margin-bottom: 0.75rem;"><i class="fas fa-users-cog"></i></div>
+            <h4 style="font-size: 1.15rem; font-weight: 700; color: #1f1f1f; margin-bottom: 0.5rem;">Student Cohort Analytics</h4>
+            <p style="color: #5f6368; font-size: 0.88rem; line-height: 1.5;">Track real-time student mastery rates, engagement duration, and identify learners who need support.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- SECTION 4: Student Innovation Showcase Spotlight -->
+    <section style="margin-bottom: 6rem;">
+      <div style="display: flex; align-items: flex-end; justify-content: space-between; margin-bottom: 2rem; flex-wrap: wrap; gap: 1rem;">
+        <div>
+          <span class="pill pill-cyan">Student Innovations</span>
+          <h2 style="font-size: 2.15rem; font-weight: 800; color: var(--text-primary); margin-top: 0.5rem;">
+            Featured Student Innovations
+          </h2>
+          <p style="color: var(--text-secondary); font-size: 1rem;">Student research prototypes shaping digital learning.</p>
+        </div>
+        <a href="/innovation/" class="btn btn-secondary">Explore All Innovations <i class="fas fa-arrow-right"></i></a>
+      </div>
+
+      <div class="cards-grid">
+        {% for proj in featured_projects %}
+          <div class="card">
+            <div>
+              <div class="card-top">
+                <span class="pill pill-indigo">{{ proj.category }}</span>
+                <button class="btn btn-secondary btn-sm" onclick="toggleUpvote('{{ proj.id }}', this)">
+                  <i class="fas fa-arrow-up" style="color:var(--google-blue);"></i> <span class="upvote-count">{{ proj.upvotes }}</span>
+                </button>
+              </div>
+              <h3 class="card-title">
+                <a href="/innovation/{{ proj.id }}/">{{ proj.title }}</a>
+              </h3>
+              <p class="card-desc">{{ proj.abstract|truncatewords:28 }}</p>
+
+              <div class="tags-list">
+                {% for tech in proj.tech_stack %}
+                  <span class="tag-item">{{ tech }}</span>
+                {% endfor %}
+              </div>
+            </div>
+
+            <div class="card-footer">
+              <div style="display: flex; align-items: center; gap: 0.5rem;">
+                <div style="width:26px; height:26px; border-radius:50%; background:var(--google-blue); display:flex; align-items:center; justify-content:center; font-size:0.75rem; color:#fff; font-weight:700;">
+                  {{ proj.author_name|slice:":1"|upper }}
+                </div>
+                <span style="color:var(--text-primary); font-weight:500;">{{ proj.author_name }}</span>
+              </div>
+              <span><i class="far fa-comment"></i> {{ proj.comments|length }} comments</span>
+            </div>
+          </div>
+        {% endfor %}
+      </div>
+    </section>
+
+  </div>
+</div>
+{% endblock %}

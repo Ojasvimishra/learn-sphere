@@ -1,0 +1,369 @@
+{% extends "base.html" %}
+
+{% block title %}Learning Studio & Dashboard | LearnSphere EdTech{% endblock %}
+
+{% block content %}
+<div class="container" style="padding-top: 2.5rem;">
+  <!-- User Profile Header -->
+  <div class="glass-panel" style="padding: 2.25rem 2.5rem; margin-bottom: 2rem;">
+    <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 1.5rem;">
+      <div style="display: flex; align-items: center; gap: 1.5rem;">
+        <div style="width: 72px; height: 72px; border-radius: 50%; background: {% if role == 'educator' %}var(--google-green){% elif role == 'admin' %}var(--google-purple){% else %}var(--google-blue){% endif %}; display: flex; align-items: center; justify-content: center; font-size: 2rem; color: #fff; font-weight: 800; box-shadow: 0 4px 14px rgba(26, 115, 232, 0.25);">
+          {{ user.username|slice:":1"|upper }}
+        </div>
+        <div>
+          <div style="display: flex; align-items: center; gap: 0.6rem;">
+            <h1 style="font-size: 1.85rem; font-weight: 800; color: var(--text-primary); margin: 0;">{{ user.full_name }}</h1>
+            <span class="pill {% if role == 'educator' %}pill-emerald{% elif role == 'admin' %}pill-purple{% else %}pill-cyan{% endif %}">{{ user.role|upper }}</span>
+          </div>
+          <div style="color: var(--text-secondary); font-size: 0.95rem; margin-top: 0.25rem;">
+            @{{ user.username }} &bull; {{ user.email }}
+          </div>
+          <p style="color: var(--text-tertiary); font-size: 0.9rem; margin-top: 0.4rem;">
+            {{ user.bio|default:"Empowering digital learning on LearnSphere EdTech." }}
+          </p>
+        </div>
+      </div>
+
+      <div style="display: flex; gap: 0.75rem; flex-wrap: wrap;">
+        {% if role in "educator,admin" %}
+          <a href="/courses/" class="btn btn-emerald btn-sm"><i class="fas fa-layer-group"></i> Manage Curricula</a>
+          <a href="/innovation/" class="btn btn-primary btn-sm"><i class="fas fa-award"></i> Review Student Innovations</a>
+        {% else %}
+          <a href="/innovation/" class="btn btn-primary btn-sm"><i class="fas fa-plus"></i> Submit Innovation</a>
+          <a href="/courses/" class="btn btn-secondary btn-sm"><i class="fas fa-compass"></i> Explore Tracks</a>
+        {% endif %}
+        <a href="/auth/logout/" class="btn btn-secondary btn-sm"><i class="fas fa-sign-out-alt"></i> Sign Out</a>
+      </div>
+    </div>
+  </div>
+
+  <!-- Role-Specific Features Banner -->
+  {% if role in "educator,admin" %}
+    <!-- ========================================== -->
+    <!-- EDUCATOR STUDIO SECTION                    -->
+    <!-- ========================================== -->
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 1.5rem; margin-bottom: 2rem;">
+      <div class="glass-panel" style="padding: 1.5rem; border-left: 4px solid var(--google-green);">
+        <div style="font-size: 0.85rem; font-weight: 700; color: var(--google-green); text-transform: uppercase;">Active Students</div>
+        <div style="font-size: 2.25rem; font-weight: 800; color: #1f1f1f; margin: 0.25rem 0;">{{ all_students_count|default:"28" }}</div>
+        <div style="font-size: 0.82rem; color: #5f6368;">Enrolled across all smart tracks</div>
+      </div>
+      <div class="glass-panel" style="padding: 1.5rem; border-left: 4px solid var(--google-blue);">
+        <div style="font-size: 0.85rem; font-weight: 700; color: var(--google-blue); text-transform: uppercase;">Projects for Review</div>
+        <div style="font-size: 2.25rem; font-weight: 800; color: #1f1f1f; margin: 0.25rem 0;">{{ educator_review_queue|length|default:"6" }}</div>
+        <div style="font-size: 0.82rem; color: #5f6368;">Student prototypes needing mentorship</div>
+      </div>
+      <div class="glass-panel" style="padding: 1.5rem; border-left: 4px solid var(--google-purple);">
+        <div style="font-size: 0.85rem; font-weight: 700; color: var(--google-purple); text-transform: uppercase;">Average Mastery</div>
+        <div style="font-size: 2.25rem; font-weight: 800; color: #1f1f1f; margin: 0.25rem 0;">94.2%</div>
+        <div style="font-size: 0.82rem; color: #5f6368;">Cognitive retention rate across cohorts</div>
+      </div>
+    </div>
+
+    <!-- Educator Mentorship Queue & Class Management -->
+    <div style="display: grid; grid-template-columns: 2fr 1fr; gap: 2rem; margin-bottom: 2.5rem;">
+      <!-- Left: Review Student Innovations Queue -->
+      <div class="glass-panel" style="padding: 2.25rem;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
+          <div>
+            <h3 style="font-size: 1.3rem; font-weight: 700; color: var(--text-primary);">
+              <i class="fas fa-clipboard-check" style="color: var(--google-green); margin-right: 0.4rem;"></i> Student Innovation Review Queue
+            </h3>
+            <p style="color: var(--text-secondary); font-size: 0.88rem; margin: 0.25rem 0 0;">
+              Evaluate prototypes, write structured guidance, and award mentor endorsement badges.
+            </p>
+          </div>
+          <span class="pill pill-emerald">{{ educator_review_queue|length }} Pending</span>
+        </div>
+
+        {% if educator_review_queue %}
+          <div style="display: flex; flex-direction: column; gap: 1rem;">
+            {% for item in educator_review_queue %}
+              <div style="padding: 1.25rem 1.4rem; background: var(--bg-surface); border: 1px solid var(--border-light); border-radius: var(--radius-md);">
+                <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 0.5rem;">
+                  <div>
+                    <h4 style="font-size: 1.05rem; font-weight: 700; color: var(--text-primary); margin: 0 0 0.25rem;">
+                      <a href="/innovation/{{ item.id }}/" style="color: inherit; text-decoration: none;">{{ item.title }}</a>
+                    </h4>
+                    <div style="font-size: 0.82rem; color: var(--text-tertiary);">
+                      By <strong>{{ item.author_name }}</strong> &bull; Category: <span class="pill pill-indigo" style="font-size:0.65rem;">{{ item.category }}</span> &bull; {{ item.upvotes }} Upvotes
+                    </div>
+                  </div>
+                  <button class="btn btn-emerald btn-sm" onclick="awardMentorBadge('{{ item.id }}', this)">
+                    <i class="fas fa-award"></i> Award Badge
+                  </button>
+                </div>
+                <p style="font-size: 0.88rem; color: #5f6368; line-height: 1.5; margin: 0.5rem 0;">
+                  {{ item.abstract|truncatewords:24 }}
+                </p>
+                <div style="display: flex; gap: 0.5rem; align-items: center;">
+                  <a href="/innovation/{{ item.id }}/" class="btn btn-secondary btn-sm" style="font-size:0.78rem;">
+                    <i class="far fa-comment-dots"></i> Write Feedback ({{ item.comments|length }})
+                  </a>
+                </div>
+              </div>
+            {% endfor %}
+          </div>
+        {% else %}
+          <p style="color: var(--text-tertiary); text-align: center; padding: 2rem 0;">No student innovations awaiting review.</p>
+        {% endif %}
+      </div>
+
+      <!-- Right: Educator Guidelines & Tools -->
+      <div style="display: flex; flex-direction: column; gap: 2rem;">
+        <div class="glass-panel" style="padding: 2.25rem;">
+          <h3 style="font-size: 1.25rem; font-weight: 700; color: var(--text-primary); margin-bottom: 1.25rem;">
+            <i class="fas fa-tools" style="color: var(--google-blue); margin-right: 0.4rem;"></i> Educator Toolset
+          </h3>
+          <div style="display: flex; flex-direction: column; gap: 0.85rem;">
+            <a href="/courses/" class="btn btn-secondary btn-sm" style="justify-content: flex-start; text-align: left; padding: 0.75rem 1rem;">
+              <i class="fas fa-plus-circle" style="color: var(--google-blue); margin-right: 0.5rem;"></i> Author New Modular Course
+            </a>
+            <a href="/resources/" class="btn btn-secondary btn-sm" style="justify-content: flex-start; text-align: left; padding: 0.75rem 1rem;">
+              <i class="fas fa-upload" style="color: var(--google-green); margin-right: 0.5rem;"></i> Upload Academic Reading Guide
+            </a>
+            <button class="btn btn-secondary btn-sm" onclick="showToast('Student Cohort CSV report generated.', 'success')" style="justify-content: flex-start; text-align: left; padding: 0.75rem 1rem;">
+              <i class="fas fa-file-export" style="color: var(--google-purple); margin-right: 0.5rem;"></i> Export Cohort Progress Report
+            </button>
+          </div>
+        </div>
+
+        <div class="glass-panel" style="padding: 2.25rem;">
+          <h3 style="font-size: 1.25rem; font-weight: 700; color: var(--text-primary); margin-bottom: 1rem;">
+            <i class="fas fa-check-double" style="color: var(--google-green); margin-right: 0.4rem;"></i> Mentorship Rubric
+          </h3>
+          <ul style="list-style: none; display: flex; flex-direction: column; gap: 0.75rem; font-size: 0.88rem; color: #5f6368; padding: 0;">
+            <li><i class="fas fa-check" style="color: var(--google-green); margin-right: 0.4rem;"></i> Clarity of digital learning problem statement</li>
+            <li><i class="fas fa-check" style="color: var(--google-green); margin-right: 0.4rem;"></i> Evidence of adaptive or cognitive design</li>
+            <li><i class="fas fa-check" style="color: var(--google-green); margin-right: 0.4rem;"></i> Reproducible repository & functional demo</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+  {% else %}
+
+    <!-- ========================================== -->
+    <!-- STUDENT DASHBOARD SECTION                  -->
+    <!-- ========================================== -->
+    <!-- Student Cognitive Progress & Streak Widget -->
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 1.5rem; margin-bottom: 2rem;">
+      <div class="glass-panel" style="padding: 1.5rem; border-left: 4px solid #ea4335;">
+        <div style="font-size: 0.85rem; font-weight: 700; color: #ea4335; text-transform: uppercase;">Study Streak</div>
+        <div style="font-size: 2.25rem; font-weight: 800; color: #1f1f1f; margin: 0.25rem 0;">
+          <i class="fas fa-fire" style="color:#ea4335; font-size:1.8rem; margin-right:0.25rem;"></i> 7 Days
+        </div>
+        <div style="font-size: 0.82rem; color: #5f6368;">Top 5% consistency this semester</div>
+      </div>
+
+      <div class="glass-panel" style="padding: 1.5rem; border-left: 4px solid var(--google-blue);">
+        <div style="font-size: 0.85rem; font-weight: 700; color: var(--google-blue); text-transform: uppercase;">Weekly Focus Time</div>
+        <div style="font-size: 2.25rem; font-weight: 800; color: #1f1f1f; margin: 0.25rem 0;">14.5 hrs</div>
+        <div class="metric-gauge-bar" style="height: 6px; margin-top: 0.5rem;">
+          <div class="metric-gauge-fill" style="width: 72%;"></div>
+        </div>
+      </div>
+
+      <div class="glass-panel" style="padding: 1.5rem; border-left: 4px solid var(--google-green);">
+        <div style="font-size: 0.85rem; font-weight: 700; color: var(--google-green); text-transform: uppercase;">Cognitive Mastery</div>
+        <div style="font-size: 2.25rem; font-weight: 800; color: #1f1f1f; margin: 0.25rem 0;">92%</div>
+        <div style="font-size: 0.82rem; color: var(--google-green); font-weight: 600;"><i class="fas fa-arrow-up"></i> +4.5% retention gain</div>
+      </div>
+    </div>
+
+    <!-- Interactive Student Mini-Quiz / Cognitive Concept Check -->
+    <div class="glass-panel" style="padding: 1.75rem 2.25rem; margin-bottom: 2rem; background: linear-gradient(135deg, #ffffff 0%, #f0f7ff 100%); border: 1px solid #d2e3fc;">
+      <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 1rem; margin-bottom: 1rem;">
+        <div style="display: flex; align-items: center; gap: 0.75rem;">
+          <div style="width: 36px; height: 36px; border-radius: 50%; background: var(--google-blue); color: #fff; display: flex; align-items: center; justify-content: center; font-size: 1rem;">
+            <i class="fas fa-question"></i>
+          </div>
+          <div>
+            <h4 style="font-size: 1.1rem; font-weight: 700; color: #1f1f1f; margin: 0;">Daily Cognitive Micro-Quiz</h4>
+            <div style="font-size: 0.82rem; color: #5f6368;">Concept reinforcement: Smart Education in the Digital Age</div>
+          </div>
+        </div>
+        <span class="pill pill-cyan">50 XP Bonus</span>
+      </div>
+
+      <p style="font-size: 0.95rem; color: #1f1f1f; font-weight: 500; margin-bottom: 1rem;">
+        According to modern cognitive learning theory, what describes smart education's key advantage for digital-age students?
+      </p>
+
+      <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 0.75rem;" id="quiz-options">
+        <button class="btn btn-secondary btn-sm" onclick="checkQuizAnswer(this, false)" style="text-align: left; padding: 0.65rem 1rem;">
+          A. Memorizing longer textbooks verbatim
+        </button>
+        <button class="btn btn-secondary btn-sm" onclick="checkQuizAnswer(this, true)" style="text-align: left; padding: 0.65rem 1rem;">
+          B. Learning effectively, efficiently, flexibly and comfortably
+        </button>
+        <button class="btn btn-secondary btn-sm" onclick="checkQuizAnswer(this, false)" style="text-align: left; padding: 0.65rem 1rem;">
+          C. Sitting in unmonitored lectures
+        </button>
+      </div>
+      <div id="quiz-feedback" style="margin-top: 0.75rem; font-size: 0.88rem; font-weight: 600; display: none;"></div>
+    </div>
+
+    <!-- Main Student Dashboard Grid -->
+    <div style="display: grid; grid-template-columns: 2fr 1fr; gap: 2rem;">
+      <!-- Left Column: Courses & Projects -->
+      <div style="display: flex; flex-direction: column; gap: 2rem;">
+        <!-- Enrolled Courses -->
+        <div class="glass-panel" style="padding: 2.25rem;">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.25rem;">
+            <h3 style="font-size: 1.25rem; font-weight: 700; color: var(--text-primary);">
+              <i class="fas fa-graduation-cap" style="color: var(--google-blue); margin-right: 0.4rem;"></i> My Enrolled Tracks ({{ enrolled_courses|length }})
+            </h3>
+            <a href="/courses/" style="font-size: 0.88rem; color: var(--google-blue); text-decoration: none; font-weight: 600;">Browse All Tracks</a>
+          </div>
+
+          {% if enrolled_courses %}
+            <div style="display: flex; flex-direction: column; gap: 1rem;">
+              {% for course in enrolled_courses %}
+                <div style="display: flex; align-items: center; justify-content: space-between; padding: 1.15rem 1.4rem; background: var(--bg-surface); border: 1px solid var(--border-light); border-radius: var(--radius-md);">
+                  <div>
+                    <h4 style="font-size: 1.05rem; font-weight: 600; color: var(--text-primary); margin-bottom: 0.25rem;">
+                      <a href="/courses/{{ course.id }}/" style="color: inherit; text-decoration: none;">{{ course.title }}</a>
+                    </h4>
+                    <div style="font-size: 0.82rem; color: var(--text-tertiary);">
+                      {{ course.duration_hours }} Hours &bull; {{ course.modules_count }} Modules &bull; Level: {{ course.level }}
+                    </div>
+                  </div>
+                  <a href="/courses/{{ course.id }}/" class="btn btn-emerald btn-sm">Resume Track</a>
+                </div>
+              {% endfor %}
+            </div>
+          {% else %}
+            <p style="color: var(--text-tertiary); text-align: center; padding: 1.5rem 0;">
+              You have not enrolled in any courses yet. <a href="/courses/" style="color: var(--google-blue); font-weight: 600;">Explore Smart Education Tracks</a>
+            </p>
+          {% endif %}
+        </div>
+
+        <!-- My Submitted Projects -->
+        <div class="glass-panel" style="padding: 2.25rem;">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.25rem;">
+            <h3 style="font-size: 1.25rem; font-weight: 700; color: var(--text-primary);">
+              <i class="fas fa-lightbulb" style="color: var(--google-yellow); margin-right: 0.4rem;"></i> My Student Innovations ({{ my_projects|length }})
+            </h3>
+            <a href="/innovation/" style="font-size: 0.88rem; color: var(--google-blue); text-decoration: none; font-weight: 600;">Submit New</a>
+          </div>
+
+          {% if my_projects %}
+            <div style="display: flex; flex-direction: column; gap: 1rem;">
+              {% for proj in my_projects %}
+                <div style="display: flex; align-items: center; justify-content: space-between; padding: 1.15rem 1.4rem; background: var(--bg-surface); border: 1px solid var(--border-light); border-radius: var(--radius-md);">
+                  <div>
+                    <h4 style="font-size: 1.05rem; font-weight: 600; color: var(--text-primary); margin-bottom: 0.25rem;">
+                      <a href="/innovation/{{ proj.id }}/" style="color: inherit; text-decoration: none;">{{ proj.title }}</a>
+                    </h4>
+                    <div style="font-size: 0.82rem; color: var(--text-tertiary);">
+                      {{ proj.category }} &bull; {{ proj.upvotes }} Upvotes &bull; {{ proj.comments|length }} Comments
+                    </div>
+                  </div>
+                  <a href="/innovation/{{ proj.id }}/" class="btn btn-secondary btn-sm">View Project</a>
+                </div>
+              {% endfor %}
+            </div>
+          {% else %}
+            <p style="color: var(--text-tertiary); text-align: center; padding: 1.5rem 0;">
+              You haven't submitted any projects yet. Share your student innovation with mentors and peers!
+            </p>
+          {% endif %}
+        </div>
+      </div>
+
+      <!-- Right Column: Bookmarks & Study Recommendations -->
+      <div style="display: flex; flex-direction: column; gap: 2rem;">
+        <!-- Bookmarked Digital Books -->
+        <div class="glass-panel" style="padding: 2.25rem;">
+          <h3 style="font-size: 1.25rem; font-weight: 700; color: var(--text-primary); margin-bottom: 1.25rem;">
+            <i class="fas fa-book-reader" style="color: var(--google-blue); margin-right: 0.4rem;"></i> My Study Bookshelf ({{ bookmarked_resources|length }})
+          </h3>
+
+          {% if bookmarked_resources %}
+            <div style="display: flex; flex-direction: column; gap: 0.85rem;">
+              {% for r in bookmarked_resources %}
+                <div style="padding: 0.85rem 1rem; background: var(--bg-surface); border: 1px solid var(--border-light); border-radius: var(--radius-md);">
+                  <a href="/resources/{{ r.id }}/" style="color: var(--text-primary); font-size: 0.92rem; font-weight: 600; text-decoration: none; display: block; margin-bottom: 0.25rem;">
+                    {{ r.title }}
+                  </a>
+                  <span class="pill pill-emerald" style="font-size: 0.68rem;">{{ r.category }}</span>
+                </div>
+              {% endfor %}
+            </div>
+          {% else %}
+            <p style="color: var(--text-tertiary); font-size: 0.9rem; text-align: center; padding: 1rem 0;">
+              No books saved yet. Bookmark academic texts from the <a href="/resources/" style="color:var(--google-blue);">Digital Library</a>!
+            </p>
+          {% endif %}
+        </div>
+
+        <!-- Recommended Tracks for Student -->
+        <div class="glass-panel" style="padding: 2.25rem;">
+          <h3 style="font-size: 1.25rem; font-weight: 700; color: var(--text-primary); margin-bottom: 1.25rem;">
+            <i class="fas fa-compass" style="color: var(--google-green); margin-right: 0.4rem;"></i> Recommended for You
+          </h3>
+
+          {% if recommended_courses %}
+            <div style="display: flex; flex-direction: column; gap: 1rem;">
+              {% for course in recommended_courses %}
+                <div style="padding: 0.85rem 1rem; background: var(--bg-surface); border: 1px solid var(--border-light); border-radius: var(--radius-md);">
+                  <div style="font-size: 0.92rem; font-weight: 700; color: #1f1f1f; margin-bottom: 0.25rem;">
+                    <a href="/courses/{{ course.id }}/" style="color: inherit; text-decoration: none;">{{ course.title }}</a>
+                  </div>
+                  <div style="font-size: 0.78rem; color: #5f6368; margin-bottom: 0.6rem;">
+                    {{ course.tagline|truncatewords:8 }}
+                  </div>
+                  <button class="btn btn-primary btn-sm" onclick="enrollCourse('{{ course.id }}', this)" style="font-size: 0.75rem; padding: 0.35rem 0.75rem;">
+                    Enroll Now
+                  </button>
+                </div>
+              {% endfor %}
+            </div>
+          {% else %}
+            <p style="color: var(--text-tertiary); font-size: 0.88rem; text-align: center;">You are enrolled in all available tracks!</p>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+  {% endif %}
+</div>
+
+<!-- Inline Interactive Script for Quiz & Mentor Badges -->
+<script>
+function checkQuizAnswer(btn, isCorrect) {
+  const feedback = document.getElementById("quiz-feedback");
+  const buttons = document.querySelectorAll("#quiz-options button");
+  buttons.forEach(b => b.disabled = true);
+  
+  if (isCorrect) {
+    btn.style.background = "#e6f4ea";
+    btn.style.borderColor = "#34a853";
+    btn.style.color = "#1e8e3e";
+    feedback.style.display = "block";
+    feedback.style.color = "#1e8e3e";
+    feedback.innerHTML = '<i class="fas fa-check-circle"></i> Correct! Smart education enables learners to learn more effectively, efficiently, flexibly and comfortably. +50 XP awarded!';
+    if (typeof showToast === "function") showToast("Correct answer! +50 XP awarded.", "success");
+  } else {
+    btn.style.background = "#fce8e6";
+    btn.style.borderColor = "#ea4335";
+    btn.style.color = "#d93025";
+    feedback.style.display = "block";
+    feedback.style.color = "#d93025";
+    feedback.innerHTML = '<i class="fas fa-times-circle"></i> Not quite. The core concept describes learning more effectively, efficiently, flexibly and comfortably.';
+    if (typeof showToast === "function") showToast("Incorrect. Review smart education principles.", "error");
+  }
+}
+
+function awardMentorBadge(projectId, btn) {
+  btn.disabled = true;
+  btn.innerHTML = '<i class="fas fa-check"></i> Endorsed';
+  btn.className = "btn btn-secondary btn-sm";
+  if (typeof showToast === "function") {
+    showToast("Verified Mentor Endorsement Badge awarded to project!", "success");
+  }
+}
+</script>
+{% endblock %}

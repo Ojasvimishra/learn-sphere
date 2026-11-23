@@ -1,0 +1,79 @@
+{% extends "base.html" %}
+
+{% block title %}{{ course.title }} | LearnSphere Curriculum{% endblock %}
+
+{% block content %}
+<div class="container" style="padding-top: 3rem; max-width: 960px;">
+  <div style="margin-bottom: 1.5rem;">
+    <a href="/courses/" style="color: var(--text-secondary); text-decoration: none; font-size: 0.9rem; display: flex; align-items: center; gap: 0.4rem; font-weight: 500;">
+      <i class="fas fa-arrow-left"></i> Back to Courses
+    </a>
+  </div>
+
+  <div class="glass-panel" style="padding: 2.75rem; margin-bottom: 2rem;">
+    <div style="display: flex; gap: 0.5rem; margin-bottom: 1rem;">
+      <span class="pill pill-emerald">{{ course.badge }}</span>
+      <span class="pill pill-indigo">{{ course.level }} Level</span>
+    </div>
+
+    <h1 style="font-size: 2.35rem; font-weight: 800; color: var(--text-primary); margin-bottom: 0.8rem;">
+      {{ course.title }}
+    </h1>
+    <p style="font-size: 1.2rem; color: var(--google-blue); font-weight: 500; margin-bottom: 1.5rem;">
+      {{ course.tagline }}
+    </p>
+
+    <div style="display: flex; gap: 2rem; color: var(--text-tertiary); font-size: 0.9rem; border-top: 1px solid var(--border-light); border-bottom: 1px solid var(--border-light); padding: 1rem 0; margin-bottom: 1.75rem; flex-wrap: wrap;">
+      <span><i class="far fa-clock"></i> Duration: <strong>{{ course.duration_hours }} hours</strong></span>
+      <span><i class="fas fa-book-open"></i> Syllabus: <strong>{{ course.modules_count }} modules</strong></span>
+      <span><i class="fas fa-user-graduate"></i> Enrolled: <strong>{{ course.enrolled_count }} students</strong></span>
+      <span><i class="fas fa-star" style="color: #f59e0b;"></i> Rating: <strong>{{ course.rating }} / 5.0</strong></span>
+    </div>
+
+    <p style="font-size: 1.05rem; color: var(--text-secondary); line-height: 1.8; margin-bottom: 2rem;">
+      {{ course.description }}
+    </p>
+
+    <div>
+      {% if is_enrolled %}
+        <button class="btn btn-emerald" disabled><i class="fas fa-check-circle"></i> Enrolled in this track</button>
+      {% else %}
+        <button class="btn btn-primary" onclick="enrollCourse('{{ course.id }}', this)">
+          <i class="fas fa-graduation-cap"></i> Enroll in Track Free
+        </button>
+      {% endif %}
+    </div>
+  </div>
+
+  <!-- Syllabus Curriculum Modules -->
+  <div class="glass-panel" style="padding: 2.75rem;">
+    <h3 style="font-size: 1.4rem; font-weight: 700; color: var(--text-primary); margin-bottom: 1.5rem;">
+      Interactive Curriculum & Syllabus
+    </h3>
+
+    <div style="display: flex; flex-direction: column; gap: 1rem;">
+      {% for mod in course.modules %}
+        <div style="display: flex; align-items: center; justify-content: space-between; padding: 1.25rem; background: var(--bg-surface); border: 1px solid var(--border-light); border-radius: var(--radius-md); transition: all 0.2s ease;">
+          <div style="display: flex; align-items: center; gap: 1.25rem;">
+            <div style="width: 36px; height: 36px; border-radius: 50%; background: {% if mod.status == 'unlocked' %}var(--google-green-light){% else %}var(--border-light){% endif %}; color: {% if mod.status == 'unlocked' %}var(--google-green){% else %}var(--text-tertiary){% endif %}; display: flex; align-items: center; justify-content: center; font-size: 0.9rem;">
+              <i class="fas {% if mod.status == 'unlocked' %}fa-play{% else %}fa-lock{% endif %}"></i>
+            </div>
+            <div>
+              <div style="font-size: 1.05rem; font-weight: 600; color: var(--text-primary);">{{ mod.title }}</div>
+              <div style="font-size: 0.82rem; color: var(--text-tertiary); margin-top: 0.15rem;"><i class="far fa-clock"></i> {{ mod.duration }}</div>
+            </div>
+          </div>
+
+          <div>
+            {% if mod.status == 'unlocked' %}
+              <span class="pill pill-emerald" style="font-size: 0.78rem;">Available</span>
+            {% else %}
+              <span class="pill" style="background: var(--border-light); color: var(--text-tertiary); font-size: 0.78rem;">Next Milestone</span>
+            {% endif %}
+          </div>
+        </div>
+      {% endfor %}
+    </div>
+  </div>
+</div>
+{% endblock %}

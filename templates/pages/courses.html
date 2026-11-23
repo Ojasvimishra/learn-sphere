@@ -1,0 +1,76 @@
+{% extends "base.html" %}
+
+{% block title %}Smart Education Tracks & Courses | LearnSphere{% endblock %}
+
+{% block content %}
+<div class="container" style="padding-top: 2.5rem;">
+  <div style="margin-bottom: 2rem;">
+    <span class="pill pill-emerald"><i class="fas fa-graduation-cap"></i> Smart Education Ecosystem</span>
+    <h1 style="font-size: 2.5rem; font-weight: 800; color: var(--text-primary); margin-top: 0.5rem;">
+      Smart Education & Specialized Tracks
+    </h1>
+    <p style="color: var(--text-secondary); font-size: 1.1rem; max-width: 820px; line-height: 1.6;">
+      Enabling learners in the digital age to learn <strong>more effectively, efficiently, flexibly and comfortably</strong> through adaptive curricula, cognitive load optimization, and mastery-driven tracks.
+    </p>
+  </div>
+
+  <!-- Level Filter -->
+  <div class="filter-bar">
+    <div style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
+      <a href="/courses/" class="btn {% if selected_level == 'all' %}btn-primary{% else %}btn-secondary{% endif %} btn-sm">All Levels</a>
+      <a href="/courses/?level=beginner" class="btn {% if selected_level == 'beginner' %}btn-primary{% else %}btn-secondary{% endif %} btn-sm">Beginner</a>
+      <a href="/courses/?level=intermediate" class="btn {% if selected_level == 'intermediate' %}btn-primary{% else %}btn-secondary{% endif %} btn-sm">Intermediate</a>
+      <a href="/courses/?level=advanced" class="btn {% if selected_level == 'advanced' %}btn-primary{% else %}btn-secondary{% endif %} btn-sm">Advanced</a>
+    </div>
+    <div style="color: var(--text-tertiary); font-size: 0.9rem; font-weight: 500;">
+      <i class="fas fa-certificate" style="color: var(--google-green);"></i> All tracks include hands-on labs
+    </div>
+  </div>
+
+  <!-- Courses Grid -->
+  <div class="cards-grid">
+    {% for course in courses %}
+      <div class="card" style="padding: 0; overflow: hidden;">
+        <div style="height: 140px; background: {{ course.thumbnail_gradient }}; padding: 1.5rem; display: flex; flex-direction: column; justify-content: space-between; position: relative;">
+          <div style="display: flex; justify-content: space-between; align-items: center;">
+            <span class="pill" style="background: rgba(0,0,0,0.25); color:#fff; border: 1px solid rgba(255,255,255,0.3);">{{ course.badge }}</span>
+            <span class="pill" style="background: rgba(0,0,0,0.25); color:#fff;"><i class="fas fa-signal"></i> {{ course.level }}</span>
+          </div>
+          <div style="display: flex; align-items: center; gap: 0.5rem; color: #fff; font-size: 0.88rem; font-weight: 500;">
+            <i class="far fa-clock"></i> {{ course.duration_hours }} Hours &bull; {{ course.modules_count }} Modules
+          </div>
+        </div>
+
+        <div style="padding: 1.75rem; flex: 1; display: flex; flex-direction: column; justify-content: space-between;">
+          <div>
+            <h3 class="card-title">
+              <a href="/courses/{{ course.id }}/">{{ course.title }}</a>
+            </h3>
+            <p style="font-size: 0.9rem; color: var(--google-blue); font-weight: 600; margin-bottom: 0.75rem;">
+              {{ course.tagline }}
+            </p>
+            <p class="card-desc" style="font-size: 0.92rem;">
+              {{ course.description|truncatewords:24 }}
+            </p>
+          </div>
+
+          <div style="border-top: 1px solid var(--border-light); padding-top: 1.25rem; margin-top: 1rem; display: flex; align-items: center; justify-content: space-between;">
+            <div>
+              <div style="font-size: 0.8rem; color: var(--text-tertiary);">Instructor</div>
+              <div style="font-size: 0.92rem; font-weight: 600; color: var(--text-primary);">{{ course.instructor_name }}</div>
+            </div>
+
+            {% if course.id in enrolled_ids %}
+              <a href="/courses/{{ course.id }}/" class="btn btn-emerald btn-sm"><i class="fas fa-play"></i> Continue</a>
+            {% else %}
+              <button class="btn btn-primary btn-sm" onclick="enrollCourse('{{ course.id }}', this)">
+                <i class="fas fa-user-plus"></i> Enroll Free
+              </button>
+            {% endif %}
+          </div>
+        </div>
+      </div>
+    {% endfor %}
+  </div>
+</div>
+{% endblock %}

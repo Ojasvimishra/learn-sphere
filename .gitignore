@@ -1,0 +1,19 @@
+# Python / Django
+__pycache__/
+*.py[cod]
+*$py.class
+*.sqlite3
+.venv/
+.uv_python/
+.uv_cache/
+.env
+
+# MongoDB data
+mongodb_data/
+backups/
+
+# Static collection & test artifacts
+staticfiles/
+*.png
+*.log
+.DS_Store

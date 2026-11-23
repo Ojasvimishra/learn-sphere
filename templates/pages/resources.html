@@ -1,0 +1,128 @@
+{% extends "base.html" %}
+
+{% block title %}Digital Books & Smart Education Library | LearnSphere{% endblock %}
+
+{% block content %}
+<div class="container" style="padding-top: 2.5rem;">
+  <div style="margin-bottom: 2rem;">
+    <span class="pill pill-indigo"><i class="fas fa-book-open"></i> Google Books Inspired</span>
+    <h1 style="font-size: 2.5rem; font-weight: 800; color: var(--text-primary); margin-top: 0.5rem;">
+      Digital Books & Smart Study Library
+    </h1>
+    <p style="color: var(--text-secondary); font-size: 1.1rem; max-width: 800px;">
+      Explore curated academic textbooks, cognitive learning research, and computer science foundations designed for digital-age students and educators.
+    </p>
+  </div>
+
+  <!-- Google-Style Search Bar -->
+  <form method="GET" action="/resources/" class="filter-bar">
+    <div style="flex: 1; min-width: 280px; position: relative;">
+      <i class="fas fa-search" style="position: absolute; left: 1.1rem; top: 50%; transform: translateY(-50%); color: var(--text-tertiary);"></i>
+      <input 
+        type="text" 
+        name="q" 
+        value="{{ selected_q }}" 
+        placeholder="Search digital textbooks, AI in education, algorithms, learning psychology..." 
+        class="form-control"
+        style="padding-left: 2.75rem;"
+      >
+    </div>
+
+    <div class="filter-group">
+      <select name="relevance" class="form-control" style="width: auto;">
+        <option value="all" {% if selected_relevance == "all" %}selected{% endif %}>All Relevance</option>
+        <option value="high" {% if selected_relevance == "high" %}selected{% endif %}>High Relevance</option>
+        <option value="medium" {% if selected_relevance == "medium" %}selected{% endif %}>Standard Relevance</option>
+      </select>
+
+      <button type="submit" class="btn btn-primary btn-sm"><i class="fas fa-search"></i> Search Books</button>
+      {% if selected_q or selected_relevance != "all" or selected_tag != "all" %}
+        <a href="/resources/" class="btn btn-secondary btn-sm">Clear</a>
+      {% endif %}
+    </div>
+  </form>
+
+  <!-- Popular Topic Chips -->
+  <div style="display: flex; flex-wrap: wrap; gap: 0.5rem; margin-bottom: 2rem; align-items: center;">
+    <span style="font-size: 0.88rem; color: var(--text-tertiary); margin-right: 0.5rem;"><i class="fas fa-bookmark"></i> Explore Subjects:</span>
+    <a href="/resources/" class="tag-item {% if selected_tag == 'all' %}pill-indigo{% endif %}">All Topics</a>
+    {% for tag in all_tags %}
+      <a href="/resources/?tag={{ tag }}&relevance={{ selected_relevance }}&q={{ selected_q }}" 
+         class="tag-item {% if selected_tag == tag %}pill-indigo{% endif %}">
+        #{{ tag }}
+      </a>
+    {% endfor %}
+  </div>
+
+  <!-- Digital Books Grid -->
+  {% if resources %}
+    <div class="cards-grid">
+      {% for item in resources %}
+        <div class="card">
+          <div>
+            <div class="card-top">
+              <span class="pill pill-emerald">{{ item.category }}</span>
+              <button 
+                class="btn btn-secondary btn-sm {% if item.id in user_bookmarks %}active{% endif %}" 
+                onclick="toggleBookmark('{{ item.id }}', this)" 
+                title="Save to My Bookshelf">
+                <i class="{% if item.id in user_bookmarks %}fas{% else %}far{% endif %} fa-bookmark" style="color:var(--google-blue);"></i>
+              </button>
+            </div>
+
+            <h3 class="card-title">
+              <a href="/resources/{{ item.id }}/">{{ item.title }}</a>
+            </h3>
+
+            <p class="card-desc">{{ item.description }}</p>
+
+            {% if item.highlights %}
+              <div style="background: var(--google-blue-light); border-left: 4px solid var(--google-blue); padding: 0.85rem 1.1rem; border-radius: var(--radius-sm); font-size: 0.88rem; color: #1a237e; margin-bottom: 1.15rem;">
+                <i class="fas fa-lightbulb" style="color:#f59e0b; margin-right: 0.35rem;"></i>
+                <strong>Key Takeaway:</strong> {{ item.highlights }}
+              </div>
+            {% endif %}
+
+            <div class="tags-list">
+              {% for tag in item.tags %}
+                <span class="tag-item">#{{ tag }}</span>
+              {% endfor %}
+            </div>
+          </div>
+
+          <div class="card-footer">
+            <span style="color: var(--text-secondary); display: flex; align-items: center; gap: 0.4rem; font-weight: 500;">
+              <i class="fas fa-book-reader" style="color:var(--google-blue);"></i> {{ item.source }}
+            </span>
+            <a href="/resources/{{ item.id }}/" class="btn btn-secondary btn-sm" style="padding: 0.35rem 0.85rem; font-size: 0.8rem;">
+              Read Preview <i class="fas fa-arrow-right" style="margin-left: 0.25rem;"></i>
+            </a>
+          </div>
+        </div>
+      {% endfor %}
+    </div>
+
+    <!-- Pagination -->
+    {% if pagination.total_pages > 1 %}
+      <div style="display: flex; justify-content: center; gap: 0.5rem; margin: 3rem 0;">
+        {% if pagination.has_prev %}
+          <a href="?page={{ pagination.page|add:'-1' }}&q={{ selected_q }}&tag={{ selected_tag }}&relevance={{ selected_relevance }}" class="btn btn-secondary btn-sm">Previous</a>
+        {% endif %}
+        <span class="btn btn-secondary btn-sm" style="cursor: default; pointer-events: none; background: #fff;">
+          Page {{ pagination.page }} of {{ pagination.total_pages }} ({{ pagination.total }} total)
+        </span>
+        {% if pagination.has_next %}
+          <a href="?page={{ pagination.page|add:'1' }}&q={{ selected_q }}&tag={{ selected_tag }}&relevance={{ selected_relevance }}" class="btn btn-secondary btn-sm">Next</a>
+        {% endif %}
+      </div>
+    {% endif %}
+  {% else %}
+    <div class="glass-panel" style="padding: 3.5rem; text-align: center; margin: 3rem 0;">
+      <i class="fas fa-search" style="font-size: 3rem; color: var(--text-tertiary); margin-bottom: 1rem;"></i>
+      <h3 style="font-size: 1.35rem; color: var(--text-primary);">No books or study guides found.</h3>
+      <p style="color: var(--text-secondary); margin-top: 0.5rem;">Try searching for "smart education", "algorithms", or "pedagogy".</p>
+      <a href="/resources/" class="btn btn-primary btn-sm" style="margin-top: 1.25rem;">Reset Search</a>
+    </div>
+  {% endif %}
+</div>
+{% endblock %}

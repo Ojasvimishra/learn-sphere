@@ -1,0 +1,132 @@
+{% extends "base.html" %}
+
+{% block title %}{{ project.title }} | Student Innovation Hub{% endblock %}
+
+{% block content %}
+<div class="container" style="padding-top: 3rem; max-width: 900px;">
+  <div style="margin-bottom: 1.5rem;">
+    <a href="/innovation/" style="color: var(--text-secondary); text-decoration: none; font-size: 0.9rem; display: flex; align-items: center; gap: 0.4rem; font-weight: 500;">
+      <i class="fas fa-arrow-left"></i> Back to Innovation Showcase
+    </a>
+  </div>
+
+  <div class="glass-panel" style="padding: 2.75rem; margin-bottom: 2.5rem;">
+    <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 1rem; margin-bottom: 1.25rem;">
+      <span class="pill pill-cyan">{{ project.category }}</span>
+      <button 
+        class="btn {% if has_upvoted %}btn-primary{% else %}btn-secondary{% endif %} btn-sm" 
+        onclick="toggleUpvote('{{ project.id }}', this)">
+        <i class="fas fa-arrow-up"></i> <span class="upvote-count">{{ project.upvotes }}</span> Upvotes
+      </button>
+    </div>
+
+    <h1 style="font-size: 2.35rem; font-weight: 800; color: var(--text-primary); line-height: 1.25; margin-bottom: 1.25rem;">
+      {{ project.title }}
+    </h1>
+
+    <div style="display: flex; align-items: center; gap: 1.5rem; color: var(--text-tertiary); font-size: 0.9rem; margin-bottom: 2rem; border-bottom: 1px solid var(--border-light); padding-bottom: 1rem;">
+      <span><i class="fas fa-user-graduate" style="color:var(--google-blue);"></i> Author: <strong>{{ project.author_name }}</strong></span>
+      <span><i class="far fa-calendar-alt"></i> {{ project.created_at|date:"M d, Y" }}</span>
+      <span><i class="fas fa-check-circle" style="color: var(--google-green);"></i> Status: {{ project.status|capfirst }}</span>
+    </div>
+
+    <h3 style="font-size: 1.2rem; font-weight: 700; color: var(--text-primary); margin-bottom: 0.75rem;">Abstract & Architecture</h3>
+    <div style="font-size: 1.1rem; color: var(--text-secondary); line-height: 1.8; margin-bottom: 2rem;">
+      {{ project.abstract }}
+    </div>
+
+    <div style="margin-bottom: 2rem;">
+      <h4 style="font-size: 0.95rem; font-weight: 600; color: var(--text-tertiary); margin-bottom: 0.6rem;">Technology Stack</h4>
+      <div class="tags-list">
+        {% for tech in project.tech_stack %}
+          <span class="tag-item" style="font-size: 0.85rem; padding: 0.35rem 0.8rem;">{{ tech }}</span>
+        {% endfor %}
+      </div>
+    </div>
+
+    <div style="display: flex; gap: 1rem; flex-wrap: wrap;">
+      {% if project.demo_url %}
+        <a href="{{ project.demo_url }}" target="_blank" rel="noopener noreferrer" class="btn btn-primary">
+          <i class="fas fa-play"></i> Launch Interactive Demo
+        </a>
+      {% endif %}
+      {% if project.repo_url %}
+        <a href="{{ project.repo_url }}" target="_blank" rel="noopener noreferrer" class="btn btn-secondary">
+          <i class="fab fa-github"></i> View Source Code
+        </a>
+      {% endif %}
+    </div>
+  </div>
+
+  <!-- Peer Comments & Discussion -->
+  <div class="glass-panel" style="padding: 2.75rem;">
+    <h3 style="font-size: 1.4rem; font-weight: 700; color: var(--text-primary); margin-bottom: 1.5rem; display: flex; align-items: center; gap: 0.6rem;">
+      <i class="far fa-comments" style="color: var(--google-blue);"></i> Peer Review & Discussion ({{ project.comments|length }})
+    </h3>
+
+    {% if request.mongo_user %}
+      <form id="comment-form" onsubmit="postComment(event, '{{ project.id }}')" style="margin-bottom: 2.5rem;">
+        <div class="form-group">
+          <textarea id="comment-text" rows="3" required placeholder="Leave feedback, technical suggestions, or questions for {{ project.author_name }}..." class="form-control"></textarea>
+        </div>
+        <button type="submit" class="btn btn-primary btn-sm"><i class="fas fa-paper-plane"></i> Post Comment</button>
+      </form>
+    {% else %}
+      <div style="background: var(--bg-surface); border: 1px solid var(--border-light); padding: 1.5rem; border-radius: var(--radius-md); text-align: center; margin-bottom: 2rem;">
+        <p style="color: var(--text-secondary); margin-bottom: 0.75rem;">Sign in to join the peer review discussion.</p>
+        <a href="/auth/login/?next={{ request.path }}" class="btn btn-secondary btn-sm">Sign In</a>
+      </div>
+    {% endif %}
+
+    <div id="comments-list" style="display: flex; flex-direction: column; gap: 1.25rem;">
+      {% for comment in project.comments %}
+        <div style="background: var(--bg-surface); border: 1px solid var(--border-light); border-radius: var(--radius-md); padding: 1.25rem;">
+          <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 0.6rem;">
+            <div style="display: flex; align-items: center; gap: 0.6rem;">
+              <div style="width:28px; height:28px; border-radius:50%; background:var(--google-blue); display:flex; align-items:center; justify-content:center; font-size:0.8rem; color:#fff; font-weight:700;">
+                {{ comment.user_name|slice:":1"|upper }}
+              </div>
+              <strong style="color: var(--text-primary); font-size: 0.95rem;">{{ comment.user_name }}</strong>
+            </div>
+            <span style="font-size: 0.8rem; color: var(--text-tertiary);">{{ comment.created_at|slice:":10" }}</span>
+          </div>
+          <p style="color: var(--text-secondary); font-size: 0.95rem; margin: 0; line-height: 1.6;">{{ comment.text }}</p>
+        </div>
+      {% empty %}
+        <p style="color: var(--text-tertiary); text-align: center; padding: 1.5rem 0;">No comments yet. Start the conversation!</p>
+      {% endfor %}
+    </div>
+  </div>
+</div>
+
+<script>
+async function postComment(e, projectId) {
+  e.preventDefault();
+  const textarea = document.getElementById("comment-text");
+  const text = textarea.value.trim();
+  if (!text) return;
+
+  try {
+    const csrfToken = getCookie("csrftoken");
+    const res = await fetch(`/innovation/api/${projectId}/comment/`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "X-CSRFToken": csrfToken,
+        "X-Requested-With": "XMLHttpRequest"
+      },
+      body: JSON.stringify({ text: text })
+    });
+    const data = await res.json();
+    if (data.status === "success") {
+      showToast("Comment posted!", "success");
+      setTimeout(() => window.location.reload(), 600);
+    } else {
+      showToast(data.message || "Failed to post comment", "error");
+    }
+  } catch (err) {
+    showToast("Error posting comment", "error");
+  }
+}
+</script>
+{% endblock %}

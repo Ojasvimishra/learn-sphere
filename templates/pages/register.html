@@ -1,0 +1,95 @@
+{% extends "base.html" %}
+
+{% block title %}Create Account | LearnSphere EdTech{% endblock %}
+
+{% block content %}
+<div class="container" style="padding-top: 3.5rem; max-width: 500px;">
+  <div class="glass-panel" style="padding: 2.75rem; border-radius: var(--radius-xl); box-shadow: var(--shadow-card);">
+    <div style="text-align: center; margin-bottom: 2rem;">
+      <div class="logo-icon" style="margin: 0 auto 1rem; width: 3.25rem; height: 3.25rem;">
+        <div class="logo-dots" style="width: 18px; height: 18px; gap: 3.5px;">
+          <div class="dot-blue"></div>
+          <div class="dot-red"></div>
+          <div class="dot-yellow"></div>
+          <div class="dot-green"></div>
+        </div>
+      </div>
+      <h2 style="font-size: 1.85rem; font-weight: 800; color: var(--text-primary);">Join LearnSphere</h2>
+      <p style="color: var(--text-secondary); font-size: 0.95rem; margin-top: 0.25rem;">
+        Unlock Smart Education & Student Innovation
+      </p>
+    </div>
+
+    {% if error_msg %}
+      <div style="background: var(--google-red-light); border: 1px solid #f5c6cb; border-radius: var(--radius-sm); padding: 0.85rem 1rem; color: var(--google-red); font-size: 0.9rem; margin-bottom: 1.5rem; display: flex; align-items: center; gap: 0.5rem; font-weight: 500;">
+        <i class="fas fa-exclamation-circle"></i>
+        <span>{{ error_msg }}</span>
+      </div>
+    {% endif %}
+
+    <form method="POST" action="/auth/register/">
+      {% csrf_token %}
+
+      <div class="form-group">
+        <label class="form-label">Full Name</label>
+        <input 
+          type="text" 
+          name="full_name" 
+          placeholder="Alex Mercer" 
+          class="form-control"
+          autofocus
+        >
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Username</label>
+        <input 
+          type="text" 
+          name="username" 
+          required 
+          placeholder="alex_mercer" 
+          class="form-control"
+        >
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Email Address</label>
+        <input 
+          type="email" 
+          name="email" 
+          required 
+          placeholder="alex@university.edu" 
+          class="form-control"
+        >
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Account Role (Authorization)</label>
+        <select name="role" class="form-control">
+          <option value="student">Student / Researcher</option>
+          <option value="educator">Educator / Academic Mentor</option>
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Password</label>
+        <input 
+          type="password" 
+          name="password" 
+          required 
+          placeholder="At least 6 characters" 
+          class="form-control"
+        >
+      </div>
+
+      <button type="submit" class="btn btn-primary" style="width: 100%; padding: 0.75rem; margin-top: 0.5rem;">
+        <i class="fas fa-check"></i> Create Account
+      </button>
+    </form>
+
+    <div style="margin-top: 1.75rem; padding-top: 1.5rem; border-top: 1px solid var(--border-light); text-align: center; font-size: 0.9rem; color: var(--text-secondary);">
+      Already have an account? <a href="/auth/login/" style="color: var(--google-blue); font-weight: 600; text-decoration: none;">Sign In</a>
+    </div>
+  </div>
+</div>
+{% endblock %}

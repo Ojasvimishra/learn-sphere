@@ -1,0 +1,70 @@
+{% extends "base.html" %}
+
+{% block title %}{{ resource.title }} | LearnSphere Digital Library{% endblock %}
+
+{% block content %}
+<div class="container" style="padding-top: 3rem; max-width: 900px;">
+  <div style="margin-bottom: 1.5rem;">
+    <a href="/resources/" style="color: var(--text-secondary); text-decoration: none; font-size: 0.9rem; display: flex; align-items: center; gap: 0.4rem; font-weight: 500;">
+      <i class="fas fa-arrow-left"></i> Back to Digital Bookshelf
+    </a>
+  </div>
+
+  <div class="glass-panel" style="padding: 2.75rem;">
+    <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 1rem; margin-bottom: 1.25rem;">
+      <div style="display: flex; gap: 0.5rem;">
+        <span class="pill pill-emerald">{{ resource.category }}</span>
+        <span class="pill pill-indigo">{{ resource.relevance|upper }} RELEVANCE</span>
+      </div>
+      <button class="btn btn-secondary btn-sm {% if is_bookmarked %}active{% endif %}" onclick="toggleBookmark('{{ resource.id }}', this)">
+        <i class="{% if is_bookmarked %}fas{% else %}far{% endif %} fa-bookmark" style="color:var(--google-blue);"></i>
+        <span>{% if is_bookmarked %}Saved on Bookshelf{% else %}Save to Bookshelf{% endif %}</span>
+      </button>
+    </div>
+
+    <h1 style="font-size: 2.35rem; font-weight: 800; color: var(--text-primary); line-height: 1.25; margin-bottom: 1.25rem;">
+      {{ resource.title }}
+    </h1>
+
+    <div style="display: flex; align-items: center; gap: 1.5rem; color: var(--text-tertiary); font-size: 0.9rem; margin-bottom: 2rem; border-bottom: 1px solid var(--border-light); padding-bottom: 1rem;">
+      <span><i class="fas fa-book" style="color:var(--google-blue);"></i> Publisher: <strong>{{ resource.source }}</strong></span>
+      <span><i class="fas fa-eye" style="color:var(--google-green);"></i> {{ resource.views }} Student Reads</span>
+      <span><i class="far fa-clock"></i> Curated Study Edition</span>
+    </div>
+
+    <div style="font-size: 1.15rem; color: var(--text-secondary); line-height: 1.8; margin-bottom: 2rem;">
+      {{ resource.description }}
+    </div>
+
+    {% if resource.highlights %}
+      <div style="background: var(--google-blue-light); border-left: 4px solid var(--google-blue); padding: 1.25rem; border-radius: var(--radius-sm); margin-bottom: 2rem;">
+        <h4 style="color: #1a237e; font-size: 1.05rem; margin-bottom: 0.4rem; display: flex; align-items: center; gap: 0.5rem;">
+          <i class="fas fa-lightbulb" style="color: #f59e0b;"></i> Key Pedagogical Insights & Summary
+        </h4>
+        <p style="color: #283593; font-size: 0.95rem; margin: 0; line-height: 1.6;">{{ resource.highlights }}</p>
+      </div>
+    {% endif %}
+
+    {% if resource.markdown %}
+      <h3 style="font-size: 1.2rem; font-weight: 700; color: var(--text-primary); margin-bottom: 0.75rem;">
+        Book Excerpt & Study Outline:
+      </h3>
+      <div style="background: var(--bg-surface); border: 1px solid var(--border-light); border-radius: var(--radius-md); padding: 1.5rem; font-size: 0.95rem; color: var(--text-secondary); line-height: 1.7; margin-bottom: 2rem;">
+        <pre style="white-space: pre-wrap; font-family: inherit; margin: 0;">{{ resource.markdown }}</pre>
+      </div>
+    {% endif %}
+
+    <div style="margin-top: 2rem; padding-top: 1.5rem; border-top: 1px solid var(--border-light); display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 1rem;">
+      <div class="tags-list" style="margin: 0;">
+        {% for tag in resource.tags %}
+          <a href="/resources/?tag={{ tag }}" class="tag-item">#{{ tag }}</a>
+        {% endfor %}
+      </div>
+
+      <a href="{{ resource.url }}" target="_blank" rel="noopener noreferrer" class="btn btn-primary btn-sm">
+        View on Google Books <i class="fas fa-external-link-alt" style="margin-left: 0.3rem;"></i>
+      </a>
+    </div>
+  </div>
+</div>
+{% endblock %}
