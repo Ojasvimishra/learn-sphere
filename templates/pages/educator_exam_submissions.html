@@ -1,0 +1,109 @@
+{% extends "base.html" %}
+
+{% block title %}Proctor Submissions Audit: {{ exam.title }} | LearnSphere{% endblock %}
+
+{% block content %}
+<div class="container" style="padding-top: 2.5rem; max-width: 1200px;">
+  <div style="margin-bottom: 1.5rem;">
+    <a href="/exams/" style="color: var(--text-secondary); text-decoration: none; font-size: 0.9rem; display: flex; align-items: center; gap: 0.4rem; font-weight: 500;">
+      <i class="fas fa-arrow-left"></i> Back to Assessments
+    </a>
+  </div>
+
+  <div style="display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 2rem; flex-wrap: wrap; gap: 1rem;">
+    <div>
+      <span class="pill pill-indigo"><i class="fas fa-user-shield"></i> Faculty Proctor Audit</span>
+      <h1 style="font-size: 2.2rem; font-weight: 800; color: var(--text-primary); margin-top: 0.5rem;">
+        {{ exam.title }} &mdash; Student Submissions
+      </h1>
+      <p style="color: var(--text-secondary); font-size: 0.95rem;">
+        Inspect student completion rates, review anti-cheat anomaly flags, and perform auditable grade overrides.
+      </p>
+    </div>
+  </div>
+
+  <div class="glass-panel" style="padding: 0; overflow: hidden; border-radius: 24px;">
+    <table style="width: 100%; border-collapse: collapse; text-align: left; font-size: 0.92rem;">
+      <thead style="background: rgba(0,0,0,0.02); border-bottom: 1px solid var(--border-light); color: var(--text-tertiary);">
+        <tr>
+          <th style="padding: 1.15rem 1.5rem;">Student Name</th>
+          <th style="padding: 1.15rem 1.5rem;">Score</th>
+          <th style="padding: 1.15rem 1.5rem;">Proctor Anomaly</th>
+          <th style="padding: 1.15rem 1.5rem;">Status</th>
+          <th style="padding: 1.15rem 1.5rem;">Submitted</th>
+          <th style="padding: 1.15rem 1.5rem;">Action</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for s in submissions %}
+          <tr style="border-bottom: 1px solid var(--border-light);">
+            <td style="padding: 1rem 1.5rem;">
+              <strong style="color: var(--text-primary);">{{ s.student_name }}</strong>
+              <div style="font-size: 0.78rem; color: var(--text-tertiary);">{{ s.student_email }}</div>
+            </td>
+            <td style="padding: 1rem 1.5rem; font-weight: 700;">
+              {{ s.score }} / {{ s.total_marks }} ({{ s.percentage }}%)
+            </td>
+            <td style="padding: 1rem 1.5rem;">
+              {% if s.is_flagged %}
+                <span class="pill" style="background: #fde8e8; color: #c81e1e;">
+                  <i class="fas fa-exclamation-triangle"></i> {{ s.tab_switches_count }} Tab Switches
+                </span>
+              {% else %}
+                <span class="pill pill-emerald"><i class="fas fa-check"></i> Clean Session</span>
+              {% endif %}
+            </td>
+            <td style="padding: 1rem 1.5rem;">
+              {% if s.passed %}
+                <span class="pill pill-emerald">Passed</span>
+              {% else %}
+                <span class="pill" style="background: #fde8e8; color: #c81e1e;">Failed</span>
+              {% endif %}
+            </td>
+            <td style="padding: 1rem 1.5rem; color: var(--text-tertiary);">{{ s.submitted_at|date:"M d, H:i" }}</td>
+            <td style="padding: 1rem 1.5rem;">
+              <button class="btn btn-secondary btn-sm" onclick="promptGradeOverride('{{ s.id }}', '{{ s.score }}')">
+                <i class="fas fa-edit"></i> Override Grade
+              </button>
+            </td>
+          </tr>
+        {% empty %}
+          <tr>
+            <td colspan="6" style="padding: 3rem; text-align: center; color: var(--text-tertiary);">
+              No student submissions recorded for this exam yet.
+            </td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<script>
+function promptGradeOverride(attemptId, currentScore) {
+  const newScore = prompt(`Enter new score for attempt (Current: ${currentScore}):`, currentScore);
+  if (newScore === null) return;
+
+  const reason = prompt("Enter mandatory justification reason for grade override (Logged to audit trail):");
+  if (!reason || !reason.trim()) {
+    alert("Grade override aborted: Justification reason is required.");
+    return;
+  }
+
+  fetch(`/exams/api/attempt/${attemptId}/override-grade/`, {
+    method: "POST",
+    headers: {"Content-Type": "application/json"},
+    body: JSON.stringify({new_score: parseInt(newScore), reason: reason.trim()})
+  })
+  .then(res => res.json())
+  .then(data => {
+    if (data.status === 200 || data.data) {
+      alert("Grade override recorded successfully.");
+      window.location.reload();
+    } else {
+      alert(data.message || "Failed to override grade.");
+    }
+  });
+}
+</script>
+{% endblock %}

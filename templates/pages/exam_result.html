@@ -1,0 +1,60 @@
+{% extends "base.html" %}
+
+{% block title %}Exam Result: {{ attempt.exam_title }} | LearnSphere{% endblock %}
+
+{% block content %}
+<div class="container" style="padding-top: 2.5rem; max-width: 900px;">
+  <!-- Results Banner -->
+  <div class="glass-panel" style="padding: 3rem; text-align: center; border-radius: 28px; margin-bottom: 2.5rem;">
+    <div style="width: 80px; height: 80px; border-radius: 50%; background: {% if attempt.passed %}#e6f4ea{% else %}#fde8e8{% endif %}; color: {% if attempt.passed %}var(--google-green){% else %}#ea4335{% endif %}; display: flex; align-items: center; justify-content: center; font-size: 2.5rem; margin: 0 auto 1.25rem;">
+      <i class="fas {% if attempt.passed %}fa-check-circle{% else %}fa-times-circle{% endif %}"></i>
+    </div>
+
+    <span class="pill {% if attempt.passed %}pill-emerald{% else %}pill-rose{% endif %}" style="font-size: 0.88rem; margin-bottom: 0.75rem;">
+      {% if attempt.passed %}ASSESSMENT PASSED{% else %}NEEDS REVIEW{% endif %}
+    </span>
+
+    <h1 style="font-size: 2.25rem; font-weight: 800; color: var(--text-primary); margin-bottom: 0.5rem;">
+      {{ attempt.exam_title }}
+    </h1>
+    <p style="color: var(--text-secondary); font-size: 1rem; max-width: 540px; margin: 0 auto 2rem;">
+      Evaluated server-side using cryptographic answer verification.
+    </p>
+
+    <!-- Score Badges Grid -->
+    <div style="display: flex; justify-content: center; gap: 2.5rem; border-top: 1px solid var(--border-light); border-bottom: 1px solid var(--border-light); padding: 1.5rem 0; max-width: 600px; margin: 0 auto 2rem; flex-wrap: wrap;">
+      <div>
+        <div style="font-size: 0.8rem; color: var(--text-tertiary);">Final Score</div>
+        <div style="font-size: 2rem; font-weight: 800; color: var(--text-primary);">{{ attempt.score }} / {{ attempt.total_marks }}</div>
+      </div>
+      <div>
+        <div style="font-size: 0.8rem; color: var(--text-tertiary);">Percentage</div>
+        <div style="font-size: 2rem; font-weight: 800; color: var(--google-blue);">{{ attempt.percentage }}%</div>
+      </div>
+      <div>
+        <div style="font-size: 0.8rem; color: var(--text-tertiary);">Proctor Flags</div>
+        <div style="font-size: 2rem; font-weight: 800; color: {% if attempt.is_flagged %}#ea4335{% else %}var(--google-green){% endif %};">
+          {{ attempt.tab_switches_count }}
+        </div>
+      </div>
+    </div>
+
+    {% if attempt.is_flagged %}
+      <div style="background: #fde8e8; border: 1px solid #f8b4b4; padding: 1rem 1.5rem; border-radius: 12px; color: #c81e1e; font-size: 0.92rem; max-width: 600px; margin: 0 auto 2rem; text-align: left;">
+        <i class="fas fa-exclamation-triangle"></i> <strong>Proctor Notice:</strong> This attempt had elevated tab switch activity and has been queued for faculty review.
+      </div>
+    {% endif %}
+
+    {% if attempt.grade_overridden %}
+      <div style="background: #e8f0fe; border: 1px solid #c2e7ff; padding: 1rem 1.5rem; border-radius: 12px; color: #1a73e8; font-size: 0.92rem; max-width: 600px; margin: 0 auto 2rem; text-align: left;">
+        <i class="fas fa-info-circle"></i> <strong>Grade Adjusted by Faculty:</strong> {{ attempt.override_reason }} (Reviewed by {{ attempt.overridden_by }})
+      </div>
+    {% endif %}
+
+    <div style="display: flex; justify-content: center; gap: 1rem;">
+      <a href="/exams/" class="btn btn-secondary">All Assessments</a>
+      <a href="/courses/" class="btn btn-primary">Continue Course Track</a>
+    </div>
+  </div>
+</div>
+{% endblock %}

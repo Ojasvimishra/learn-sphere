@@ -1,0 +1,152 @@
+{% extends "base.html" %}
+
+{% block title %}Proctored Exam: {{ exam.title }} | LearnSphere{% endblock %}
+
+{% block content %}
+<div class="container" style="padding-top: 1.5rem; max-width: 960px;">
+  <!-- Anti-Cheat Status & Countdown Header -->
+  <div class="glass-panel" style="padding: 1.25rem 1.75rem; border-radius: 20px; margin-bottom: 1.5rem; display: flex; justify-content: space-between; align-items: center; background: #fff; box-shadow: 0 4px 20px rgba(0,0,0,0.06); position: sticky; top: 80px; z-index: 100;">
+    <div>
+      <div style="font-size: 0.8rem; font-weight: 700; color: var(--google-blue); text-transform: uppercase;">
+        {{ exam.course_title }} &bull; Proctored Mode
+      </div>
+      <h2 style="font-size: 1.35rem; font-weight: 800; color: var(--text-primary); margin: 0;">{{ exam.title }}</h2>
+    </div>
+
+    <div style="display: flex; align-items: center; gap: 1.5rem;">
+      <div style="text-align: right;">
+        <div style="font-size: 0.75rem; color: var(--text-tertiary);">Time Remaining</div>
+        <div id="countdown-timer" style="font-size: 1.4rem; font-weight: 800; font-family: monospace; color: #ea4335;">--:--</div>
+      </div>
+
+      <div style="display: flex; align-items: center; gap: 0.5rem; background: #fef7e0; border: 1px solid #fef08a; padding: 0.4rem 0.85rem; border-radius: 999px; font-size: 0.82rem; color: #b06000;">
+        <i class="fas fa-shield-alt"></i> Tab Switches: <strong id="tab-switch-count">0</strong> / {{ exam.tab_switch_limit }}
+      </div>
+    </div>
+  </div>
+
+  <!-- Warning Banner -->
+  <div style="background: #e8f0fe; border-left: 4px solid var(--google-blue); padding: 1rem 1.5rem; border-radius: 0 12px 12px 0; margin-bottom: 2rem; color: #1a73e8; font-size: 0.92rem;">
+    <strong><i class="fas fa-lock"></i> Proctored Integrity Active:</strong> All tab switches, window blurs, and screen exits are timestamped and recorded in the immutable platform security audit log. Exceeding {{ exam.tab_switch_limit }} tab switches will automatically flag this attempt for faculty audit.
+  </div>
+
+  <!-- Exam Questions Container -->
+  <form id="exam-form" onsubmit="event.preventDefault(); submitExam();">
+    <div style="display: flex; flex-direction: column; gap: 1.75rem;">
+      {% for q in exam.questions %}
+        <div class="glass-panel" style="padding: 2rem; border-radius: 20px; background: #fff;">
+          <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 1rem;">
+            <span class="pill pill-indigo" style="font-size: 0.8rem;">Question {{ forloop.counter }}</span>
+            <span style="font-size: 0.85rem; font-weight: 600; color: var(--text-tertiary);">{{ q.marks }} Marks</span>
+          </div>
+
+          <h3 style="font-size: 1.15rem; font-weight: 700; color: var(--text-primary); line-height: 1.6; margin-bottom: 1.25rem;">
+            {{ q.text }}
+          </h3>
+
+          <div style="display: flex; flex-direction: column; gap: 0.65rem;">
+            {% for opt in q.options %}
+              <label style="display: flex; align-items: center; gap: 0.85rem; padding: 0.85rem 1.25rem; border-radius: 12px; border: 1px solid var(--border-light); background: var(--bg-surface); cursor: pointer; transition: all 0.2s ease;">
+                <input type="radio" name="question_{{ q.id }}" value="{{ forloop.counter0 }}" style="width: 18px; height: 18px; cursor: pointer;">
+                <span style="font-size: 0.95rem; color: var(--text-primary);">{{ opt }}</span>
+              </label>
+            {% endfor %}
+          </div>
+        </div>
+      {% endfor %}
+    </div>
+
+    <!-- Final Submission Footer -->
+    <div style="margin-top: 2.5rem; margin-bottom: 4rem; display: flex; justify-content: space-between; align-items: center; background: var(--bg-surface); border: 1px solid var(--border-light); border-radius: 20px; padding: 1.5rem 2rem;">
+      <div style="color: var(--text-secondary); font-size: 0.92rem;">
+        Verify all questions are answered before submitting.
+      </div>
+      <button type="submit" id="btn-submit-exam" class="btn btn-primary" style="padding: 0.85rem 2.5rem; font-size: 1.05rem;">
+        <i class="fas fa-check-circle"></i> Submit Examination
+      </button>
+    </div>
+  </form>
+</div>
+
+<script>
+const attemptId = "{{ exam.attempt_id }}";
+let durationMinutes = {{ exam.duration_minutes }};
+let totalSeconds = durationMinutes * 60;
+let tabSwitches = 0;
+
+// Countdown timer
+const timerEl = document.getElementById("countdown-timer");
+const timerInterval = setInterval(() => {
+  if (totalSeconds <= 0) {
+    clearInterval(timerInterval);
+    alert("Time is up! Submitting exam automatically...");
+    submitExam();
+    return;
+  }
+  totalSeconds--;
+  const mins = Math.floor(totalSeconds / 60);
+  const secs = totalSeconds % 60;
+  timerEl.textContent = `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+}, 1000);
+
+// Anti-Cheat: Visibility change / tab switch tracking
+document.addEventListener("visibilitychange", () => {
+  if (document.hidden) {
+    tabSwitches++;
+    document.getElementById("tab-switch-count").textContent = tabSwitches;
+    logProctorEvent("tab_hidden", { count: tabSwitches, timestamp: new Date().toISOString() });
+  }
+});
+
+window.addEventListener("blur", () => {
+  logProctorEvent("window_blur", { timestamp: new Date().toISOString() });
+});
+
+function logProctorEvent(eventType, details) {
+  fetch(`/exams/api/attempt/${attemptId}/proctor-event/`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ event: eventType, details: details })
+  }).catch(e => console.error(e));
+}
+
+function submitExam() {
+  const btn = document.getElementById("btn-submit-exam");
+  btn.disabled = true;
+  btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Evaluating...';
+
+  // Harvest answers
+  const form = document.getElementById("exam-form");
+  const formData = new FormData(form);
+  const answers = {};
+
+  for (let [key, val] of formData.entries()) {
+    if (key.startsWith("question_")) {
+      const qId = key.replace("question_", "");
+      answers[qId] = parseInt(val);
+    }
+  }
+
+  fetch(`/exams/api/attempt/${attemptId}/submit/`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ answers: answers })
+  })
+  .then(res => res.json())
+  .then(data => {
+    if (data.status === 200 || data.data) {
+      window.location.href = `/exams/attempt/${attemptId}/result/`;
+    } else {
+      btn.disabled = false;
+      btn.innerHTML = '<i class="fas fa-check-circle"></i> Submit Examination';
+      alert(data.message || "Failed to submit exam.");
+    }
+  })
+  .catch(err => {
+    btn.disabled = false;
+    btn.innerHTML = '<i class="fas fa-check-circle"></i> Submit Examination';
+    console.error(err);
+  });
+}
+</script>
+{% endblock %}

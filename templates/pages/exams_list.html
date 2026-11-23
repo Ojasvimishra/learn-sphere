@@ -1,0 +1,115 @@
+{% extends "base.html" %}
+
+{% block title %}Examinations & Quizzes | LearnSphere{% endblock %}
+
+{% block content %}
+<div class="container" style="padding-top: 2.5rem; max-width: 1200px;">
+  <!-- Header -->
+  <div style="display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 2rem; flex-wrap: wrap; gap: 1rem;">
+    <div>
+      <span class="pill pill-indigo"><i class="fas fa-file-signature"></i> Academic Assessment</span>
+      <h1 style="font-size: 2.35rem; font-weight: 800; color: var(--text-primary); margin-top: 0.5rem;">
+        Examinations & Proctored Quizzes
+      </h1>
+      <p style="color: var(--text-secondary); font-size: 1.05rem; max-width: 780px;">
+        Validate your mastery through standardized, anti-cheat proctored exams with instant server-side evaluation.
+      </p>
+    </div>
+
+    {% if user and user.role in "educator,super_admin,dept_admin" %}
+      <a href="/exams/educator/create/" class="btn btn-primary" style="padding: 0.75rem 1.75rem;">
+        <i class="fas fa-plus"></i> Author New Exam
+      </a>
+    {% endif %}
+  </div>
+
+  <!-- Available Exams Cards -->
+  <h3 style="font-size: 1.35rem; font-weight: 700; color: var(--text-primary); margin-bottom: 1.25rem;">
+    Available Course Certifications & Tests
+  </h3>
+
+  <div class="cards-grid" style="grid-template-columns: repeat(auto-fill, minmax(360px, 1fr)); margin-bottom: 4rem;">
+    {% for exam in exams %}
+      <div class="card" style="padding: 1.75rem; border-radius: 20px; display: flex; flex-direction: column; justify-content: space-between;">
+        <div>
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.75rem;">
+            <span class="pill pill-indigo"><i class="fas fa-shield-alt"></i> Proctored</span>
+            <span style="font-size: 0.85rem; color: var(--text-tertiary);"><i class="far fa-clock"></i> {{ exam.duration_minutes }}m</span>
+          </div>
+
+          <h3 style="font-size: 1.25rem; font-weight: 800; color: var(--text-primary); margin-bottom: 0.4rem;">
+            {{ exam.title }}
+          </h3>
+          <p style="font-size: 0.88rem; color: var(--google-blue); font-weight: 600; margin-bottom: 0.75rem;">
+            {{ exam.course_title }}
+          </p>
+          <p style="font-size: 0.9rem; color: var(--text-secondary); line-height: 1.5; margin-bottom: 1.25rem;">
+            {{ exam.description|default:"Comprehensive evaluation of modular principles, algorithmic analysis, and problem-solving techniques." }}
+          </p>
+        </div>
+
+        <div>
+          <div style="border-top: 1px solid var(--border-light); padding-top: 1rem; margin-bottom: 1.25rem; font-size: 0.85rem; color: var(--text-tertiary); display: flex; justify-content: space-between;">
+            <span>Questions: <strong>{{ exam.questions_count }}</strong></span>
+            <span>Total Marks: <strong>{{ exam.total_marks }}</strong></span>
+            <span>Passing: <strong>{{ exam.passing_marks }}</strong></span>
+          </div>
+
+          <a href="/exams/{{ exam.id }}/take/" class="btn btn-primary" style="width: 100%; text-align: center;">
+            <i class="fas fa-play"></i> Start Proctored Exam
+          </a>
+        </div>
+      </div>
+    {% empty %}
+      <div class="glass-panel" style="grid-column: 1 / -1; padding: 3rem; text-align: center;">
+        <i class="fas fa-clipboard-check" style="font-size: 2.5rem; color: var(--google-blue); margin-bottom: 1rem;"></i>
+        <h3 style="font-size: 1.3rem; font-weight: 700;">No Exams Scheduled</h3>
+        <p style="color: var(--text-secondary);">Check your course tracks for upcoming evaluations.</p>
+      </div>
+    {% endfor %}
+  </div>
+
+  <!-- Past Attempts Table -->
+  {% if attempts %}
+    <h3 style="font-size: 1.35rem; font-weight: 700; color: var(--text-primary); margin-bottom: 1.25rem;">
+      Your Completed Assessments
+    </h3>
+    <div class="glass-panel" style="padding: 0; overflow: hidden; border-radius: 20px;">
+      <table style="width: 100%; border-collapse: collapse; text-align: left; font-size: 0.92rem;">
+        <thead style="background: rgba(0,0,0,0.02); border-bottom: 1px solid var(--border-light); color: var(--text-tertiary);">
+          <tr>
+            <th style="padding: 1rem 1.5rem;">Exam Title</th>
+            <th style="padding: 1rem 1.5rem;">Score</th>
+            <th style="padding: 1rem 1.5rem;">Status</th>
+            <th style="padding: 1rem 1.5rem;">Submitted</th>
+            <th style="padding: 1rem 1.5rem;">Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for att in attempts %}
+            <tr style="border-bottom: 1px solid var(--border-light);">
+              <td style="padding: 1rem 1.5rem; font-weight: 600; color: var(--text-primary);">{{ att.exam_title }}</td>
+              <td style="padding: 1rem 1.5rem; font-weight: 700; color: {% if att.passed %}var(--google-green){% else %}#ea4335{% endif %};">
+                {{ att.score }} / {{ att.total_marks }} ({{ att.percentage }}%)
+              </td>
+              <td style="padding: 1rem 1.5rem;">
+                {% if att.is_flagged %}
+                  <span class="pill" style="background: #fde8e8; color: #c81e1e;"><i class="fas fa-flag"></i> Flagged Review</span>
+                {% elif att.passed %}
+                  <span class="pill pill-emerald"><i class="fas fa-check"></i> Passed</span>
+                {% else %}
+                  <span class="pill" style="background: #fde8e8; color: #c81e1e;">Failed</span>
+                {% endif %}
+              </td>
+              <td style="padding: 1rem 1.5rem; color: var(--text-tertiary);">{{ att.submitted_at|date:"M d, Y &bull; H:i" }}</td>
+              <td style="padding: 1rem 1.5rem;">
+                <a href="/exams/attempt/{{ att.id }}/result/" class="btn btn-secondary btn-sm">Review Result</a>
+              </td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  {% endif %}
+</div>
+{% endblock %}
