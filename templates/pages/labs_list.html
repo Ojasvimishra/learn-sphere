@@ -1,0 +1,69 @@
+{% extends "base.html" %}
+
+{% block title %}Virtual Coding Labs & Sandboxes | LearnSphere{% endblock %}
+
+{% block content %}
+<div class="container" style="padding-top: 2.5rem; max-width: 1200px;">
+  <!-- Header -->
+  <div style="display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 2rem; flex-wrap: wrap; gap: 1rem;">
+    <div>
+      <span class="pill pill-emerald"><i class="fas fa-terminal"></i> Interactive Virtual Sandboxes</span>
+      <h1 style="font-size: 2.35rem; font-weight: 800; color: var(--text-primary); margin-top: 0.5rem;">
+        Hands-on Virtual Coding Labs
+      </h1>
+      <p style="color: var(--text-secondary); font-size: 1.05rem; max-width: 780px;">
+        Reinforce computer science and algorithm fundamentals by writing, running, and submitting real code directly in the browser sandbox.
+      </p>
+    </div>
+  </div>
+
+  <!-- Filter Bar -->
+  <div class="filter-bar" style="margin-bottom: 2rem;">
+    <div style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
+      <a href="/labs/" class="btn {% if selected_lang == 'all' %}btn-primary{% else %}btn-secondary{% endif %} btn-sm">All Languages</a>
+      <a href="/labs/?lang=python" class="btn {% if selected_lang == 'python' %}btn-primary{% else %}btn-secondary{% endif %} btn-sm"><i class="fab fa-python"></i> Python</a>
+      <a href="/labs/?lang=javascript" class="btn {% if selected_lang == 'javascript' %}btn-primary{% else %}btn-secondary{% endif %} btn-sm"><i class="fab fa-js"></i> JavaScript</a>
+      <a href="/labs/?lang=sql" class="btn {% if selected_lang == 'sql' %}btn-primary{% else %}btn-secondary{% endif %} btn-sm"><i class="fas fa-database"></i> SQL</a>
+    </div>
+  </div>
+
+  <!-- Labs Cards Grid -->
+  <div class="cards-grid" style="grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));">
+    {% for lab in labs %}
+      <div class="card" style="padding: 1.75rem; border-radius: 20px; display: flex; flex-direction: column; justify-content: space-between;">
+        <div>
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.85rem;">
+            <span class="pill pill-indigo"><i class="fab fa-{{ lab.language }}"></i> {{ lab.language|upper }}</span>
+            <span class="pill {% if lab.difficulty == 'Easy' %}pill-emerald{% elif lab.difficulty == 'Medium' %}pill-cyan{% else %}pill-rose{% endif %}">{{ lab.difficulty }}</span>
+          </div>
+
+          <h3 style="font-size: 1.25rem; font-weight: 800; color: var(--text-primary); margin-bottom: 0.5rem;">
+            {{ lab.title }}
+          </h3>
+          <p style="font-size: 0.9rem; color: var(--text-secondary); line-height: 1.5; margin-bottom: 1.25rem;">
+            {{ lab.description|truncatewords:20 }}
+          </p>
+        </div>
+
+        <div>
+          <div style="border-top: 1px solid var(--border-light); padding-top: 1rem; margin-bottom: 1.25rem; display: flex; justify-content: space-between; font-size: 0.85rem; color: var(--text-tertiary);">
+            <span>Reward: <strong style="color: #f59e0b;"><i class="fas fa-bolt"></i> +{{ lab.xp_reward }} XP</strong></span>
+            <span>Completions: <strong>{{ lab.completions_count }}</strong></span>
+          </div>
+
+          <a href="/labs/{{ lab.id }}/" class="btn btn-primary" style="width: 100%; text-align: center;">
+            <i class="fas fa-code"></i> Launch Virtual Lab
+          </a>
+        </div>
+      </div>
+    {% empty %}
+      <div class="glass-panel" style="grid-column: 1 / -1; padding: 3.5rem; text-align: center; border-radius: 24px;">
+        <i class="fas fa-laptop-code" style="font-size: 2.5rem; color: var(--google-blue); margin-bottom: 1rem;"></i>
+        <h3 style="font-size: 1.35rem; font-weight: 700; margin-bottom: 0.5rem;">No Virtual Labs Found</h3>
+        <p style="color: var(--text-secondary);">Browse our course tracks for integrated coding challenges.</p>
+        <a href="/courses/" class="btn btn-primary">Explore Courses</a>
+      </div>
+    {% endfor %}
+  </div>
+</div>
+{% endblock %}
