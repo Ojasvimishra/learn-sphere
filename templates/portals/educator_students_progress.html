@@ -1,0 +1,284 @@
+{% extends "base.html" %}
+
+{% block title %}Student Progress Analytics | Educator Studio{% endblock %}
+
+{% block content %}
+<div class="container" style="padding-top: 2.5rem; padding-bottom: 4rem;">
+  <div style="margin-bottom: 1.5rem;">
+    <a href="/educator/" style="color: var(--text-secondary); text-decoration: none; font-size: 0.9rem; display: inline-flex; align-items: center; gap: 0.4rem; font-weight: 500;">
+      <i class="fas fa-arrow-left"></i> Back to Educator Operations Studio
+    </a>
+  </div>
+
+  <!-- Header -->
+  <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 2rem; flex-wrap: wrap; gap: 1rem;">
+    <div>
+      <div style="display: flex; align-items: center; gap: 0.6rem; margin-bottom: 0.4rem;">
+        <span class="pill pill-emerald"><i class="fas fa-user-graduate"></i> Academic Analytics</span>
+        <span class="pill pill-blue">Real-Time Telemetry</span>
+      </div>
+      <h1 style="font-size: 2.2rem; font-weight: 800; color: var(--text-primary); margin: 0;">
+        Student Course Progress & Completion
+      </h1>
+      <p style="color: var(--text-secondary); font-size: 0.95rem; margin-top: 0.25rem;">
+        Monitor learner engagement across your authored curricula, verify lesson completion percentages, and track graduation certificates.
+      </p>
+    </div>
+
+    <div style="display: flex; gap: 0.75rem;">
+      <button class="btn btn-secondary btn-sm" onclick="openAdminReportModal('progress_summary')">
+        <i class="fas fa-paper-plane"></i> Report Progress to Admin
+      </button>
+      <a href="/educator/" class="btn btn-primary btn-sm">
+        <i class="fas fa-chalkboard"></i> Studio Dashboard
+      </a>
+    </div>
+  </div>
+
+  <!-- Telemetry Metrics Cards -->
+  <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 1.25rem; margin-bottom: 2rem;">
+    <div class="glass-panel" style="padding: 1.5rem; border-top: 3px solid var(--google-blue);">
+      <div style="font-size: 0.8rem; font-weight: 700; color: var(--google-blue); text-transform: uppercase;">Total Enrollments</div>
+      <div style="font-size: 2.2rem; font-weight: 800; color: var(--text-primary); margin: 0.25rem 0;">{{ total_enrolled }}</div>
+      <div style="font-size: 0.82rem; color: var(--text-tertiary);">Active learners in your tracks</div>
+    </div>
+
+    <div class="glass-panel" style="padding: 1.5rem; border-top: 3px solid var(--google-green);">
+      <div style="font-size: 0.8rem; font-weight: 700; color: var(--google-green); text-transform: uppercase;">Completed (100%)</div>
+      <div style="font-size: 2.2rem; font-weight: 800; color: var(--text-primary); margin: 0.25rem 0;">{{ completed_count }}</div>
+      <div style="font-size: 0.82rem; color: var(--text-tertiary);">Earned course certificates</div>
+    </div>
+
+    <div class="glass-panel" style="padding: 1.5rem; border-top: 3px solid #fbbc05;">
+      <div style="font-size: 0.8rem; font-weight: 700; color: #b06000; text-transform: uppercase;">In Progress</div>
+      <div style="font-size: 2.2rem; font-weight: 800; color: var(--text-primary); margin: 0.25rem 0;">{{ in_progress_count }}</div>
+      <div style="font-size: 0.82rem; color: var(--text-tertiary);">Currently progressing through lessons</div>
+    </div>
+
+    <div class="glass-panel" style="padding: 1.5rem; border-top: 3px solid #a142f4;">
+      <div style="font-size: 0.8rem; font-weight: 700; color: #a142f4; text-transform: uppercase;">Average Progress</div>
+      <div style="font-size: 2.2rem; font-weight: 800; color: var(--text-primary); margin: 0.25rem 0;">{{ avg_progress }}%</div>
+      <div style="font-size: 0.82rem; color: var(--text-tertiary);">Cohort-wide completion average</div>
+    </div>
+  </div>
+
+  <!-- Filter & Search Controls -->
+  <div class="glass-panel" style="padding: 1.25rem 1.75rem; border-radius: 20px; margin-bottom: 1.75rem; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem;">
+    <form method="GET" style="display: flex; gap: 1rem; align-items: center; flex-wrap: wrap; flex: 1;">
+      <div style="display: flex; align-items: center; gap: 0.5rem;">
+        <label style="font-size: 0.85rem; font-weight: 700; color: var(--text-secondary); white-space: nowrap;">Course Filter:</label>
+        <select name="course_id" onchange="this.form.submit()" style="padding: 0.45rem 0.85rem; border-radius: var(--radius-sm); border: 1px solid var(--border-light); font-size: 0.88rem; background: #fff;">
+          <option value="all">All Authored Courses ({{ my_courses|length }})</option>
+          {% for c in my_courses %}
+            <option value="{{ c.id }}" {% if selected_course_id == c.id %}selected{% endif %}>{{ c.title }}</option>
+          {% endfor %}
+        </select>
+      </div>
+
+      <div style="display: flex; align-items: center; gap: 0.5rem; flex: 1; max-width: 360px;">
+        <div style="position: relative; width: 100%;">
+          <i class="fas fa-search" style="position: absolute; left: 12px; top: 50%; transform: translateY(-50%); color: var(--text-tertiary); font-size: 0.85rem;"></i>
+          <input 
+            type="text" 
+            name="q" 
+            value="{{ search_query }}" 
+            placeholder="Search student name or email..." 
+            style="width: 100%; padding: 0.45rem 0.85rem 0.45rem 2.25rem; border-radius: var(--radius-sm); border: 1px solid var(--border-light); font-size: 0.88rem;"
+          >
+        </div>
+        <button type="submit" class="btn btn-secondary btn-sm">Filter</button>
+        {% if search_query or selected_course_id != 'all' %}
+          <a href="/educator/students-progress/" class="btn btn-secondary btn-sm" title="Clear filters"><i class="fas fa-times"></i></a>
+        {% endif %}
+      </div>
+    </form>
+  </div>
+
+  <!-- Student Progress Table -->
+  <div class="glass-panel" style="padding: 0; overflow: hidden; border-radius: 24px;">
+    {% if students %}
+      <div style="overflow-x: auto;">
+        <table style="width: 100%; border-collapse: collapse; text-align: left; font-size: 0.9rem;">
+          <thead style="background: rgba(0,0,0,0.02); border-bottom: 2px solid var(--border-light); color: var(--text-tertiary); font-size: 0.8rem; text-transform: uppercase;">
+            <tr>
+              <th style="padding: 1.15rem 1.5rem;">Student</th>
+              <th style="padding: 1.15rem 1.5rem;">Course Title</th>
+              <th style="padding: 1.15rem 1.5rem; width: 220px;">Progress</th>
+              <th style="padding: 1.15rem 1.5rem;">Lessons Completed</th>
+              <th style="padding: 1.15rem 1.5rem;">Status</th>
+              <th style="padding: 1.15rem 1.5rem;">Last Accessed</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for s in students %}
+              <tr style="border-bottom: 1px solid var(--border-light);">
+                <td style="padding: 1.15rem 1.5rem;">
+                  <div style="display: flex; align-items: center; gap: 0.75rem;">
+                    <div style="width: 34px; height: 34px; border-radius: 50%; background: var(--google-blue-light); color: var(--google-blue); display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 0.85rem;">
+                      {{ s.student_name|slice:":1"|upper }}
+                    </div>
+                    <div>
+                      <strong style="color: var(--text-primary); font-size: 0.95rem;">{{ s.student_name }}</strong>
+                      <div style="font-size: 0.78rem; color: var(--text-tertiary);">{{ s.student_email }}</div>
+                    </div>
+                  </div>
+                </td>
+                <td style="padding: 1.15rem 1.5rem; font-weight: 600; color: var(--text-primary);">
+                  {{ s.course_title }}
+                </td>
+                <td style="padding: 1.15rem 1.5rem;">
+                  <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.35rem; font-size: 0.82rem;">
+                    <strong style="color: {% if s.is_completed %}var(--google-green){% else %}var(--google-blue){% endif %};">{{ s.progress_percent }}%</strong>
+                    <span style="color: var(--text-tertiary);">{{ s.completed_lessons }}/{{ s.total_lessons }}</span>
+                  </div>
+                  <div style="width: 100%; height: 8px; background: #e8eaed; border-radius: 999px; overflow: hidden;">
+                    <div style="width: {{ s.progress_percent }}%; height: 100%; background: {% if s.is_completed %}var(--google-green){% elif s.progress_percent > 40 %}var(--google-blue){% else %}#fbbc05{% endif %}; border-radius: 999px; transition: width 0.3s ease;"></div>
+                  </div>
+                </td>
+                <td style="padding: 1.15rem 1.5rem; font-weight: 700; color: var(--text-primary);">
+                  {{ s.completed_lessons }} <span style="font-weight: normal; color: var(--text-tertiary);">/ {{ s.total_lessons }}</span>
+                </td>
+                <td style="padding: 1.15rem 1.5rem;">
+                  {% if s.is_completed %}
+                    <span class="pill pill-emerald"><i class="fas fa-check-circle"></i> Completed</span>
+                  {% elif s.progress_percent > 0 %}
+                    <span class="pill pill-blue"><i class="fas fa-spinner fa-spin"></i> In Progress</span>
+                  {% else %}
+                    <span class="pill" style="background: rgba(0,0,0,0.05); color: var(--text-tertiary);">Not Started</span>
+                  {% endif %}
+                </td>
+                <td style="padding: 1.15rem 1.5rem; font-size: 0.85rem; color: var(--text-tertiary);">
+                  {{ s.last_accessed_at|date:"M d, Y H:i"|default:"Never" }}
+                </td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    {% else %}
+      <div style="padding: 4rem 2rem; text-align: center;">
+        <i class="fas fa-user-friends" style="font-size: 2.75rem; color: var(--text-tertiary); margin-bottom: 1rem;"></i>
+        <h3 style="font-size: 1.25rem; font-weight: 700; color: var(--text-primary); margin: 0 0 0.5rem;">
+          No Enrolled Students Found
+        </h3>
+        <p style="color: var(--text-secondary); max-width: 500px; margin: 0 auto 1.5rem; font-size: 0.92rem;">
+          {% if search_query or selected_course_id != 'all' %}
+            No students match your active filters. Try clearing the search or choosing a different course.
+          {% else %}
+            As students enroll in your curricula and complete video lessons, their real-time progress will appear here.
+          {% endif %}
+        </p>
+        {% if search_query or selected_course_id != 'all' %}
+          <a href="/educator/students-progress/" class="btn btn-secondary btn-sm">Clear Filters</a>
+        {% endif %}
+      </div>
+    {% endif %}
+  </div>
+</div>
+
+<!-- Modal: Send Report / Update to Admin -->
+<div id="adminReportModal" style="display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 9999; align-items: center; justify-content: center;">
+  <div style="background: var(--bg-surface); width: 100%; max-width: 500px; padding: 2rem; border-radius: var(--radius-lg); box-shadow: var(--shadow-xl); border: 1px solid var(--border-light);">
+    <h3 style="font-size: 1.25rem; font-weight: 800; color: var(--text-primary); margin: 0 0 0.5rem;">
+      <i class="fas fa-paper-plane" style="color: var(--google-blue);"></i> Dispatch Update to Admin
+    </h3>
+    <p style="font-size: 0.88rem; color: var(--text-secondary); margin-bottom: 1.25rem;">
+      Deliver a formal academic progress report, cheating alert, or curriculum request directly to the Administrative Command Center.
+    </p>
+
+    <form id="adminReportForm" onsubmit="submitAdminReport(event)">
+      {% csrf_token %}
+
+      <div style="margin-bottom: 1rem;">
+        <label style="font-size: 0.85rem; font-weight: 700; color: var(--text-primary);">Report Type</label>
+        <select id="reportType" style="width: 100%; padding: 0.65rem; border-radius: var(--radius-sm); border: 1px solid var(--border-light); font-size: 0.9rem;" required>
+          <option value="progress_summary">Cohort Progress & Completion Summary</option>
+          <option value="course_update">Curriculum Revision / Approval Request</option>
+          <option value="proctor_incident">Exam Proctoring / Anti-Cheat Violation</option>
+          <option value="general_update">General Faculty Notice to Administration</option>
+        </select>
+      </div>
+
+      <div style="margin-bottom: 1rem;">
+        <label style="font-size: 0.85rem; font-weight: 700; color: var(--text-primary);">Associated Course (Optional)</label>
+        <select id="reportCourseId" style="width: 100%; padding: 0.65rem; border-radius: var(--radius-sm); border: 1px solid var(--border-light); font-size: 0.9rem;">
+          <option value="">-- No specific course --</option>
+          {% for c in my_courses %}
+            <option value="{{ c.id }}">{{ c.title }}</option>
+          {% endfor %}
+        </select>
+      </div>
+
+      <div style="margin-bottom: 1rem;">
+        <label style="font-size: 0.85rem; font-weight: 700; color: var(--text-primary);">Report Title *</label>
+        <input type="text" id="reportTitle" placeholder="e.g. Weekly Progress Summary for Cohort A" style="width: 100%; padding: 0.65rem; border-radius: var(--radius-sm); border: 1px solid var(--border-light); font-size: 0.9rem;" required>
+      </div>
+
+      <div style="margin-bottom: 1.5rem;">
+        <label style="font-size: 0.85rem; font-weight: 700; color: var(--text-primary);">Detailed Message / Findings *</label>
+        <textarea id="reportMessage" rows="4" placeholder="Detail student performance metrics, notable completion rates, or issues requiring administrative attention..." style="width: 100%; padding: 0.65rem; border-radius: var(--radius-sm); border: 1px solid var(--border-light); font-size: 0.9rem;" required></textarea>
+      </div>
+
+      <div style="display: flex; justify-content: flex-end; gap: 0.75rem;">
+        <button type="button" class="btn btn-secondary btn-sm" onclick="closeAdminReportModal()">Cancel</button>
+        <button type="submit" id="btn-submit-report" class="btn btn-primary btn-sm"><i class="fas fa-paper-plane"></i> Send to Admin</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<script>
+function openAdminReportModal(defaultType) {
+  if (defaultType) document.getElementById("reportType").value = defaultType;
+  document.getElementById("reportTitle").value = "";
+  document.getElementById("reportMessage").value = "";
+  document.getElementById("adminReportModal").style.display = "flex";
+}
+
+function closeAdminReportModal() {
+  document.getElementById("adminReportModal").style.display = "none";
+}
+
+async function submitAdminReport(e) {
+  e.preventDefault();
+  const btn = document.getElementById("btn-submit-report");
+  btn.disabled = true;
+  btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Dispatching...';
+
+  const reportType = document.getElementById("reportType").value;
+  const courseId = document.getElementById("reportCourseId").value;
+  const title = document.getElementById("reportTitle").value;
+  const message = document.getElementById("reportMessage").value;
+  const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+
+  const formData = new FormData();
+  formData.append("csrfmiddlewaretoken", csrfToken);
+  formData.append("report_type", reportType);
+  formData.append("course_id", courseId);
+  formData.append("title", title);
+  formData.append("message", message);
+
+  try {
+    const res = await fetch("/educator/reports/submit/", {
+      method: "POST",
+      headers: { "X-Requested-With": "XMLHttpRequest" },
+      body: formData
+    });
+    const data = await res.json();
+    btn.disabled = false;
+    btn.innerHTML = '<i class="fas fa-paper-plane"></i> Send to Admin';
+
+    if (data.success) {
+      alert("Success: " + data.message);
+      closeAdminReportModal();
+    } else {
+      alert("Error: " + (data.error || "Failed to submit report."));
+    }
+  } catch (err) {
+    btn.disabled = false;
+    btn.innerHTML = '<i class="fas fa-paper-plane"></i> Send to Admin';
+    alert("Network error delivering report to admin.");
+  }
+}
+</script>
+{% endblock %}

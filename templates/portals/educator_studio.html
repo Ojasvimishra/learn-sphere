@@ -13,14 +13,17 @@
           <h1 style="font-size: 1.85rem; font-weight: 800; color: var(--text-primary); margin: 0;">Educator Operations Studio</h1>
           <span class="pill pill-emerald">{{ user.role|upper }}</span>
         </div>
-        <p style="color: var(--text-secondary); font-size: 0.95rem; margin: 0 0 1rem;">
-          Manage recorded curricula, schedule live lectures, audit proctored exam attempts, and verify student doubt inquiries.
+        <p style="color: var(--text-secondary); font-size: 0.95rem; margin: 0 0 1.25rem;">
+          Manage recorded curricula, schedule live lectures, track real-time student progress, audit proctored exams, and dispatch updates to administration.
         </p>
         <div style="display: flex; gap: 0.6rem; flex-wrap: wrap;">
-          <a href="/courses/create/" class="btn btn-primary btn-sm"><i class="fas fa-plus-circle"></i> Create New Course</a>
-          <a href="/live/create/" class="btn btn-emerald btn-sm"><i class="fas fa-video"></i> Schedule Live Lecture</a>
-          <a href="/exams/create/" class="btn btn-secondary btn-sm"><i class="fas fa-file-alt"></i> Create Proctored Exam</a>
-          <a href="/labs/create/" class="btn btn-secondary btn-sm"><i class="fas fa-flask"></i> Author Virtual Lab</a>
+          <a href="/courses/educator/create/" class="btn btn-primary btn-sm"><i class="fas fa-plus-circle"></i> Create New Course</a>
+          <a href="/exams/educator/create/" class="btn btn-indigo btn-sm"><i class="fas fa-calendar-check"></i> Schedule Proctored Exam</a>
+          <a href="/educator/students-progress/" class="btn btn-emerald btn-sm"><i class="fas fa-user-graduate"></i> Track Student Progress</a>
+          <a href="/live/create/" class="btn btn-secondary btn-sm"><i class="fas fa-video"></i> Schedule Live Lecture</a>
+          <button type="button" class="btn btn-secondary btn-sm" onclick="openAdminReportModal('general_update')" style="border-color: #d2e3fc; color: var(--google-blue);">
+            <i class="fas fa-paper-plane"></i> Send Update to Admin
+          </button>
         </div>
       </div>
 
@@ -46,9 +49,9 @@
     </div>
 
     <div class="glass-panel" style="padding: 1.5rem; border-top: 3px solid var(--google-green);">
-      <div style="font-size: 0.8rem; font-weight: 700; color: var(--google-green); text-transform: uppercase;">Upcoming Broadcasts</div>
-      <div style="font-size: 2.2rem; font-weight: 800; color: var(--text-primary); margin: 0.25rem 0;">{{ my_live_classes|length }}</div>
-      <div style="font-size: 0.82rem; color: var(--text-tertiary);">Interactive live classroom sessions</div>
+      <div style="font-size: 0.8rem; font-weight: 700; color: var(--google-green); text-transform: uppercase;">Learner Progress</div>
+      <div style="font-size: 2.2rem; font-weight: 800; color: var(--text-primary); margin: 0.25rem 0;">{{ total_students_enrolled }}</div>
+      <div style="font-size: 0.82rem; color: var(--text-tertiary);"><a href="/educator/students-progress/" style="color: var(--google-green); text-decoration: none; font-weight: 600;">View progress analytics &rarr;</a></div>
     </div>
 
     <div class="glass-panel" style="padding: 1.5rem; border-top: 3px solid #ea4335;">
@@ -58,19 +61,27 @@
     </div>
 
     <div class="glass-panel" style="padding: 1.5rem; border-top: 3px solid #a142f4;">
-      <div style="font-size: 0.8rem; font-weight: 700; color: #a142f4; text-transform: uppercase;">Open Doubts</div>
-      <div style="font-size: 2.2rem; font-weight: 800; color: var(--text-primary); margin: 0.25rem 0;">{{ open_doubts|length }}</div>
-      <div style="font-size: 0.82rem; color: var(--text-tertiary);">Awaiting faculty verification</div>
+      <div style="font-size: 0.8rem; font-weight: 700; color: #a142f4; text-transform: uppercase;">Dispatched Admin Reports</div>
+      <div style="font-size: 2.2rem; font-weight: 800; color: var(--text-primary); margin: 0.25rem 0;">{{ my_reports|length }}</div>
+      <div style="font-size: 0.82rem; color: var(--text-tertiary);">Updates delivered to admin</div>
     </div>
   </div>
 
-  <!-- Section 1: Authored Courses -->
+  <!-- Section 1: Authored Courses & Syllabus Editor -->
   <div class="glass-panel" style="padding: 2rem; margin-bottom: 2rem;">
-    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
-      <h2 style="font-size: 1.3rem; font-weight: 800; color: var(--text-primary); margin: 0;">
-        <i class="fas fa-layer-group" style="color: var(--google-blue); margin-right: 0.5rem;"></i> My Authored Curricula
-      </h2>
-      <a href="/courses/create/" class="btn btn-primary btn-sm"><i class="fas fa-plus"></i> New Curriculum</a>
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; flex-wrap: wrap; gap: 1rem;">
+      <div>
+        <h2 style="font-size: 1.3rem; font-weight: 800; color: var(--text-primary); margin: 0;">
+          <i class="fas fa-layer-group" style="color: var(--google-blue); margin-right: 0.5rem;"></i> My Authored Curricula
+        </h2>
+        <p style="color: var(--text-secondary); font-size: 0.85rem; margin: 0.25rem 0 0;">
+          Update curriculum metadata, add modules/lessons, review enrollment rates, and submit for admin approval.
+        </p>
+      </div>
+      <div style="display: flex; gap: 0.5rem;">
+        <a href="/educator/students-progress/" class="btn btn-emerald btn-sm"><i class="fas fa-user-graduate"></i> All Students Progress</a>
+        <a href="/courses/educator/create/" class="btn btn-primary btn-sm"><i class="fas fa-plus"></i> New Curriculum</a>
+      </div>
     </div>
 
     {% if my_courses %}
@@ -92,18 +103,31 @@
               <tr style="border-bottom: 1px solid var(--border-light);">
                 <td style="padding: 1rem; font-weight: 700; color: var(--text-primary);">
                   {{ c.title }}
+                  {% if c.tagline %}
+                    <div style="font-size: 0.78rem; font-weight: normal; color: var(--text-tertiary);">{{ c.tagline|truncatechars:60 }}</div>
+                  {% endif %}
                 </td>
                 <td style="padding: 1rem; color: var(--text-secondary);">{{ c.category }}</td>
                 <td style="padding: 1rem;"><span class="pill pill-blue">{{ c.level }}</span></td>
-                <td style="padding: 1rem; color: var(--text-primary); font-weight: 600;">{{ c.lessons_count|default:"8" }}</td>
+                <td style="padding: 1rem; color: var(--text-primary); font-weight: 600;">{{ c.lessons_count|default:"0" }}</td>
                 <td style="padding: 1rem; font-weight: 700; color: var(--google-green);">{{ c.enrolled_count }}</td>
                 <td style="padding: 1rem;">
-                  <span class="pill {% if c.status == 'published' %}pill-emerald{% else %}pill-amber{% endif %}">
+                  <span class="pill {% if c.status == 'published' %}pill-emerald{% elif c.status == 'pending_approval' %}pill-amber{% else %}pill-blue{% endif %}">
                     {{ c.status|upper }}
                   </span>
                 </td>
                 <td style="padding: 1rem; text-align: right;">
-                  <a href="/courses/{{ c.id }}/" class="btn btn-secondary btn-sm"><i class="fas fa-eye"></i> View</a>
+                  <div style="display: flex; gap: 0.4rem; justify-content: flex-end;">
+                    <a href="/courses/educator/{{ c.id }}/edit/" class="btn btn-primary btn-sm" title="Edit course syllabus and details">
+                      <i class="fas fa-edit"></i> Edit
+                    </a>
+                    <a href="/educator/students-progress/?course_id={{ c.id }}" class="btn btn-emerald btn-sm" title="View enrolled students progress">
+                      <i class="fas fa-chart-line"></i> Progress
+                    </a>
+                    <a href="/courses/{{ c.id }}/" class="btn btn-secondary btn-sm" title="Preview live course">
+                      <i class="fas fa-eye"></i> View
+                    </a>
+                  </div>
                 </td>
               </tr>
             {% endfor %}
@@ -111,22 +135,25 @@
         </table>
       </div>
     {% else %}
-      <p style="color: var(--text-secondary); margin: 0;">No courses authored yet. Click "Create New Course" above to build your first curriculum.</p>
+      <p style="color: var(--text-secondary); margin: 0;">No courses authored yet. Click "New Curriculum" above to build your first course.</p>
     {% endif %}
   </div>
 
   <!-- Section 2: Proctored Exam Submissions & Anti-Cheat Telemetry -->
   <div class="glass-panel" style="padding: 2rem; margin-bottom: 2rem;">
-    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; flex-wrap: wrap; gap: 1rem;">
       <div>
         <h2 style="font-size: 1.3rem; font-weight: 800; color: var(--text-primary); margin: 0;">
-          <i class="fas fa-user-shield" style="color: #ea4335; margin-right: 0.5rem;"></i> Proctored Exam Attempts & Grade Overrides
+          <i class="fas fa-user-shield" style="color: #ea4335; margin-right: 0.5rem;"></i> Student Exam Results & Anti-Cheat Telemetry
         </h2>
         <p style="color: var(--text-secondary); font-size: 0.85rem; margin: 0.25rem 0 0;">
-          Inspect student submissions. Attempts with tab-switch anomalies are automatically flagged for faculty audit.
+          Review exam scores, pass/fail status, and anti-cheat tab-switch anomalies. Disputed attempts can be overridden or reported to admin.
         </p>
       </div>
-      <a href="/educator/exams/submissions/" class="btn btn-secondary btn-sm">Full Submissions Log</a>
+      <div style="display: flex; gap: 0.5rem;">
+        <a href="/exams/educator/create/" class="btn btn-primary btn-sm"><i class="fas fa-plus"></i> Schedule New Exam</a>
+        <a href="/educator/exams/submissions/" class="btn btn-secondary btn-sm">Full Submissions Log</a>
+      </div>
     </div>
 
     {% if all_submissions %}
@@ -167,9 +194,16 @@
                   {% endif %}
                 </td>
                 <td style="padding: 1rem; text-align: right;">
-                  <button class="btn btn-secondary btn-sm" onclick="openOverrideModal('{{ s.id }}', '{{ s.student_name }}', '{{ s.score }}', '{{ s.total_marks }}')">
-                    <i class="fas fa-edit"></i> Override
-                  </button>
+                  <div style="display: flex; gap: 0.4rem; justify-content: flex-end;">
+                    <button class="btn btn-secondary btn-sm" onclick="openOverrideModal('{{ s.id }}', '{{ s.student_name }}', '{{ s.score }}', '{{ s.total_marks }}')">
+                      <i class="fas fa-edit"></i> Override
+                    </button>
+                    {% if s.is_flagged %}
+                      <button class="btn btn-secondary btn-sm" onclick="escalateToAdmin('{{ s.student_name }}', '{{ s.course_id }}', '{{ s.tab_switches_count }}')" style="color: #ea4335; border-color: #fca5a5;" title="Escalate cheating to Admin">
+                        <i class="fas fa-shield-virus"></i> Escalate
+                      </button>
+                    {% endif %}
+                  </div>
                 </td>
               </tr>
             {% endfor %}
@@ -178,6 +212,71 @@
       </div>
     {% else %}
       <p style="color: var(--text-secondary); margin: 0;">No student exam submissions recorded yet.</p>
+    {% endif %}
+  </div>
+
+  <!-- Section 3: Recent Reports & Updates Dispatched to Administration -->
+  <div class="glass-panel" style="padding: 2rem;">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; flex-wrap: wrap; gap: 1rem;">
+      <div>
+        <h2 style="font-size: 1.3rem; font-weight: 800; color: var(--text-primary); margin: 0;">
+          <i class="fas fa-paper-plane" style="color: var(--google-blue); margin-right: 0.5rem;"></i> Updates & Reports to Admin Command Center
+        </h2>
+        <p style="color: var(--text-secondary); font-size: 0.85rem; margin: 0.25rem 0 0;">
+          Track administrative review status for course revision requests, progress memos, and proctoring incident escalations.
+        </p>
+      </div>
+      <button type="button" class="btn btn-primary btn-sm" onclick="openAdminReportModal('general_update')">
+        <i class="fas fa-plus"></i> New Report to Admin
+      </button>
+    </div>
+
+    {% if my_reports %}
+      <div style="overflow-x: auto;">
+        <table style="width: 100%; border-collapse: collapse; text-align: left; font-size: 0.9rem;">
+          <thead>
+            <tr style="border-bottom: 2px solid var(--border-light); color: var(--text-tertiary); font-size: 0.8rem; text-transform: uppercase;">
+              <th style="padding: 0.75rem 1rem;">Report Subject</th>
+              <th style="padding: 0.75rem 1rem;">Type</th>
+              <th style="padding: 0.75rem 1rem;">Associated Course</th>
+              <th style="padding: 0.75rem 1rem;">Submitted</th>
+              <th style="padding: 0.75rem 1rem;">Status</th>
+              <th style="padding: 0.75rem 1rem;">Admin Response</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for r in my_reports %}
+              <tr style="border-bottom: 1px solid var(--border-light);">
+                <td style="padding: 1rem; font-weight: 700; color: var(--text-primary);">
+                  {{ r.title }}
+                  <div style="font-size: 0.8rem; font-weight: normal; color: var(--text-tertiary);">{{ r.message|truncatechars:80 }}</div>
+                </td>
+                <td style="padding: 1rem;">
+                  <span class="pill pill-blue">{{ r.report_type|upper }}</span>
+                </td>
+                <td style="padding: 1rem; color: var(--text-secondary);">
+                  {{ r.course_title|default:"Cohort-wide" }}
+                </td>
+                <td style="padding: 1rem; font-size: 0.85rem; color: var(--text-tertiary);">
+                  {{ r.created_at|date:"M d, H:i" }}
+                </td>
+                <td style="padding: 1rem;">
+                  {% if r.status == "reviewed" or r.status == "resolved" %}
+                    <span class="pill pill-emerald"><i class="fas fa-check-circle"></i> {{ r.status|upper }}</span>
+                  {% else %}
+                    <span class="pill pill-amber"><i class="fas fa-clock"></i> PENDING REVIEW</span>
+                  {% endif %}
+                </td>
+                <td style="padding: 1rem; font-size: 0.85rem; color: var(--text-secondary);">
+                  {{ r.admin_response|default:"Awaiting administrative review." }}
+                </td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    {% else %}
+      <p style="color: var(--text-secondary); margin: 0;">No reports submitted to admin yet. Use the button above to dispatch curriculum updates or incident reports.</p>
     {% endif %}
   </div>
 
@@ -226,6 +325,57 @@
   </div>
 </div>
 
+<!-- Send Report / Update to Admin Modal -->
+<div id="adminReportModal" style="display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 9999; align-items: center; justify-content: center;">
+  <div style="background: var(--bg-surface); width: 100%; max-width: 500px; padding: 2rem; border-radius: var(--radius-lg); box-shadow: var(--shadow-xl); border: 1px solid var(--border-light);">
+    <h3 style="font-size: 1.25rem; font-weight: 800; color: var(--text-primary); margin: 0 0 0.5rem;">
+      <i class="fas fa-paper-plane" style="color: var(--google-blue);"></i> Dispatch Update to Admin
+    </h3>
+    <p style="font-size: 0.88rem; color: var(--text-secondary); margin-bottom: 1.25rem;">
+      Submit course updates, exam anti-cheat violations, or student cohort summaries directly to the Administrative Command Center.
+    </p>
+
+    <form id="adminReportForm" onsubmit="submitAdminReport(event)">
+      {% csrf_token %}
+
+      <div style="margin-bottom: 1rem;">
+        <label style="font-size: 0.85rem; font-weight: 700; color: var(--text-primary);">Report Type</label>
+        <select id="reportType" style="width: 100%; padding: 0.65rem; border-radius: var(--radius-sm); border: 1px solid var(--border-light); font-size: 0.9rem;" required>
+          <option value="general_update">General Faculty Notice to Administration</option>
+          <option value="course_update">Curriculum Revision / Approval Request</option>
+          <option value="proctor_incident">Exam Proctoring / Anti-Cheat Violation</option>
+          <option value="progress_summary">Cohort Progress & Completion Summary</option>
+        </select>
+      </div>
+
+      <div style="margin-bottom: 1rem;">
+        <label style="font-size: 0.85rem; font-weight: 700; color: var(--text-primary);">Associated Course (Optional)</label>
+        <select id="reportCourseId" style="width: 100%; padding: 0.65rem; border-radius: var(--radius-sm); border: 1px solid var(--border-light); font-size: 0.9rem;">
+          <option value="">-- No specific course --</option>
+          {% for c in my_courses %}
+            <option value="{{ c.id }}">{{ c.title }}</option>
+          {% endfor %}
+        </select>
+      </div>
+
+      <div style="margin-bottom: 1rem;">
+        <label style="font-size: 0.85rem; font-weight: 700; color: var(--text-primary);">Report Title *</label>
+        <input type="text" id="reportTitle" placeholder="e.g. Assessment Results & Course Update" style="width: 100%; padding: 0.65rem; border-radius: var(--radius-sm); border: 1px solid var(--border-light); font-size: 0.9rem;" required>
+      </div>
+
+      <div style="margin-bottom: 1.5rem;">
+        <label style="font-size: 0.85rem; font-weight: 700; color: var(--text-primary);">Detailed Message / Findings *</label>
+        <textarea id="reportMessage" rows="4" placeholder="Detail student performance metrics, notable completion rates, or issues requiring administrative attention..." style="width: 100%; padding: 0.65rem; border-radius: var(--radius-sm); border: 1px solid var(--border-light); font-size: 0.9rem;" required></textarea>
+      </div>
+
+      <div style="display: flex; justify-content: flex-end; gap: 0.75rem;">
+        <button type="button" class="btn btn-secondary btn-sm" onclick="closeAdminReportModal()">Cancel</button>
+        <button type="submit" id="btn-submit-report" class="btn btn-primary btn-sm"><i class="fas fa-paper-plane"></i> Send to Admin</button>
+      </div>
+    </form>
+  </div>
+</div>
+
 <script>
 function openOverrideModal(attemptId, studentName, score, totalMarks) {
   document.getElementById("overrideAttemptId").value = attemptId;
@@ -238,6 +388,23 @@ function openOverrideModal(attemptId, studentName, score, totalMarks) {
 
 function closeOverrideModal() {
   document.getElementById("overrideModal").style.display = "none";
+}
+
+function openAdminReportModal(defaultType) {
+  if (defaultType) document.getElementById("reportType").value = defaultType;
+  document.getElementById("reportTitle").value = "";
+  document.getElementById("reportMessage").value = "";
+  document.getElementById("adminReportModal").style.display = "flex";
+}
+
+function closeAdminReportModal() {
+  document.getElementById("adminReportModal").style.display = "none";
+}
+
+function escalateToAdmin(studentName, courseId, tabSwitches) {
+  openAdminReportModal('proctor_incident');
+  document.getElementById("reportTitle").value = `Anti-Cheat Incident Flag: ${studentName}`;
+  document.getElementById("reportMessage").value = `Student ${studentName} accumulated ${tabSwitches} tab-switch violations during exam evaluation for course ID: ${courseId}. Requesting administrative review and sanction determination.`;
 }
 
 async function submitGradeOverride(e) {
@@ -269,6 +436,49 @@ async function submitGradeOverride(e) {
     }
   } catch (err) {
     alert("Network error processing override.");
+  }
+}
+
+async function submitAdminReport(e) {
+  e.preventDefault();
+  const btn = document.getElementById("btn-submit-report");
+  btn.disabled = true;
+  btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Dispatching...';
+
+  const reportType = document.getElementById("reportType").value;
+  const courseId = document.getElementById("reportCourseId").value;
+  const title = document.getElementById("reportTitle").value;
+  const message = document.getElementById("reportMessage").value;
+  const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+
+  const formData = new FormData();
+  formData.append("csrfmiddlewaretoken", csrfToken);
+  formData.append("report_type", reportType);
+  formData.append("course_id", courseId);
+  formData.append("title", title);
+  formData.append("message", message);
+
+  try {
+    const res = await fetch("/educator/reports/submit/", {
+      method: "POST",
+      headers: { "X-Requested-With": "XMLHttpRequest" },
+      body: formData
+    });
+    const data = await res.json();
+    btn.disabled = false;
+    btn.innerHTML = '<i class="fas fa-paper-plane"></i> Send to Admin';
+
+    if (data.success) {
+      alert("Success: " + data.message);
+      closeAdminReportModal();
+      location.reload();
+    } else {
+      alert("Error: " + (data.error || "Failed to submit report."));
+    }
+  } catch (err) {
+    btn.disabled = false;
+    btn.innerHTML = '<i class="fas fa-paper-plane"></i> Send to Admin';
+    alert("Network error delivering report to admin.");
   }
 }
 </script>

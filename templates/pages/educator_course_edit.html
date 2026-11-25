@@ -1,0 +1,309 @@
+{% extends "base.html" %}
+
+{% block title %}Edit Course: {{ course.title }} | Educator Studio{% endblock %}
+
+{% block content %}
+<div class="container" style="padding-top: 2.5rem; padding-bottom: 4rem; max-width: 1000px;">
+  <div style="margin-bottom: 1.5rem;">
+    <a href="/educator/" style="color: var(--text-secondary); text-decoration: none; font-size: 0.9rem; display: inline-flex; align-items: center; gap: 0.4rem; font-weight: 500;">
+      <i class="fas fa-arrow-left"></i> Back to Educator Operations Studio
+    </a>
+  </div>
+
+  <!-- Header -->
+  <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 2rem; flex-wrap: wrap; gap: 1rem;">
+    <div>
+      <div style="display: flex; align-items: center; gap: 0.6rem; margin-bottom: 0.4rem;">
+        <span class="pill pill-emerald"><i class="fas fa-chalkboard-teacher"></i> Curriculum Editor</span>
+        <span class="pill {% if course.status == 'published' %}pill-emerald{% elif course.status == 'pending_approval' %}pill-amber{% else %}pill-blue{% endif %}">
+          {{ course.status|upper }}
+        </span>
+      </div>
+      <h1 style="font-size: 2.2rem; font-weight: 800; color: var(--text-primary); margin: 0;">
+        Update Course Curriculum
+      </h1>
+      <p style="color: var(--text-secondary); font-size: 0.95rem; margin-top: 0.25rem;">
+        Modify course metadata, syllabus structure, video lessons, and manage administrative publishing review.
+      </p>
+    </div>
+
+    <div style="display: flex; gap: 0.75rem;">
+      <a href="/courses/{{ course.id }}/" target="_blank" class="btn btn-secondary btn-sm">
+        <i class="fas fa-external-link-alt"></i> View Live Course
+      </a>
+      <a href="/educator/students-progress/?course_id={{ course.id }}" class="btn btn-emerald btn-sm">
+        <i class="fas fa-user-graduate"></i> Enrolled Students
+      </a>
+    </div>
+  </div>
+
+  {% if success_msg %}
+    <div style="background: var(--google-green-light); border: 1px solid #b7eb8f; border-radius: var(--radius-sm); padding: 1rem 1.25rem; color: #135200; font-size: 0.95rem; margin-bottom: 2rem; display: flex; align-items: center; gap: 0.6rem; font-weight: 600;">
+      <i class="fas fa-check-circle" style="font-size: 1.1rem;"></i>
+      <span>{{ success_msg }}</span>
+    </div>
+  {% endif %}
+
+  {% if error_msg %}
+    <div style="background: var(--google-red-light); border: 1px solid #ffa39e; border-radius: var(--radius-sm); padding: 1rem 1.25rem; color: var(--google-red); font-size: 0.95rem; margin-bottom: 2rem; display: flex; align-items: center; gap: 0.6rem; font-weight: 600;">
+      <i class="fas fa-exclamation-circle" style="font-size: 1.1rem;"></i>
+      <span>{{ error_msg }}</span>
+    </div>
+  {% endif %}
+
+  <form method="POST" id="course-edit-form">
+    {% csrf_token %}
+    <input type="hidden" name="modules_json" id="modules_json" value="">
+
+    <!-- Card 1: Core Course Details -->
+    <div class="glass-panel" style="padding: 2.25rem; border-radius: 24px; margin-bottom: 2rem;">
+      <h3 style="font-size: 1.25rem; font-weight: 800; color: var(--text-primary); margin-bottom: 1.5rem; display: flex; align-items: center; gap: 0.5rem;">
+        <i class="fas fa-info-circle" style="color: var(--google-blue);"></i> Core Course Information
+      </h3>
+
+      <div class="form-group" style="margin-bottom: 1.25rem;">
+        <label class="form-label" style="font-weight: 700;">Course Title *</label>
+        <input 
+          type="text" 
+          name="title" 
+          required 
+          value="{{ course.title }}" 
+          class="form-control"
+          placeholder="e.g. Masterclass in Quantum Algorithms & Computation"
+        >
+      </div>
+
+      <div class="form-group" style="margin-bottom: 1.25rem;">
+        <label class="form-label" style="font-weight: 700;">Tagline / Short Summary *</label>
+        <input 
+          type="text" 
+          name="tagline" 
+          required 
+          value="{{ course.tagline }}" 
+          class="form-control"
+          placeholder="e.g. Hands-on exploration of qubits, quantum circuits, and algorithmic complexity."
+        >
+      </div>
+
+      <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1.25rem; margin-bottom: 1.25rem;">
+        <div class="form-group">
+          <label class="form-label" style="font-weight: 700;">Category</label>
+          <select name="category" class="form-control">
+            <option value="Smart Education" {% if course.category == "Smart Education" %}selected{% endif %}>Smart Education</option>
+            <option value="Computer Science" {% if course.category == "Computer Science" %}selected{% endif %}>Computer Science</option>
+            <option value="Artificial Intelligence" {% if course.category == "Artificial Intelligence" %}selected{% endif %}>Artificial Intelligence</option>
+            <option value="Data Science" {% if course.category == "Data Science" %}selected{% endif %}>Data Science</option>
+            <option value="Physics & Engineering" {% if course.category == "Physics & Engineering" %}selected{% endif %}>Physics & Engineering</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" style="font-weight: 700;">Skill Level</label>
+          <select name="level" class="form-control">
+            <option value="Beginner" {% if course.level == "Beginner" %}selected{% endif %}>Beginner</option>
+            <option value="Intermediate" {% if course.level == "Intermediate" %}selected{% endif %}>Intermediate</option>
+            <option value="Advanced" {% if course.level == "Advanced" %}selected{% endif %}>Advanced</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" style="font-weight: 700;">Estimated Hours</label>
+          <input 
+            type="number" 
+            name="duration_hours" 
+            min="1" 
+            max="500" 
+            value="{{ course.duration_hours|default:10 }}" 
+            class="form-control"
+          >
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" style="font-weight: 700;">Price (USD)</label>
+          <input 
+            type="number" 
+            name="price" 
+            step="0.01" 
+            min="0" 
+            value="{{ course.price|default:0.0 }}" 
+            class="form-control"
+            placeholder="0.00 for Free"
+          >
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label" style="font-weight: 700;">Full Description *</label>
+        <textarea 
+          name="description" 
+          rows="5" 
+          required 
+          class="form-control" 
+          style="line-height: 1.6;"
+        >{{ course.description }}</textarea>
+      </div>
+    </div>
+
+    <!-- Card 2: Syllabus Modules & Lessons Builder -->
+    <div class="glass-panel" style="padding: 2.25rem; border-radius: 24px; margin-bottom: 2rem;">
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; flex-wrap: wrap; gap: 1rem;">
+        <div>
+          <h3 style="font-size: 1.25rem; font-weight: 800; color: var(--text-primary); margin: 0; display: flex; align-items: center; gap: 0.5rem;">
+            <i class="fas fa-list-ol" style="color: var(--google-green);"></i> Syllabus & Video Lessons
+          </h3>
+          <p style="color: var(--text-secondary); font-size: 0.85rem; margin: 0.25rem 0 0;">
+            Add or reorder learning modules and lessons. Changes are saved when you submit the form.
+          </p>
+        </div>
+        <button type="button" class="btn btn-secondary btn-sm" onclick="addNewModule()">
+          <i class="fas fa-plus"></i> Add Module
+        </button>
+      </div>
+
+      <div id="modules-container" style="display: flex; flex-direction: column; gap: 1.5rem;">
+        <!-- Modules injected via JavaScript -->
+      </div>
+    </div>
+
+    <!-- Card 3: Publishing Actions & Submit to Admin -->
+    <div class="glass-panel" style="padding: 2rem 2.25rem; border-radius: 24px; background: var(--bg-surface); border: 1.5px solid var(--border-light); display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1.5rem;">
+      <div>
+        <div style="font-weight: 800; color: var(--text-primary); font-size: 1.1rem; margin-bottom: 0.25rem;">
+          Publishing Workflow & Admin Review
+        </div>
+        <div style="font-size: 0.88rem; color: var(--text-secondary);">
+          Choose how you want to save or submit this course update to the administrator.
+        </div>
+      </div>
+
+      <div style="display: flex; gap: 0.75rem; flex-wrap: wrap;">
+        <button type="submit" name="status_action" value="save_draft" class="btn btn-secondary">
+          <i class="fas fa-file"></i> Save as Draft
+        </button>
+        <button type="submit" name="status_action" value="publish" class="btn btn-emerald">
+          <i class="fas fa-check"></i> Save & Publish
+        </button>
+        <button type="submit" name="status_action" value="submit_admin" class="btn btn-primary" title="Notify admin of update and request verification">
+          <i class="fas fa-paper-plane"></i> Submit Update to Admin
+        </button>
+      </div>
+    </div>
+  </form>
+</div>
+
+<script>
+// Initial modules data from backend
+let currentModules = {{ course.modules|default:"[]"|safe }};
+
+function renderModules() {
+  const container = document.getElementById("modules-container");
+  container.innerHTML = "";
+
+  if (currentModules.length === 0) {
+    container.innerHTML = `
+      <div style="text-align: center; padding: 2.5rem; background: rgba(0,0,0,0.01); border: 2px dashed var(--border-light); border-radius: var(--radius-md);">
+        <i class="fas fa-folder-open" style="font-size: 2rem; color: var(--text-tertiary); margin-bottom: 0.5rem;"></i>
+        <div style="font-weight: 700; color: var(--text-secondary);">No Syllabus Modules Yet</div>
+        <p style="color: var(--text-tertiary); font-size: 0.85rem; margin: 0.25rem 0 1rem;">Click "Add Module" to start structuring lessons.</p>
+        <button type="button" class="btn btn-primary btn-sm" onclick="addNewModule()"><i class="fas fa-plus"></i> Add First Module</button>
+      </div>
+    `;
+    return;
+  }
+
+  currentModules.forEach((mod, modIdx) => {
+    const modEl = document.createElement("div");
+    modEl.style.cssText = "background: #fff; border: 1.5px solid var(--border-light); border-radius: var(--radius-md); padding: 1.5rem; box-shadow: 0 2px 8px rgba(0,0,0,0.03);";
+    
+    let lessonsHtml = "";
+    (mod.lessons || []).forEach((les, lesIdx) => {
+      lessonsHtml += `
+        <div style="display: flex; gap: 0.75rem; align-items: center; margin-top: 0.75rem; background: var(--bg-surface); padding: 0.75rem 1rem; border-radius: var(--radius-sm); border: 1px solid var(--border-light);">
+          <i class="fas fa-play-circle" style="color: var(--google-blue);"></i>
+          <div style="flex: 1; display: grid; grid-template-columns: 2fr 1fr 1fr; gap: 0.5rem;">
+            <input type="text" placeholder="Lesson Title" value="${escapeHtml(les.title || '')}" onchange="updateLesson(${modIdx}, ${lesIdx}, 'title', this.value)" style="padding: 0.4rem 0.6rem; border: 1px solid var(--border-light); border-radius: 4px; font-size: 0.88rem;">
+            <input type="text" placeholder="Duration (e.g. 15m)" value="${escapeHtml(les.duration || '')}" onchange="updateLesson(${modIdx}, ${lesIdx}, 'duration', this.value)" style="padding: 0.4rem 0.6rem; border: 1px solid var(--border-light); border-radius: 4px; font-size: 0.88rem;">
+            <input type="text" placeholder="Video URL" value="${escapeHtml(les.video_url || '')}" onchange="updateLesson(${modIdx}, ${lesIdx}, 'video_url', this.value)" style="padding: 0.4rem 0.6rem; border: 1px solid var(--border-light); border-radius: 4px; font-size: 0.88rem;">
+          </div>
+          <button type="button" onclick="deleteLesson(${modIdx}, ${lesIdx})" style="background: none; border: none; color: #ea4335; cursor: pointer; padding: 4px;"><i class="fas fa-trash-alt"></i></button>
+        </div>
+      `;
+    });
+
+    modEl.innerHTML = `
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; border-bottom: 1px solid var(--border-light); padding-bottom: 0.75rem;">
+        <div style="display: flex; align-items: center; gap: 0.5rem; flex: 1;">
+          <span class="pill pill-indigo" style="font-size: 0.75rem;">Module ${modIdx + 1}</span>
+          <input type="text" value="${escapeHtml(mod.title || '')}" onchange="updateModuleTitle(${modIdx}, this.value)" placeholder="Module Title" style="flex: 1; max-width: 400px; font-weight: 700; padding: 0.4rem 0.65rem; border: 1px solid var(--border-light); border-radius: 6px; font-size: 0.95rem;">
+        </div>
+        <div style="display: flex; gap: 0.5rem;">
+          <button type="button" class="btn btn-secondary btn-sm" onclick="addNewLesson(${modIdx})"><i class="fas fa-plus"></i> Add Lesson</button>
+          <button type="button" class="btn btn-secondary btn-sm" onclick="deleteModule(${modIdx})" style="color: #ea4335;"><i class="fas fa-trash-alt"></i></button>
+        </div>
+      </div>
+      <div>
+        <div style="font-size: 0.8rem; font-weight: 700; color: var(--text-tertiary); text-transform: uppercase;">Lessons in this module (${(mod.lessons || []).length}):</div>
+        ${lessonsHtml || '<p style="font-size:0.85rem; color:var(--text-tertiary); margin:0.5rem 0 0;">No lessons yet. Click "Add Lesson" above.</p>'}
+      </div>
+    `;
+
+    container.appendChild(modEl);
+  });
+}
+
+function escapeHtml(str) {
+  if (!str) return "";
+  return String(str).replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/'/g, '&#39;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+}
+
+function addNewModule() {
+  currentModules.push({
+    id: "mod_" + (currentModules.length + 1) + "_" + Math.random().toString(36).substr(2, 6),
+    title: "New Module " + (currentModules.length + 1),
+    lessons: []
+  });
+  renderModules();
+}
+
+function deleteModule(idx) {
+  if (confirm("Delete this module and its lessons?")) {
+    currentModules.splice(idx, 1);
+    renderModules();
+  }
+}
+
+function updateModuleTitle(idx, val) {
+  currentModules[idx].title = val;
+}
+
+function addNewLesson(modIdx) {
+  if (!currentModules[modIdx].lessons) currentModules[modIdx].lessons = [];
+  const lesNum = currentModules[modIdx].lessons.length + 1;
+  currentModules[modIdx].lessons.push({
+    id: "les_" + (modIdx + 1) + "_" + lesNum + "_" + Math.random().toString(36).substr(2, 6),
+    title: "Lesson " + lesNum,
+    duration: "15m",
+    video_url: "https://www.youtube.com/embed/dQw4w9WgXcQ",
+    summary: ""
+  });
+  renderModules();
+}
+
+function deleteLesson(modIdx, lesIdx) {
+  currentModules[modIdx].lessons.splice(lesIdx, 1);
+  renderModules();
+}
+
+function updateLesson(modIdx, lesIdx, key, val) {
+  currentModules[modIdx].lessons[lesIdx][key] = val;
+}
+
+// On submit, serialize modules array to hidden input
+document.getElementById("course-edit-form").addEventListener("submit", function() {
+  document.getElementById("modules_json").value = JSON.stringify(currentModules);
+});
+
+// Initial render
+renderModules();
+</script>
+{% endblock %}

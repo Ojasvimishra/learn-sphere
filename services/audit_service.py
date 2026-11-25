@@ -23,8 +23,16 @@ class AuditService:
         status: str = "success",
         ip_address: Optional[str] = None,
         user_agent: Optional[str] = None,
-        details: Optional[Dict[str, Any]] = None
+        details: Optional[Dict[str, Any]] = None,
+        request: Optional[Any] = None
     ) -> str:
+        if request:
+            from core.middleware import get_client_ip
+            if not ip_address:
+                ip_address = get_client_ip(request)
+            if not user_agent:
+                user_agent = request.META.get("HTTP_USER_AGENT", "")
+
         actor_id = actor.get("id") or actor.get("_id") if actor else None
         actor_email = actor.get("email") if actor else None
         actor_role = actor.get("role") if actor else None

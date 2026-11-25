@@ -54,6 +54,47 @@ class CourseService:
         )
         return True, "Course created successfully.", course_id
 
+    def update_course(self, course_id: str, instructor: Dict[str, Any], data: Dict[str, Any]) -> Tuple[bool, str, Optional[Dict[str, Any]]]:
+        course = self.course_repo.find_by_id(course_id)
+        if not course:
+            return False, "Course not found.", None
+
+        is_owner = str(course.get("instructor_id")) == str(instructor.get("id"))
+        is_admin = instructor.get("role") in ["super_admin", "dept_admin"]
+        if not (is_owner or is_admin):
+            return False, "Permission denied: You can only edit your own courses.", None
+
+        try:
+            title = validate_string(data.get("title", course.get("title")), "title", min_length=5, max_length=150)
+            tagline = validate_string(data.get("tagline", course.get("tagline", "")), "tagline", min_length=5, max_length=200)
+            desc = validate_string(data.get("description", course.get("description", "")), "description", min_length=20, max_length=3000)
+        except ValidationError as e:
+            return False, e.message, None
+
+        update_fields = {
+            "title": title,
+            "tagline": tagline,
+            "description": desc,
+            "level": data.get("level", course.get("level", "Beginner")),
+            "duration_hours": int(data.get("duration_hours", course.get("duration_hours", 10))),
+            "category": data.get("category", course.get("category", "Smart Education")),
+            "price": float(data.get("price", course.get("price", 0.0))),
+            "status": data.get("status", course.get("status", "published"))
+        }
+
+        if "thumbnail_gradient" in data:
+            update_fields["thumbnail_gradient"] = data["thumbnail_gradient"]
+
+        ok = self.course_repo.update_course_details(course_id, update_fields)
+        if not ok:
+            return False, "Failed to update course details.", None
+
+        if "modules" in data and isinstance(data["modules"], list):
+            self.course_repo.update_syllabus(course_id, data["modules"])
+
+        updated_course = self.course_repo.find_by_id(course_id)
+        return True, "Course updated successfully.", updated_course
+
     def enroll_student(self, course_id: str, student_id: str) -> bool:
         course = self.course_repo.find_by_id(course_id)
         if not course:

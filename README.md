@@ -6,7 +6,7 @@
 ![Django](https://img.shields.io/badge/Django-6.1-092E20?style=for-the-badge&logo=django&logoColor=white)
 ![MongoDB](https://img.shields.io/badge/MongoDB-8.2-47A248?style=for-the-badge&logo=mongodb&logoColor=white)
 ![Python](https://img.shields.io/badge/Python-3.12-3776AB?style=for-the-badge&logo=python&logoColor=white)
-![Tests](https://img.shields.io/badge/Tests-32%2F32%20Passing-10B981?style=for-the-badge&logo=pytest&logoColor=white)
+![Tests](https://img.shields.io/badge/Tests-38%2F38%20Passing-10B981?style=for-the-badge&logo=pytest&logoColor=white)
 ![Security](https://img.shields.io/badge/Security-Argon2id%20%7C%205--Role%20RBAC%20%7C%20Audit%20Log-10B981?style=for-the-badge)
 
 <br/>
@@ -35,7 +35,7 @@
 7. [Disaster Recovery & Extended JSON Backups](#-disaster-recovery--extended-json-backups)
 8. [Docker Compose & Deployment](#-docker-compose--deployment)
 9. [Quickstart & Initial Admin Bootstrap](#-quickstart--initial-admin-bootstrap)
-10. [Automated Test Suite (32 Passing Tests)](#-automated-test-suite-32-passing-tests)
+10. [Automated Test Suite (38 Passing Tests)](#-automated-test-suite-38-passing-tests)
 11. [REST API & OpenAPI Specification](#-rest-api--openapi-specification)
 
 ---
@@ -318,9 +318,9 @@ Open your browser to: **`http://127.0.0.1:8000/`**
 
 ---
 
-## 🧪 Automated Test Suite (32 Passing Tests)
+## 🧪 Automated Test Suite (38 Passing Tests)
 
-Run the automated test suite across all 8 phases:
+Run the automated test suite across all 9 phases (Phases 0–8):
 ```powershell
 pytest tests/ -v
 ```
@@ -344,6 +344,7 @@ tests/test_phase3_exams.py::test_exam_creation_and_taker_payload_sanitization PA
 tests/test_phase3_exams.py::test_server_side_grading_and_evaluation PASSED
 tests/test_phase3_exams.py::test_anti_cheat_proctor_flagging PASSED
 tests/test_phase3_exams.py::test_faculty_grade_override_and_audit_trail PASSED
+tests/test_phase3_exams.py::test_exam_take_view_renders_cleanly_for_student PASSED
 tests/test_phase4_labs.py::test_code_runner_safe_execution PASSED
 tests/test_phase4_labs.py::test_code_sandbox_security_rejections PASSED
 tests/test_phase4_labs.py::test_lab_test_case_evaluation PASSED
@@ -358,9 +359,21 @@ tests/test_phase6_portals.py::test_portal_rbac_authorization PASSED
 tests/test_phase6_portals.py::test_educator_grade_override_and_audit PASSED
 tests/test_phase6_portals.py::test_admin_educator_approval_queue PASSED
 tests/test_phase7_e2e_integration.py::test_complete_platform_e2e_workflow PASSED
+tests/test_phase8_educator_platform.py::test_educator_can_update_course PASSED
+tests/test_phase8_educator_platform.py::test_educator_can_see_students_progress PASSED
+tests/test_phase8_educator_platform.py::test_educator_can_schedule_exam PASSED
+tests/test_phase8_educator_platform.py::test_educator_can_see_results_and_override_grade PASSED
+tests/test_phase8_educator_platform.py::test_educator_report_and_admin_workflow PASSED
 
-============================= 32 passed in 5.04s ==============================
+======================= 38 passed, 6 warnings in 11.06s =======================
 ```
+
+### Phase 8: Educator Operations & Admin Reporting
+- **Course Curriculum Editor (`/courses/educator/<course_id>/edit/`)**: Full metadata & module/lesson editor with Draft, Publish, and Submit-to-Admin workflows.
+- **Cohort & Student Progress Analytics (`/educator/students-progress/`)**: Real-time completion percentages, completed lesson counts, and search/course filters.
+- **Exam Scheduler (`/exams/educator/create/`)**: Timed proctored exam scheduling with start/end windows, tab-switch limits, and interactive question authoring.
+- **Results & Grade Overrides (`/educator/exams/submissions/`)**: Inspect student scores, anti-cheat telemetry, and override grades with mandatory audit justification.
+- **Educator-to-Admin Reporting (`/educator/reports/submit/` -> `/admin-panel/reports/<report_id>/acknowledge/`)**: Escalate proctoring incidents, progress summaries, or curriculum updates directly to the Admin Command Center.
 
 ---
 

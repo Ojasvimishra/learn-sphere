@@ -10,6 +10,8 @@ urlpatterns = [
     path("api/<str:course_id>/lessons/<str:lesson_id>/complete/", views.api_complete_lesson, name="api_complete_lesson"),
 
     # Educator Studio Views
+    path("create/", views.educator_course_create_view, name="course_create_alias"),
     path("educator/studio/", views.educator_courses_list_view, name="educator_courses"),
     path("educator/create/", views.educator_course_create_view, name="educator_course_create"),
+    path("educator/<str:course_id>/edit/", views.educator_course_edit_view, name="educator_course_edit"),
 ]

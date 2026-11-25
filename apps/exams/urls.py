@@ -13,6 +13,7 @@ urlpatterns = [
     path("api/attempt/<str:attempt_id>/submit/", views.api_exam_submit, name="api_exam_submit"),
 
     # Educator Studio Exam Management
+    path("create/", views.educator_exam_create_view, name="exam_create_alias"),
     path("educator/create/", views.educator_exam_create_view, name="educator_exam_create"),
     path("educator/<str:exam_id>/submissions/", views.educator_submissions_view, name="educator_exam_submissions"),
     path("api/attempt/<str:attempt_id>/override-grade/", views.api_override_grade, name="api_override_grade"),

@@ -27,7 +27,9 @@ class ExamRepository(BaseRepository):
         passing_marks: int = 60,
         is_proctored: bool = True,
         tab_switch_limit: int = 3,
-        description: str = ""
+        description: str = "",
+        scheduled_start: Optional[Any] = None,
+        scheduled_end: Optional[Any] = None
     ) -> str:
         now = datetime.now(timezone.utc)
         # Ensure questions have unique IDs
@@ -50,6 +52,8 @@ class ExamRepository(BaseRepository):
             "passing_marks": passing_marks,
             "is_proctored": is_proctored,
             "tab_switch_limit": tab_switch_limit,
+            "scheduled_start": scheduled_start,
+            "scheduled_end": scheduled_end,
             "questions": normalized_q,
             "questions_count": len(normalized_q),
             "status": "published",  # draft, published, closed
@@ -60,6 +64,9 @@ class ExamRepository(BaseRepository):
 
     def list_by_course(self, course_id: str) -> List[Dict[str, Any]]:
         return self.find_many({"course_id": str(course_id)}, sort=[("created_at", -1)])
+
+    def list_by_instructor(self, instructor_id: str) -> List[Dict[str, Any]]:
+        return self.find_many({"instructor_id": str(instructor_id)}, sort=[("created_at", -1)])
 
     def list_available_exams(self) -> List[Dict[str, Any]]:
         return self.find_many({"status": "published"}, sort=[("created_at", -1)], limit=30)

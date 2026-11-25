@@ -131,6 +131,14 @@ def educator_exam_create_view(request):
         duration = int(request.POST.get("duration_minutes", 60) or 60)
         desc = request.POST.get("description", "")
         raw_json_q = request.POST.get("questions_json", "[]")
+        scheduled_start = request.POST.get("scheduled_start") or None
+        scheduled_end = request.POST.get("scheduled_end") or None
+        is_proctored = request.POST.get("is_proctored") != "false"
+        tab_switch_limit = int(request.POST.get("tab_switch_limit", 3) or 3)
+        passing_marks = int(request.POST.get("passing_marks", 60) or 60)
+
+        course_obj = course_service.get_course_by_id(course_id)
+        course_title = course_obj.get("title", "Curriculum Exam") if course_obj else "Curriculum Exam"
 
         try:
             questions = json.loads(raw_json_q)
@@ -146,13 +154,30 @@ def educator_exam_create_view(request):
                 }
             ]
 
+        if not questions:
+            questions = [
+                {
+                    "text": "Explain key core concepts covered in this curriculum module.",
+                    "type": "single_choice",
+                    "options": ["Principle A: High scalability", "Principle B: Zero fault tolerance", "Principle C: Single point failure", "Principle D: None"],
+                    "correct_option_index": 0,
+                    "marks": 10,
+                    "explanation": "Scalable modular architecture is a core tenant."
+                }
+            ]
+
         ok, msg, exam_id = exam_service.create_exam(user, {
             "title": title,
             "course_id": course_id,
+            "course_title": course_title,
             "duration_minutes": duration,
             "description": desc,
             "questions": questions,
-            "is_proctored": True
+            "is_proctored": is_proctored,
+            "tab_switch_limit": tab_switch_limit,
+            "passing_marks": passing_marks,
+            "scheduled_start": scheduled_start,
+            "scheduled_end": scheduled_end
         })
 
         if ok:

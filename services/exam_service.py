@@ -48,7 +48,9 @@ class ExamService:
             passing_marks=passing_marks,
             is_proctored=bool(data.get("is_proctored", True)),
             tab_switch_limit=int(data.get("tab_switch_limit", 3)),
-            description=data.get("description", "")
+            description=data.get("description", ""),
+            scheduled_start=data.get("scheduled_start"),
+            scheduled_end=data.get("scheduled_end")
         )
         return True, "Exam created successfully.", exam_id
 

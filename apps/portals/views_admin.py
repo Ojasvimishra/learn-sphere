@@ -19,6 +19,7 @@ from database.repositories.enrollment_repo import EnrollmentRepository
 from database.repositories.exam_repo import ExamSubmissionRepository
 from database.repositories.doubt_repo import DoubtRepository
 from database.repositories.audit_repo import AuditRepository
+from database.repositories.report_repo import EducatorReportRepository
 from services.audit_service import AuditService
 
 
@@ -59,12 +60,19 @@ def admin_panel_view(request):
     audit_page = audit_repo.query_logs(page=1, per_page=30)
     audit_logs = audit_page.get("items", [])
 
+    # 6. Incoming Educator Reports & Updates
+    report_repo = EducatorReportRepository()
+    educator_reports = report_repo.list_reports(limit=30)
+    pending_reports_count = sum(1 for r in educator_reports if r.get("status") == "pending")
+
     context = {
         "user": user,
         "metrics": metrics,
         "users_list": users_list,
         "pending_educators": pending_educators,
         "pending_courses": pending_courses,
+        "educator_reports": educator_reports,
+        "pending_reports_count": pending_reports_count,
         "audit_logs": audit_logs,
         "available_roles": ALL_ROLES,
         "current_role_filter": role_filter,
@@ -188,3 +196,25 @@ def admin_approve_course_api(request, course_id):
         return JsonResponse({"success": True, "message": f"Course '{course.get('title')}' approved and published."})
 
     return JsonResponse({"success": False, "error": "Failed to approve course."}, status=500)
+
+
+@login_required_mongo()
+@permission_required_mongo("user.manage")
+@require_http_methods(["POST"])
+def admin_acknowledge_report_api(request, report_id):
+    """Marks an incoming faculty update or exam incident report as reviewed."""
+    notes = request.POST.get("notes", "").strip()
+    report_repo = EducatorReportRepository()
+    ok = report_repo.acknowledge_report(report_id, request.mongo_user, notes=notes)
+    if ok:
+        AuditService().log_event(
+            action="educator.report_acknowledged",
+            actor=request.mongo_user,
+            resource_type="educator_report",
+            resource_id=report_id,
+            details={"notes": notes},
+            request=request
+        )
+        return JsonResponse({"success": True, "message": "Report reviewed and acknowledged."})
+
+    return JsonResponse({"success": False, "error": "Failed to acknowledge report."}, status=500)

@@ -44,7 +44,7 @@ ROLE_PERMISSIONS: Dict[str, Set[str]] = {
     },
     ROLE_EDUCATOR: {
         "course.view", "course.create", "course.edit", "course.publish",
-        "exam.view", "exam.create", "exam.proctor", "grade.view",
+        "exam.view", "exam.create", "exam.proctor", "grade.view", "grade.override",
         "live.view", "live.host",
         "lab.view", "lab.create", "lab.execute",
         "doubt.view", "doubt.answer",

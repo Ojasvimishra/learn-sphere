@@ -1,0 +1,301 @@
+{% extends "base.html" %}
+
+{% block title %}Schedule Proctored Exam | Educator Studio{% endblock %}
+
+{% block content %}
+<div class="container" style="padding-top: 2.5rem; padding-bottom: 4rem; max-width: 960px;">
+  <div style="margin-bottom: 1.5rem;">
+    <a href="/educator/" style="color: var(--text-secondary); text-decoration: none; font-size: 0.9rem; display: inline-flex; align-items: center; gap: 0.4rem; font-weight: 500;">
+      <i class="fas fa-arrow-left"></i> Back to Educator Operations Studio
+    </a>
+  </div>
+
+  <!-- Header -->
+  <div style="margin-bottom: 2rem;">
+    <div style="display: flex; align-items: center; gap: 0.6rem; margin-bottom: 0.4rem;">
+      <span class="pill pill-indigo"><i class="fas fa-file-signature"></i> Assessment Authoring</span>
+      <span class="pill pill-emerald">Anti-Cheat Proctoring Enabled</span>
+    </div>
+    <h1 style="font-size: 2.2rem; font-weight: 800; color: var(--text-primary); margin: 0;">
+      Schedule & Author Proctored Exam
+    </h1>
+    <p style="color: var(--text-secondary); font-size: 0.95rem; margin-top: 0.25rem;">
+      Configure exam windows, time limits, question banks, and anti-cheat tab-switch anomaly thresholds.
+    </p>
+  </div>
+
+  {% if error_msg %}
+    <div style="background: var(--google-red-light); border: 1px solid #ffa39e; border-radius: var(--radius-sm); padding: 1rem 1.25rem; color: var(--google-red); font-size: 0.95rem; margin-bottom: 2rem; display: flex; align-items: center; gap: 0.6rem; font-weight: 600;">
+      <i class="fas fa-exclamation-circle" style="font-size: 1.1rem;"></i>
+      <span>{{ error_msg }}</span>
+    </div>
+  {% endif %}
+
+  <form method="POST" id="exam-create-form">
+    {% csrf_token %}
+    <input type="hidden" name="questions_json" id="questions_json" value="">
+
+    <!-- Card 1: Exam Metadata & Course Selection -->
+    <div class="glass-panel" style="padding: 2.25rem; border-radius: 24px; margin-bottom: 2rem;">
+      <h3 style="font-size: 1.25rem; font-weight: 800; color: var(--text-primary); margin-bottom: 1.5rem; display: flex; align-items: center; gap: 0.5rem;">
+        <i class="fas fa-info-circle" style="color: var(--google-blue);"></i> General Exam Details
+      </h3>
+
+      <div style="display: grid; grid-template-columns: 2fr 1fr; gap: 1.25rem; margin-bottom: 1.25rem;">
+        <div class="form-group">
+          <label class="form-label" style="font-weight: 700;">Exam Title *</label>
+          <input 
+            type="text" 
+            name="title" 
+            required 
+            class="form-control"
+            placeholder="e.g. Midterm Evaluation: Quantum Algorithms & Circuits"
+          >
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" style="font-weight: 700;">Associated Course *</label>
+          <select name="course_id" required class="form-control">
+            <option value="">-- Choose Course --</option>
+            {% for c in courses %}
+              <option value="{{ c.id }}">{{ c.title }}</option>
+            {% endfor %}
+          </select>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label" style="font-weight: 700;">Exam Description / Instructions *</label>
+        <textarea 
+          name="description" 
+          rows="3" 
+          required 
+          class="form-control"
+          placeholder="Detailed assessment instructions for students before starting the proctored session..."
+        >Comprehensive evaluation of modular principles, algorithmic analysis, and problem-solving techniques.</textarea>
+      </div>
+    </div>
+
+    <!-- Card 2: Schedule & Anti-Cheat Rules -->
+    <div class="glass-panel" style="padding: 2.25rem; border-radius: 24px; margin-bottom: 2rem;">
+      <h3 style="font-size: 1.25rem; font-weight: 800; color: var(--text-primary); margin-bottom: 1.5rem; display: flex; align-items: center; gap: 0.5rem;">
+        <i class="fas fa-calendar-alt" style="color: #ea4335;"></i> Schedule & Proctoring Rules
+      </h3>
+
+      <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1.25rem; margin-bottom: 1.25rem;">
+        <div class="form-group">
+          <label class="form-label" style="font-weight: 700;">Schedule Start Window</label>
+          <input 
+            type="datetime-local" 
+            name="scheduled_start" 
+            class="form-control"
+          >
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" style="font-weight: 700;">Schedule End Window</label>
+          <input 
+            type="datetime-local" 
+            name="scheduled_end" 
+            class="form-control"
+          >
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" style="font-weight: 700;">Duration (Minutes) *</label>
+          <input 
+            type="number" 
+            name="duration_minutes" 
+            min="5" 
+            max="300" 
+            value="45" 
+            required 
+            class="form-control"
+          >
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" style="font-weight: 700;">Passing Marks *</label>
+          <input 
+            type="number" 
+            name="passing_marks" 
+            min="1" 
+            value="30" 
+            required 
+            class="form-control"
+          >
+        </div>
+      </div>
+
+      <div style="display: flex; gap: 2rem; align-items: center; margin-top: 1rem; padding-top: 1rem; border-top: 1px solid var(--border-light); flex-wrap: wrap;">
+        <label style="display: flex; align-items: center; gap: 0.6rem; cursor: pointer; font-weight: 600; color: var(--text-primary);">
+          <input type="checkbox" name="is_proctored" value="true" checked style="width: 18px; height: 18px;">
+          <span>Enable Anti-Cheat Proctoring (Tab-switch & visibility detection)</span>
+        </label>
+
+        <div style="display: flex; align-items: center; gap: 0.5rem;">
+          <label style="font-size: 0.85rem; font-weight: 700; color: var(--text-secondary); white-space: nowrap;">Tab Switch Limit:</label>
+          <input type="number" name="tab_switch_limit" min="1" max="10" value="3" style="width: 70px; padding: 0.4rem; border: 1px solid var(--border-light); border-radius: 6px;">
+        </div>
+      </div>
+    </div>
+
+    <!-- Card 3: Interactive Question Bank Builder -->
+    <div class="glass-panel" style="padding: 2.25rem; border-radius: 24px; margin-bottom: 2rem;">
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; flex-wrap: wrap; gap: 1rem;">
+        <div>
+          <h3 style="font-size: 1.25rem; font-weight: 800; color: var(--text-primary); margin: 0; display: flex; align-items: center; gap: 0.5rem;">
+            <i class="fas fa-tasks" style="color: var(--google-green);"></i> Question Authoring Engine
+          </h3>
+          <p style="color: var(--text-secondary); font-size: 0.85rem; margin: 0.25rem 0 0;">
+            Add multiple-choice questions, configure options, and designate server-side evaluated answer keys.
+          </p>
+        </div>
+        <button type="button" class="btn btn-secondary btn-sm" onclick="addNewQuestion()">
+          <i class="fas fa-plus"></i> Add Question
+        </button>
+      </div>
+
+      <div id="questions-container" style="display: flex; flex-direction: column; gap: 1.5rem;">
+        <!-- Questions injected via JavaScript -->
+      </div>
+    </div>
+
+    <!-- Submission Footer -->
+    <div class="glass-panel" style="padding: 1.75rem 2.25rem; border-radius: 24px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem;">
+      <div style="font-size: 0.9rem; color: var(--text-secondary);">
+        Exam will be published and available for enrolled students during the scheduled window.
+      </div>
+      <button type="submit" class="btn btn-primary" style="padding: 0.75rem 2.5rem; font-size: 1.05rem;">
+        <i class="fas fa-calendar-check"></i> Schedule & Publish Exam
+      </button>
+    </div>
+  </form>
+</div>
+
+<script>
+let questions = [
+  {
+    id: "q_1",
+    text: "What is the primary advantage of Argon2id over basic SHA-256 for password hashing?",
+    type: "single_choice",
+    options: [
+      "Memory hardness resisting parallel GPU/ASIC brute-force attacks",
+      "Lower memory consumption on mobile devices",
+      "Shorter hash output string length",
+      "Sub-millisecond instantaneous execution speed"
+    ],
+    correct_option_index: 0,
+    marks: 10,
+    explanation: "Argon2id utilizes memory-hard algorithms specifically designed to neutralize parallel brute-force cracking on GPUs and custom ASICs."
+  }
+];
+
+function renderQuestions() {
+  const container = document.getElementById("questions-container");
+  container.innerHTML = "";
+
+  if (questions.length === 0) {
+    container.innerHTML = `
+      <div style="text-align: center; padding: 2.5rem; background: rgba(0,0,0,0.01); border: 2px dashed var(--border-light); border-radius: var(--radius-md);">
+        <i class="fas fa-question-circle" style="font-size: 2rem; color: var(--text-tertiary); margin-bottom: 0.5rem;"></i>
+        <div style="font-weight: 700; color: var(--text-secondary);">No Questions Configured</div>
+        <button type="button" class="btn btn-primary btn-sm" onclick="addNewQuestion()" style="margin-top: 1rem;"><i class="fas fa-plus"></i> Add First Question</button>
+      </div>
+    `;
+    return;
+  }
+
+  questions.forEach((q, qIdx) => {
+    const qEl = document.createElement("div");
+    qEl.style.cssText = "background: #fff; border: 1.5px solid var(--border-light); border-radius: var(--radius-md); padding: 1.5rem; box-shadow: 0 2px 8px rgba(0,0,0,0.03);";
+
+    let optionsHtml = "";
+    (q.options || []).forEach((opt, optIdx) => {
+      const isChecked = q.correct_option_index === optIdx ? "checked" : "";
+      optionsHtml += `
+        <div style="display: flex; align-items: center; gap: 0.75rem; margin-top: 0.65rem;">
+          <input type="radio" name="correct_opt_${qIdx}" value="${optIdx}" ${isChecked} onchange="updateCorrectOption(${qIdx}, ${optIdx})" style="width: 18px; height: 18px; cursor: pointer;" title="Mark as correct answer">
+          <input type="text" placeholder="Option ${optIdx + 1}" value="${escapeHtml(opt)}" onchange="updateOptionText(${qIdx}, ${optIdx}, this.value)" style="flex: 1; padding: 0.5rem 0.75rem; border: 1px solid var(--border-light); border-radius: 6px; font-size: 0.9rem;" required>
+          <span style="font-size: 0.75rem; color: ${q.correct_option_index === optIdx ? 'var(--google-green)' : 'var(--text-tertiary)'}; font-weight: 700; width: 65px;">
+            ${q.correct_option_index === optIdx ? '✓ Correct' : ''}
+          </span>
+        </div>
+      `;
+    });
+
+    qEl.innerHTML = `
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; border-bottom: 1px solid var(--border-light); padding-bottom: 0.75rem;">
+        <div style="display: flex; align-items: center; gap: 0.6rem;">
+          <span class="pill pill-indigo" style="font-size: 0.75rem;">Question ${qIdx + 1}</span>
+          <div style="display: flex; align-items: center; gap: 0.35rem;">
+            <label style="font-size: 0.8rem; font-weight: 700; color: var(--text-tertiary);">Marks:</label>
+            <input type="number" min="1" max="100" value="${q.marks || 10}" onchange="updateMarks(${qIdx}, this.value)" style="width: 60px; padding: 0.3rem 0.45rem; border: 1px solid var(--border-light); border-radius: 4px; font-size: 0.85rem;">
+          </div>
+        </div>
+        <button type="button" class="btn btn-secondary btn-sm" onclick="deleteQuestion(${qIdx})" style="color: #ea4335;"><i class="fas fa-trash-alt"></i> Remove</button>
+      </div>
+
+      <div style="margin-bottom: 1rem;">
+        <label style="font-size: 0.85rem; font-weight: 700; color: var(--text-primary); margin-bottom: 0.35rem; display: block;">Question Text *</label>
+        <textarea rows="2" placeholder="Type question statement..." onchange="updateQuestionText(${qIdx}, this.value)" style="width: 100%; padding: 0.6rem 0.75rem; border: 1px solid var(--border-light); border-radius: 6px; font-size: 0.92rem;" required>${escapeHtml(q.text)}</textarea>
+      </div>
+
+      <div style="margin-bottom: 1rem;">
+        <label style="font-size: 0.85rem; font-weight: 700; color: var(--text-primary); margin-bottom: 0.35rem; display: block;">Choices (Select radio button for the correct answer) *</label>
+        ${optionsHtml}
+      </div>
+
+      <div>
+        <label style="font-size: 0.82rem; font-weight: 700; color: var(--text-tertiary); margin-bottom: 0.25rem; display: block;">Answer Explanation (Shown to students post-evaluation):</label>
+        <input type="text" placeholder="Explain why the marked answer is correct..." value="${escapeHtml(q.explanation || '')}" onchange="updateExplanation(${qIdx}, this.value)" style="width: 100%; padding: 0.45rem 0.75rem; border: 1px solid var(--border-light); border-radius: 6px; font-size: 0.85rem; color: var(--text-secondary);">
+      </div>
+    `;
+
+    container.appendChild(qEl);
+  });
+}
+
+function escapeHtml(str) {
+  if (!str) return "";
+  return String(str).replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/'/g, '&#39;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+}
+
+function addNewQuestion() {
+  questions.push({
+    id: "q_" + (questions.length + 1) + "_" + Math.random().toString(36).substr(2, 6),
+    text: "",
+    type: "single_choice",
+    options: ["Option A", "Option B", "Option C", "Option D"],
+    correct_option_index: 0,
+    marks: 10,
+    explanation: ""
+  });
+  renderQuestions();
+}
+
+function deleteQuestion(idx) {
+  if (confirm("Remove question " + (idx + 1) + "?")) {
+    questions.splice(idx, 1);
+    renderQuestions();
+  }
+}
+
+function updateQuestionText(idx, val) { questions[idx].text = val; }
+function updateMarks(idx, val) { questions[idx].marks = parseInt(val) || 5; }
+function updateCorrectOption(qIdx, optIdx) { questions[qIdx].correct_option_index = optIdx; renderQuestions(); }
+function updateOptionText(qIdx, optIdx, val) { questions[qIdx].options[optIdx] = val; }
+function updateExplanation(qIdx, val) { questions[qIdx].explanation = val; }
+
+document.getElementById("exam-create-form").addEventListener("submit", function(e) {
+  if (questions.length === 0) {
+    e.preventDefault();
+    alert("Please add at least one question before scheduling the exam.");
+    return;
+  }
+  document.getElementById("questions_json").value = JSON.stringify(questions);
+});
+
+renderQuestions();
+</script>
+{% endblock %}

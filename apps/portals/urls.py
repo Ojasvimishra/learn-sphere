@@ -12,14 +12,17 @@ from apps.portals.views_student import (
 from apps.portals.views_educator import (
     educator_studio_view,
     educator_submissions_view,
-    educator_grade_override_api
+    educator_grade_override_api,
+    educator_students_progress_view,
+    educator_submit_report_to_admin_api
 )
 from apps.portals.views_admin import (
     admin_panel_view,
     admin_approve_educator_api,
     admin_reject_educator_api,
     admin_change_role_api,
-    admin_approve_course_api
+    admin_approve_course_api,
+    admin_acknowledge_report_api
 )
 
 urlpatterns = [
@@ -30,6 +33,8 @@ urlpatterns = [
 
     # Educator Studio
     path("educator/", educator_studio_view, name="educator_studio"),
+    path("educator/students-progress/", educator_students_progress_view, name="educator_students_progress"),
+    path("educator/reports/submit/", educator_submit_report_to_admin_api, name="educator_submit_report"),
     path("educator/exams/submissions/", educator_submissions_view, name="educator_submissions"),
     path("educator/exams/submissions/<str:attempt_id>/override/", educator_grade_override_api, name="educator_grade_override"),
 
@@ -39,4 +44,5 @@ urlpatterns = [
     path("admin-panel/educators/<str:user_id>/reject/", admin_reject_educator_api, name="admin_reject_educator"),
     path("admin-panel/users/<str:user_id>/role/", admin_change_role_api, name="admin_change_role"),
     path("admin-panel/courses/<str:course_id>/approve/", admin_approve_course_api, name="admin_approve_course"),
+    path("admin-panel/reports/<str:report_id>/acknowledge/", admin_acknowledge_report_api, name="admin_acknowledge_report"),
 ]

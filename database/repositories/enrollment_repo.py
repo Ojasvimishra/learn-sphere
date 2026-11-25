@@ -87,3 +87,27 @@ class EnrollmentRepository(BaseRepository):
             {"user_id": str(user_id), "course_id": str(course_id)},
             {"$set": {"last_accessed_lesson_id": str(lesson_id), "last_accessed_at": now}}
         )
+
+    def list_by_course(self, course_id: str) -> List[Dict[str, Any]]:
+        """Returns all student enrollments for a given course."""
+        return self.find_many({"course_id": str(course_id)}, sort=[("enrolled_at", -1)])
+
+    def list_by_course_ids(self, course_ids: List[str]) -> List[Dict[str, Any]]:
+        """Returns student enrollments across a list of courses."""
+        clean_ids = [str(cid) for cid in course_ids]
+        return self.find_many({"course_id": {"$in": clean_ids}}, sort=[("last_accessed_at", -1)])
+
+    def get_course_completion_stats(self, course_id: str) -> Dict[str, Any]:
+        """Calculates enrollment count, average progress, and completion numbers."""
+        enrollments = self.list_by_course(course_id)
+        total = len(enrollments)
+        if total == 0:
+            return {"total_enrolled": 0, "avg_progress": 0.0, "completed_count": 0}
+
+        completed = sum(1 for e in enrollments if e.get("progress_percent", 0) >= 100.0 or e.get("completed_at"))
+        avg_progress = round(sum(e.get("progress_percent", 0.0) for e in enrollments) / total, 1)
+        return {
+            "total_enrolled": total,
+            "avg_progress": avg_progress,
+            "completed_count": completed
+        }

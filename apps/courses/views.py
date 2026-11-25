@@ -155,3 +155,90 @@ def educator_course_create_view(request):
             error_msg = msg
 
     return render(request, "pages/educator_course_create.html", {"error_msg": error_msg})
+
+
+@require_http_methods(["GET", "POST"])
+@role_required_mongo("educator", "dept_admin", "super_admin")
+def educator_course_edit_view(request, course_id):
+    """Allows instructors to edit course metadata, syllabus modules, and publish/submit to admin."""
+    user = request.mongo_user
+    course = course_service.get_course_by_id(course_id)
+    if not course:
+        raise Http404("Course not found")
+
+    is_owner = str(course.get("instructor_id")) == str(user.get("id"))
+    is_admin = user.get("role") in ["super_admin", "dept_admin"]
+    if not (is_owner or is_admin):
+        raise Http404("You do not have permission to edit this course")
+
+    error_msg = None
+    success_msg = None
+
+    if request.method == "POST":
+        title = request.POST.get("title", "")
+        tagline = request.POST.get("tagline", "")
+        description = request.POST.get("description", "")
+        level = request.POST.get("level", "Beginner")
+        duration_hours = int(request.POST.get("duration_hours", 10) or 10)
+        category = request.POST.get("category", "Smart Education")
+        price = float(request.POST.get("price", 0.0) or 0.0)
+        status_action = request.POST.get("status_action", "publish")  # save_draft, publish, submit_admin
+
+        new_status = course.get("status", "published")
+        if status_action == "save_draft":
+            new_status = "draft"
+        elif status_action == "submit_admin":
+            new_status = "pending_approval"
+        elif status_action == "publish":
+            new_status = "published"
+
+        # Check if modules JSON was submitted
+        modules = course.get("modules", [])
+        raw_modules = request.POST.get("modules_json")
+        if raw_modules:
+            try:
+                modules = json.loads(raw_modules)
+            except Exception:
+                pass
+
+        ok, msg, updated = course_service.update_course(course_id, user, {
+            "title": title,
+            "tagline": tagline,
+            "description": description,
+            "level": level,
+            "duration_hours": duration_hours,
+            "category": category,
+            "price": price,
+            "status": new_status,
+            "modules": modules
+        })
+
+        if ok:
+            if status_action == "submit_admin":
+                from database.repositories.report_repo import EducatorReportRepository
+                report_repo = EducatorReportRepository()
+                report_repo.create_report(
+                    educator_id=str(user.get("id")),
+                    educator_name=user.get("full_name") or user.get("username", "Educator"),
+                    educator_email=user.get("email", ""),
+                    report_type="course_update",
+                    title=f"Curriculum Review Request: {title}",
+                    message=f"Educator has updated curriculum '{title}' and submitted it for administrative verification and publication.",
+                    course_id=course_id,
+                    course_title=title,
+                    priority="normal"
+                )
+            return redirect(f"/courses/educator/{course_id}/edit/?saved=true")
+        else:
+            error_msg = msg
+            course = course_service.get_course_by_id(course_id)
+    else:
+        if request.GET.get("saved") == "true":
+            success_msg = "Course updated successfully."
+
+    return render(request, "pages/educator_course_edit.html", {
+        "course": course,
+        "error_msg": error_msg,
+        "success_msg": success_msg,
+        "user": user
+    })
