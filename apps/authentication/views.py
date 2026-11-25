@@ -20,15 +20,61 @@ auth_service = AuthService()
 @csrf_protect
 def login_view(request):
     if getattr(request, "mongo_user", None):
+        is_ajax = request.headers.get("x-requested-with") == "XMLHttpRequest" or "application/json" in request.headers.get("accept", "")
+        if is_ajax:
+            return api_success({"redirect_url": "/dashboard/"})
         return redirect("/dashboard/")
 
     error_msg = None
+    identifier_error = None
+    password_error = None
+    identifier = ""
+
     if request.method == "POST":
-        identifier = request.POST.get("identifier", "").strip()
-        password = request.POST.get("password", "")
-        remember_me = request.POST.get("remember_me")
+        is_ajax = (
+            request.headers.get("x-requested-with") == "XMLHttpRequest"
+            or "application/json" in request.headers.get("accept", "")
+            or request.content_type == "application/json"
+        )
+
+        if request.content_type == "application/json":
+            try:
+                body_data = json.loads(request.body)
+            except Exception:
+                body_data = {}
+            identifier = body_data.get("identifier", "").strip()
+            password = body_data.get("password", "")
+            remember_me = body_data.get("remember_me")
+            next_url_param = body_data.get("next")
+        else:
+            identifier = request.POST.get("identifier", "").strip()
+            password = request.POST.get("password", "")
+            remember_me = request.POST.get("remember_me")
+            next_url_param = request.POST.get("next")
+
         ip = get_client_ip(request)
         ua = request.META.get("HTTP_USER_AGENT", "")
+
+        # Target-specific field validation
+        if not identifier:
+            identifier_error = "Please enter your username or email."
+            if is_ajax:
+                return api_error(identifier_error, status_code=400, errors={"field": "identifier", "message": identifier_error})
+            return render(request, "pages/login.html", {
+                "identifier_error": identifier_error,
+                "identifier": identifier,
+                "next": next_url_param or request.GET.get("next", "")
+            })
+
+        if not password:
+            password_error = "Please enter your password."
+            if is_ajax:
+                return api_error(password_error, status_code=400, errors={"field": "password", "message": password_error})
+            return render(request, "pages/login.html", {
+                "password_error": password_error,
+                "identifier": identifier,
+                "next": next_url_param or request.GET.get("next", "")
+            })
 
         success, msg, user, tokens = auth_service.authenticate(identifier, password, ip_address=ip, user_agent=ua)
         if success:
@@ -41,8 +87,15 @@ def login_view(request):
             else:
                 request.session.set_expiry(60 * 60 * 24 * 7)
 
-            next_url = request.GET.get("next") or request.POST.get("next") or "/dashboard/"
-            response = redirect(next_url)
+            next_url = next_url_param or request.GET.get("next") or "/dashboard/"
+
+            if is_ajax:
+                response = api_success({
+                    "redirect_url": next_url,
+                    "user": {"id": user["id"], "username": user.get("username"), "role": user.get("role")}
+                }, message="Signed in successfully.")
+            else:
+                response = redirect(next_url)
 
             # Set HttpOnly SameSite Lax cookies
             is_secure = not request.build_absolute_uri().startswith("http://localhost") and request.is_secure()
@@ -64,10 +117,24 @@ def login_view(request):
             )
             return response
         else:
-            error_msg = msg
+            # Determine which line/field to attach the error to
+            target_field = "password"
+            password_error = msg
+            if is_ajax:
+                return api_error(msg, status_code=400, errors={"field": target_field, "message": msg})
+
+            return render(request, "pages/login.html", {
+                "password_error": password_error,
+                "error_msg": msg,
+                "identifier": identifier,
+                "next": next_url_param or request.GET.get("next", "")
+            })
 
     return render(request, "pages/login.html", {
-        "error_msg": error_msg,
+        "identifier": "",
+        "identifier_error": None,
+        "password_error": None,
+        "error_msg": None,
         "next": request.GET.get("next", "")
     })
 
