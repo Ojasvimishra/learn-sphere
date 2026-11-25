@@ -280,6 +280,18 @@ docker compose ps
 docker compose exec web python database/migrations/migration_runner.py
 ```
 
+### ▲ Deploy to Vercel (Serverless WSGI)
+1. Import this GitHub repository into [Vercel](https://vercel.com/).
+2. Vercel automatically detects `vercel.json` and routes requests to `learnsphere/wsgi.py` (`app`) with WhiteNoise static asset serving (`WHITENOISE_USE_FINDERS=True`).
+3. Configure the following Environment Variables in **Vercel Project Settings &rarr; Environment Variables**:
+   - `DEBUG=False`
+   - `SECRET_KEY=<strong-random-secret>`
+   - `JWT_SECRET=<strong-32+-char-jwt-secret>`
+   - `MONGODB_URI=mongodb+srv://<user>:<password>@<cluster>.mongodb.net/?retryWrites=true&w=majority`
+   - `MONGODB_NAME=learnsphere_db`
+   - `REDIS_URL=<optional-upstash-redis-url>`
+4. Deploy — static files, signed-cookie sessions, and MongoDB Atlas pooling work out of the box.
+
 ---
 
 ## 🚀 Quickstart & Initial Admin Bootstrap
