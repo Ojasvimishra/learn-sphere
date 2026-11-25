@@ -1,0 +1,155 @@
+{% extends "portals/educator_base.html" %}
+
+{% block title %}{{ student_name }} | Student Profile | LearnSphere Educator{% endblock %}
+
+{% block educator_content %}
+<div style="margin-bottom: 1.25rem;">
+  <a href="/educator/students-progress/" style="color: #2563eb; text-decoration: none; font-size: 0.9rem; font-weight: 600;">
+    <i class="fas fa-arrow-left"></i> Back to Students
+  </a>
+</div>
+
+<!-- Student Header Card -->
+<div class="edu-card" style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1.25rem; margin-bottom: 1.5rem;">
+  <div style="display: flex; align-items: center; gap: 1rem;">
+    <div style="width: 56px; height: 56px; border-radius: 50%; background: #e0e7ff; color: #3730a3; display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 1.15rem;">
+      {{ student_initials }}
+    </div>
+    <div>
+      <h1 style="font-size: 1.55rem; font-weight: 800; color: #0f172a; margin: 0;">{{ student_name }}</h1>
+      <div style="font-size: 0.85rem; color: #64748b; margin-top: 0.15rem;">
+        {{ student.email }} &bull; @{{ student.username }}
+      </div>
+      {% if is_at_risk %}
+        <span class="pill" style="background: #fee2e2; color: #b91c1c; font-size: 0.72rem; margin-top: 0.45rem; display: inline-block;">
+          At risk: low score or proctor flag
+        </span>
+      {% endif %}
+    </div>
+  </div>
+
+  <div style="display: flex; gap: 0.65rem;">
+    <button type="button" class="btn btn-secondary btn-sm" onclick="openNoteModal('note')">
+      <i class="fas fa-sticky-note"></i> Add note
+    </button>
+    <button type="button" class="btn btn-primary btn-sm" onclick="openNoteModal('nudge')" style="background: #2563eb; border-color: #2563eb;">
+      <i class="fas fa-paper-plane"></i> Message student
+    </button>
+  </div>
+</div>
+
+<!-- 4 KPI Cards -->
+<div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(190px, 1fr)); gap: 1rem; margin-bottom: 1.5rem;">
+  <div class="edu-card">
+    <div style="font-size: 0.78rem; color: #64748b; font-weight: 600;">Average quiz score</div>
+    <div style="font-size: 1.85rem; font-weight: 800; color: {% if avg_score < 50 %}#dc2626{% else %}#0f172a{% endif %}; margin-top: 0.3rem;">{{ avg_score }}%</div>
+  </div>
+  <div class="edu-card">
+    <div style="font-size: 0.78rem; color: #64748b; font-weight: 600;">Enrolled courses</div>
+    <div style="font-size: 1.85rem; font-weight: 800; color: #0f172a; margin-top: 0.3rem;">{{ course_progress|length }}</div>
+  </div>
+  <div class="edu-card">
+    <div style="font-size: 0.78rem; color: #64748b; font-weight: 600;">Exams attempted</div>
+    <div style="font-size: 1.85rem; font-weight: 800; color: #0f172a; margin-top: 0.3rem;">{{ submissions|length }}</div>
+  </div>
+  <div class="edu-card">
+    <div style="font-size: 0.78rem; color: #64748b; font-weight: 600;">Proctor flags</div>
+    <div style="font-size: 1.85rem; font-weight: 800; color: {% if flagged_count > 0 %}#dc2626{% else %}#16a34a{% endif %}; margin-top: 0.3rem;">{{ flagged_count }}</div>
+  </div>
+</div>
+
+<!-- Main 2-Column Grid -->
+<div style="display: grid; grid-template-columns: 1.15fr 1fr; gap: 1.25rem; margin-bottom: 1.5rem;">
+  <!-- Course Progress -->
+  <div class="edu-card">
+    <h2 style="font-size: 1.05rem; font-weight: 800; color: #0f172a; margin: 0 0 1rem;">Course progress</h2>
+    {% for cp in course_progress %}
+      <div style="margin-bottom: 1rem;">
+        <div style="display: flex; justify-content: space-between; font-size: 0.86rem; margin-bottom: 0.35rem;">
+          <strong style="color: #0f172a;">{{ cp.course_title }}</strong>
+          <span style="color: #64748b;">{{ cp.progress_percent }}% complete ({{ cp.completed_lessons }}/{{ cp.total_lessons }})</span>
+        </div>
+        <div style="width: 100%; height: 8px; background: #e2e8f0; border-radius: 999px; overflow: hidden;">
+          <div style="width: {{ cp.progress_percent }}%; height: 100%; background: #2563eb;"></div>
+        </div>
+      </div>
+    {% empty %}
+      <p style="color: #64748b; font-size: 0.88rem; margin: 0;">Not enrolled in any courses yet.</p>
+    {% endfor %}
+
+    <h3 style="font-size: 0.95rem; font-weight: 700; color: #0f172a; margin: 1.5rem 0 0.75rem;">Doubt activity</h3>
+    <p style="font-size: 0.85rem; color: #475569; margin: 0;">
+      <strong>{{ doubts_count }}</strong> doubts asked, <strong>{{ resolved_doubts }}</strong> resolved.
+    </p>
+  </div>
+
+  <!-- Recent Tests & Educator Notes -->
+  <div class="edu-card">
+    <h2 style="font-size: 1.05rem; font-weight: 800; color: #0f172a; margin: 0 0 1rem;">Recent tests and quizzes</h2>
+    {% for s in submissions %}
+      <div style="display: flex; justify-content: space-between; align-items: center; padding: 0.65rem 0; border-bottom: 1px solid #f1f5f9; font-size: 0.86rem;">
+        <div>
+          <div style="font-weight: 700; color: #0f172a;">{{ s.exam_title|default:"Proctored Assessment" }}</div>
+          <div style="font-size: 0.75rem; color: #94a3b8;">{{ s.submitted_at|date:"d M Y" }} &bull; {{ s.tab_switches_count|default:0 }} tab switches</div>
+        </div>
+        <div style="font-weight: 800; color: {% if s.passed %}#16a34a{% else %}#dc2626{% endif %};">
+          {{ s.score }} / {{ s.total_marks }}
+        </div>
+      </div>
+    {% empty %}
+      <p style="color: #64748b; font-size: 0.88rem; margin: 0;">No quiz or exam attempts recorded.</p>
+    {% endfor %}
+
+    <h3 style="font-size: 0.95rem; font-weight: 700; color: #0f172a; margin: 1.5rem 0 0.75rem;">Educator notes</h3>
+    <div id="notesList" style="display: flex; flex-direction: column; gap: 0.6rem;">
+      {% for n in notes %}
+        <div style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 10px; padding: 0.75rem 0.9rem; font-size: 0.85rem; color: #334155;">
+          <div>{{ n.text }}</div>
+          <div style="font-size: 0.72rem; color: #94a3b8; margin-top: 0.25rem;">{{ n.author }} &bull; {{ n.created_at }} ({{ n.type }})</div>
+        </div>
+      {% empty %}
+        <p style="color: #94a3b8; font-size: 0.84rem; margin: 0;">No educator notes yet. Visible to faculty only.</p>
+      {% endfor %}
+    </div>
+  </div>
+</div>
+
+<!-- Add Note / Nudge Modal -->
+<div id="noteModal" style="display: none; position: fixed; inset: 0; background: rgba(15,23,42,0.5); z-index: 9999; align-items: center; justify-content: center;">
+  <div style="background: #fff; width: 100%; max-width: 440px; padding: 1.75rem; border-radius: 18px;">
+    <h3 id="noteModalTitle" style="font-size: 1.15rem; font-weight: 800; margin: 0 0 0.75rem;">Add Educator Note</h3>
+    <form onsubmit="submitStudentNote(event)">
+      {% csrf_token %}
+      <input type="hidden" id="noteTypeInput" value="note">
+      <textarea id="noteTextInput" rows="4" required placeholder="Write observation or remedial guidance..." style="width: 100%; padding: 0.7rem; border-radius: 10px; border: 1px solid #cbd5e1; margin-bottom: 1rem;"></textarea>
+      <div style="display: flex; justify-content: flex-end; gap: 0.6rem;">
+        <button type="button" class="btn btn-secondary btn-sm" onclick="document.getElementById('noteModal').style.display='none'">Cancel</button>
+        <button type="submit" class="btn btn-primary btn-sm">Save</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<script>
+function openNoteModal(type) {
+  document.getElementById("noteTypeInput").value = type;
+  document.getElementById("noteModalTitle").textContent = type === "nudge" ? "Send Nudge / Message to Student" : "Add Educator Note";
+  document.getElementById("noteModal").style.display = "flex";
+}
+
+function submitStudentNote(e) {
+  e.preventDefault();
+  const fd = new FormData();
+  fd.append("note", document.getElementById("noteTextInput").value);
+  fd.append("type", document.getElementById("noteTypeInput").value);
+  fd.append("csrfmiddlewaretoken", document.querySelector("#noteModal [name=csrfmiddlewaretoken]").value);
+
+  fetch("/educator/students/{{ student.id }}/note/", { method: "POST", body: fd })
+    .then(r => r.json())
+    .then(res => {
+      if (res.success) window.location.reload();
+      else alert(res.error || "Failed to save note.");
+    });
+}
+</script>
+{% endblock %}

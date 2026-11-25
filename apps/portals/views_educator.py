@@ -35,23 +35,46 @@ def educator_studio_view(request):
     exam_sub_repo = ExamSubmissionRepository()
     doubt_repo = DoubtRepository()
 
-    # 1. Authored courses and enrollment metrics
-    my_courses = course_repo.list_by_instructor(educator_id)
+    # 1. Authored & catalog courses (educators can access and update courses)
+    own_courses = course_repo.list_by_instructor(educator_id)
+    all_catalog_courses = course_repo.list_courses(status=None)
+    seen_cids = {str(c.get("id")) for c in own_courses}
+    my_courses = list(own_courses) + [c for c in all_catalog_courses if str(c.get("id")) not in seen_cids]
+
     total_students_enrolled = sum(c.get("enrolled_count", 0) for c in my_courses)
     published_courses_count = sum(1 for c in my_courses if c.get("status") == "published")
     draft_courses_count = len(my_courses) - published_courses_count
 
-    # 2. Upcoming live classes
-    my_live_classes = live_repo.find_many({"instructor_id": educator_id}, sort=[("scheduled_start", -1)], limit=10)
+    # 2. Live classes (upcoming/active)
+    my_live_classes = live_repo.list_upcoming(limit=20)
 
-    # 3. Proctored exam submissions requiring review
-    all_submissions = exam_sub_repo.list_all_submissions(limit=25)
+    # 3. Proctored exams & submissions requiring review
+    proctored_exams = exam_repo.find_many({}, sort=[("created_at", -1)], limit=20)
+    all_submissions = exam_sub_repo.list_all_submissions(limit=30)
     flagged_submissions = [s for s in all_submissions if s.get("is_flagged")]
 
-    # 4. Open academic doubts
+    # 4. At-risk students derived from flagged/low-score submissions & low-progress enrollments
+    at_risk_map = {}
+    for s in all_submissions:
+        sid = str(s.get("student_id", ""))
+        if not sid:
+            continue
+        if s.get("is_flagged") or float(s.get("percentage", 100)) < 50.0:
+            if sid not in at_risk_map:
+                sname = s.get("student_name") or "Student"
+                reason = "Flagged exam anomaly" if s.get("is_flagged") else f"Low exam score ({s.get('percentage', 0)}%)"
+                at_risk_map[sid] = {
+                    "id": sid,
+                    "name": sname,
+                    "initials": "".join(p[0].upper() for p in sname.split()[:2]) or "ST",
+                    "reason": reason
+                }
+    at_risk_students = list(at_risk_map.values())[:6]
+
+    # 5. Open academic doubts
     open_doubts = doubt_repo.list_doubts(status="open", limit=10)
 
-    # 5. Reports & updates sent to admin
+    # 6. Reports & updates sent to admin
     report_repo = EducatorReportRepository()
     my_reports = report_repo.list_by_educator(educator_id, limit=10)
 
@@ -62,10 +85,13 @@ def educator_studio_view(request):
         "published_courses_count": published_courses_count,
         "draft_courses_count": draft_courses_count,
         "my_live_classes": my_live_classes,
+        "proctored_exams": proctored_exams,
         "all_submissions": all_submissions,
         "flagged_submissions": flagged_submissions,
+        "at_risk_students": at_risk_students,
         "open_doubts": open_doubts,
-        "my_reports": my_reports
+        "my_reports": my_reports,
+        "today_date": datetime.now(timezone.utc)
     }
     return render(request, "portals/educator_studio.html", context)
 
@@ -160,7 +186,10 @@ def educator_students_progress_view(request):
     enr_repo = EnrollmentRepository()
     user_repo = UserRepository()
 
-    my_courses = course_repo.list_by_instructor(educator_id)
+    own_courses = course_repo.list_by_instructor(educator_id)
+    all_catalog = course_repo.list_courses(status=None)
+    seen_ids = {str(c["id"]) for c in own_courses}
+    my_courses = list(own_courses) + [c for c in all_catalog if str(c["id"]) not in seen_ids]
     course_map = {str(c["id"]): c for c in my_courses}
     course_ids = list(course_map.keys())
 
@@ -294,3 +323,94 @@ def educator_submit_report_to_admin_api(request):
         "message": "Report successfully dispatched to the Administrative Command Center.",
         "report_id": report_id
     })
+
+
+@login_required_mongo()
+@portal_access_required("educator")
+def educator_student_detail_view(request, student_id):
+    """Comprehensive single-student academic profile for educators: progress, quizzes, doubts, and notes."""
+    user_repo = UserRepository()
+    student = user_repo.find_by_id(student_id)
+    if not student:
+        raise Http404("Student not found")
+
+    enr_repo = EnrollmentRepository()
+    course_repo = CourseRepository()
+    exam_sub_repo = ExamSubmissionRepository()
+    doubt_repo = DoubtRepository()
+
+    enrollments = enr_repo.find_many({"user_id": str(student_id)})
+    course_progress = []
+    for enr in enrollments:
+        c = course_repo.find_by_id(str(enr.get("course_id")))
+        course_progress.append({
+            "course_id": str(enr.get("course_id")),
+            "course_title": c.get("title", "Course Track") if c else "Course Track",
+            "category": c.get("category", "General") if c else "General",
+            "progress_percent": round(float(enr.get("progress_percent", 0.0)), 1),
+            "completed_lessons": len(enr.get("completed_lessons", [])),
+            "total_lessons": c.get("lessons_count", 0) if c else 0
+        })
+
+    submissions = exam_sub_repo.find_many({"student_id": str(student_id)}, sort=[("submitted_at", -1)], limit=15)
+    avg_score = round(sum(float(s.get("percentage", 0)) for s in submissions) / max(1, len(submissions)), 1) if submissions else 0.0
+    flagged_count = sum(1 for s in submissions if s.get("is_flagged"))
+
+    doubts = doubt_repo.find_many({"author_id": str(student_id)}, sort=[("created_at", -1)], limit=10)
+    resolved_doubts = sum(1 for d in doubts if d.get("status") == "resolved")
+
+    sname = student.get("full_name") or student.get("username", "Student")
+    initials = "".join(p[0].upper() for p in sname.split()[:2]) or "ST"
+    notes = student.get("educator_notes", [])
+
+    return render(request, "portals/educator_student_detail.html", {
+        "user": request.mongo_user,
+        "student": student,
+        "student_name": sname,
+        "student_initials": initials,
+        "course_progress": course_progress,
+        "submissions": submissions,
+        "avg_score": avg_score,
+        "flagged_count": flagged_count,
+        "doubts_count": len(doubts),
+        "resolved_doubts": resolved_doubts,
+        "notes": notes,
+        "is_at_risk": flagged_count > 0 or (submissions and avg_score < 50.0)
+    })
+
+
+@login_required_mongo()
+@portal_access_required("educator")
+@require_http_methods(["POST"])
+def educator_add_student_note_api(request, student_id):
+    """Persists an educator-only observation note or nudge on a student's profile."""
+    user = request.mongo_user
+    note_text = (request.POST.get("note") or "").strip()
+    action_type = (request.POST.get("type") or "note").strip()
+    if not note_text:
+        return JsonResponse({"success": False, "error": "Note text cannot be empty."}, status=400)
+
+    user_repo = UserRepository()
+    student = user_repo.find_by_id(student_id)
+    if not student:
+        return JsonResponse({"success": False, "error": "Student not found."}, status=404)
+
+    now = datetime.now(timezone.utc)
+    entry = {
+        "author": user.get("full_name") or user.get("username", "Educator"),
+        "type": action_type,
+        "text": note_text,
+        "created_at": now.strftime("%b %d, %Y %H:%M UTC")
+    }
+    oid = user_repo.to_object_id(student_id)
+    user_repo.collection.update_one({"_id": oid}, {"$push": {"educator_notes": entry}})
+
+    AuditService().log_event(
+        action=f"educator.student_{action_type}",
+        actor=user,
+        resource_type="student",
+        resource_id=student_id,
+        details={"note": note_text},
+        request=request
+    )
+    return JsonResponse({"success": True, "entry": entry})

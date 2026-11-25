@@ -14,8 +14,11 @@ from apps.portals.views_educator import (
     educator_submissions_view,
     educator_grade_override_api,
     educator_students_progress_view,
-    educator_submit_report_to_admin_api
+    educator_submit_report_to_admin_api,
+    educator_student_detail_view,
+    educator_add_student_note_api
 )
+from apps.exams.views import educator_proctor_console_view
 from apps.portals.views_admin import (
     admin_panel_view,
     admin_approve_educator_api,
@@ -34,6 +37,9 @@ urlpatterns = [
     # Educator Studio
     path("educator/", educator_studio_view, name="educator_studio"),
     path("educator/students-progress/", educator_students_progress_view, name="educator_students_progress"),
+    path("educator/students/<str:student_id>/", educator_student_detail_view, name="educator_student_detail"),
+    path("educator/students/<str:student_id>/note/", educator_add_student_note_api, name="educator_student_note"),
+    path("educator/proctoring/", educator_proctor_console_view, name="educator_proctor_console"),
     path("educator/reports/submit/", educator_submit_report_to_admin_api, name="educator_submit_report"),
     path("educator/exams/submissions/", educator_submissions_view, name="educator_submissions"),
     path("educator/exams/submissions/<str:attempt_id>/override/", educator_grade_override_api, name="educator_grade_override"),

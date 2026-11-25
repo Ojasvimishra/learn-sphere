@@ -122,7 +122,10 @@ def api_exam_submit(request, attempt_id):
 @role_required_mongo("educator", "dept_admin", "super_admin")
 def educator_exam_create_view(request):
     user = request.mongo_user
-    courses = course_service.get_instructor_courses(user["id"])
+    own_courses = course_service.get_instructor_courses(user["id"])
+    all_courses = course_service.get_courses(status="published")
+    seen_ids = {str(c.get("id")) for c in own_courses}
+    courses = list(own_courses) + [c for c in all_courses if str(c.get("id")) not in seen_ids]
     error_msg = None
 
     if request.method == "POST":
@@ -227,3 +230,127 @@ def api_override_grade(request, attempt_id):
         return api_error(msg, 400)
 
     return api_success({"overridden": True}, message=msg)
+
+
+@require_http_methods(["GET"])
+@role_required_mongo("educator", "dept_admin", "super_admin")
+def educator_proctor_console_view(request, exam_id=None):
+    """Live Exams & Invigilation Console for Educators (sorted flagged-first)."""
+    user = request.mongo_user
+    all_exams = exam_service.exam_repo.find_many({}, sort=[("created_at", -1)], limit=50)
+
+    target_exam_id = exam_id or request.GET.get("exam_id")
+    selected_exam = None
+    if target_exam_id:
+        selected_exam = exam_service.exam_repo.find_by_id(target_exam_id)
+    if not selected_exam and all_exams:
+        selected_exam = all_exams[0]
+
+    attempts = []
+    if selected_exam:
+        raw_attempts = exam_service.attempt_repo.list_by_exam(selected_exam["id"])
+        # Sort flagged first, then by tab switches descending
+        attempts = sorted(
+            raw_attempts,
+            key=lambda a: (0 if a.get("is_flagged") else 1, -(a.get("tab_switches_count", 0)))
+        )
+
+    flagged_count = sum(1 for a in attempts if a.get("is_flagged"))
+    terminated_count = sum(1 for a in attempts if a.get("status") == "disqualified" or a.get("proctor_status") == "terminated")
+    paused_count = sum(1 for a in attempts if a.get("proctor_status") == "paused")
+    active_count = max(0, len(attempts) - terminated_count)
+
+    return render(request, "pages/educator_exam_proctor.html", {
+        "user": user,
+        "all_exams": all_exams,
+        "exam": selected_exam,
+        "attempts": attempts,
+        "active_count": active_count,
+        "paused_count": paused_count,
+        "flagged_count": flagged_count,
+        "terminated_count": terminated_count
+    })
+
+
+@csrf_exempt
+@require_http_methods(["POST"])
+@role_required_mongo("educator", "dept_admin", "super_admin")
+def api_proctor_action(request, attempt_id):
+    """Executes proctor actions (send_warning, pause_student, extend_time, clear_flag, terminate) with audit logging."""
+    from datetime import datetime, timezone
+    from services.audit_service import AuditService
+
+    user = request.mongo_user
+    try:
+        data = json.loads(request.body)
+    except Exception:
+        data = request.POST.dict()
+
+    action = (data.get("action") or "").strip()
+    reason = (data.get("reason") or "").strip()
+
+    valid_actions = {"send_warning", "pause_student", "extend_time", "clear_flag", "terminate", "flag"}
+    if action not in valid_actions:
+        return api_error("Invalid proctor action.", 400)
+    if not reason:
+        return api_error("Every proctoring action requires a reason for the audit log.", 400)
+
+    attempt = exam_service.attempt_repo.find_by_id(attempt_id)
+    if not attempt:
+        return api_error("Exam attempt not found.", 404)
+
+    now = datetime.now(timezone.utc)
+    update_fields = {"updated_at": now, "last_proctor_action": action, "last_proctor_reason": reason}
+
+    if action == "clear_flag":
+        update_fields["is_flagged"] = False
+        update_fields["proctor_status"] = "cleared"
+    elif action == "flag":
+        update_fields["is_flagged"] = True
+        update_fields["proctor_status"] = "flagged"
+    elif action == "pause_student":
+        update_fields["proctor_status"] = "paused"
+    elif action == "extend_time":
+        update_fields["extra_minutes"] = int(attempt.get("extra_minutes", 0)) + 15
+        update_fields["proctor_status"] = "extended"
+    elif action == "send_warning":
+        update_fields["proctor_warning"] = reason
+        update_fields["proctor_status"] = "warned"
+    elif action == "terminate":
+        update_fields["is_flagged"] = True
+        update_fields["proctor_status"] = "terminated"
+        update_fields["status"] = "disqualified"
+        update_fields["score"] = 0
+        update_fields["percentage"] = 0.0
+        update_fields["passed"] = False
+
+    oid = exam_service.attempt_repo.to_object_id(attempt_id)
+    exam_service.attempt_repo.collection.update_one(
+        {"_id": oid},
+        {
+            "$set": update_fields,
+            "$push": {
+                "proctor_events": {
+                    "action": action,
+                    "reason": reason,
+                    "actor": user.get("full_name") or user.get("username"),
+                    "timestamp": now.isoformat()
+                }
+            }
+        }
+    )
+
+    AuditService().log_event(
+        action=f"exam.proctor.{action}",
+        actor=user,
+        resource_type="exam_attempt",
+        resource_id=attempt_id,
+        details={
+            "student_id": attempt.get("student_id"),
+            "exam_id": attempt.get("exam_id"),
+            "reason": reason
+        },
+        request=request
+    )
+
+    return api_success({"action": action, "attempt_id": attempt_id}, message=f"Proctor action '{action}' recorded.")

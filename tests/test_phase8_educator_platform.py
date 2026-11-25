@@ -281,3 +281,57 @@ def test_educator_report_and_admin_workflow(educator_env):
     rep = report_repo.find_by_id(report_id)
     assert rep["status"] == "reviewed"
     assert rep["admin_response"] == "Noted. Exam schedule approved."
+
+
+def test_educator_proctoring_and_student_detail(educator_env):
+    """Verifies educator can access proctoring console, execute proctor actions, and inspect/note student detail."""
+    client = Client()
+    client.post('/auth/login/', {'identifier': 'mentor@learnsphere.io', 'password': 'Mentor@LearnSphere2026!'})
+
+    # 1. Student detail view & add note
+    student_id = educator_env["student"]["id"]
+    s_resp = client.get(f"/educator/students/{student_id}/")
+    assert s_resp.status_code == 200
+    assert b"alex_student" in s_resp.content
+
+    note_resp = client.post(f"/educator/students/{student_id}/note/", {
+        "note": "Needs remedial review on Module 2.",
+        "type": "note"
+    })
+    assert note_resp.status_code == 200
+    assert note_resp.json()["success"] is True
+
+    # 2. Proctoring console & proctor action
+    exam_repo = ExamRepository()
+    exams = exam_repo.find_many({}, limit=1)
+    exam_id = exams[0]["id"]
+    exam_sub_repo = ExamSubmissionRepository()
+    att_id = exam_sub_repo.insert_one({
+        "exam_id": exam_id,
+        "student_id": student_id,
+        "student_name": "alex_student",
+        "student_email": "student@learnsphere.io",
+        "course_id": educator_env["course_id"],
+        "score": 60,
+        "total_marks": 100,
+        "percentage": 60.0,
+        "passed": True,
+        "tab_switches_count": 3,
+        "is_flagged": True,
+        "status": "flagged_for_review",
+        "submitted_at": datetime.now(timezone.utc)
+    })
+
+    proctor_resp = client.get(f"/exams/educator/{exam_id}/proctor/")
+    assert proctor_resp.status_code == 200
+    assert b"Candidates" in proctor_resp.content
+
+    action_resp = client.post(
+        f"/exams/api/attempt/{att_id}/proctor-action/",
+        data='{"action": "clear_flag", "reason": "Verified network reconnect"}',
+        content_type="application/json"
+    )
+    assert action_resp.status_code == 200
+    updated = exam_sub_repo.find_by_id(att_id)
+    assert updated["is_flagged"] is False
+    assert updated["proctor_status"] == "cleared"

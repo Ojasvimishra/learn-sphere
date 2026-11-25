@@ -1,0 +1,168 @@
+{% extends "portals/educator_base.html" %}
+
+{% block title %}Exams &amp; Invigilation Console | LearnSphere Educator{% endblock %}
+
+{% block educator_content %}
+<!-- Header Bar -->
+<div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem; margin-bottom: 1.5rem;">
+  <div>
+    <h1 style="font-size: 1.65rem; font-weight: 800; color: #0f172a; margin: 0;">
+      {% if exam %}{{ exam.title }}{% else %}Exams &amp; Invigilation{% endif %}
+    </h1>
+    <p style="color: #64748b; font-size: 0.88rem; margin: 0.25rem 0 0;">
+      {% if exam %}{{ exam.course_title }} &bull; Proctored ({{ exam.duration_minutes }}m){% else %}Select an exam to monitor live candidates and anti-cheat telemetry.{% endif %}
+    </p>
+  </div>
+
+  <div style="display: flex; gap: 0.65rem; align-items: center; flex-wrap: wrap;">
+    <select onchange="if(this.value) window.location.href='/exams/educator/' + this.value + '/proctor/';" style="padding: 0.55rem 0.9rem; border-radius: 10px; border: 1px solid #cbd5e1; background: #fff; font-size: 0.88rem; font-weight: 600;">
+      {% for ex in all_exams %}
+        <option value="{{ ex.id }}" {% if exam and ex.id == exam.id %}selected{% endif %}>{{ ex.title }}</option>
+      {% empty %}
+        <option value="">No exams created yet</option>
+      {% endfor %}
+    </select>
+    {% if exam %}
+      <a href="/exams/educator/{{ exam.id }}/submissions/" class="btn btn-secondary btn-sm">
+        <i class="fas fa-list-alt"></i> Submissions Log
+      </a>
+    {% endif %}
+    <a href="/exams/educator/create/" class="btn btn-primary btn-sm" style="background: #2563eb; border-color: #2563eb;">
+      <i class="fas fa-plus"></i> Schedule Exam
+    </a>
+  </div>
+</div>
+
+<!-- 4 Summary KPIs -->
+<div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(190px, 1fr)); gap: 1rem; margin-bottom: 1.5rem;">
+  <div class="edu-card">
+    <div style="font-size: 0.78rem; color: #64748b; font-weight: 600;">Active / Submitted</div>
+    <div style="font-size: 1.9rem; font-weight: 800; color: #16a34a; margin-top: 0.25rem;">{{ active_count }}</div>
+  </div>
+  <div class="edu-card">
+    <div style="font-size: 0.78rem; color: #64748b; font-weight: 600;">Paused</div>
+    <div style="font-size: 1.9rem; font-weight: 800; color: #d97706; margin-top: 0.25rem;">{{ paused_count }}</div>
+  </div>
+  <div class="edu-card">
+    <div style="font-size: 0.78rem; color: #64748b; font-weight: 600;">Flagged</div>
+    <div style="font-size: 1.9rem; font-weight: 800; color: #dc2626; margin-top: 0.25rem;">{{ flagged_count }}</div>
+  </div>
+  <div class="edu-card">
+    <div style="font-size: 0.78rem; color: #64748b; font-weight: 600;">Terminated</div>
+    <div style="font-size: 1.9rem; font-weight: 800; color: #0f172a; margin-top: 0.25rem;">{{ terminated_count }}</div>
+  </div>
+</div>
+
+<!-- Main 2-Column Invigilation Workspace -->
+<div style="display: grid; grid-template-columns: 1.55fr 1fr; gap: 1.25rem; align-items: start;">
+  <!-- Candidates Grid -->
+  <div class="edu-card">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+      <h2 style="font-size: 1.05rem; font-weight: 800; color: #0f172a; margin: 0;">Candidates</h2>
+      <span style="font-size: 0.78rem; color: #64748b;">Sorted: flagged first</span>
+    </div>
+
+    {% if attempts %}
+      <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(195px, 1fr)); gap: 0.85rem;">
+        {% for a in attempts %}
+          <div class="candidate-card"
+               onclick="selectCandidate('{{ a.id }}', '{{ a.student_name|escapejs }}', '{{ a.tab_switches_count|default:0 }}', '{{ a.proctor_status|default:a.status }}', '{{ a.score }}/{{ a.total_marks }}')"
+               style="cursor: pointer; border-radius: 12px; padding: 0.85rem; border: 1.5px solid {% if a.is_flagged %}#ef4444{% elif a.proctor_status == 'paused' %}#f59e0b{% else %}#e2e8f0{% endif %}; background: {% if a.is_flagged %}#fef2f2{% elif a.proctor_status == 'paused' %}#fffbeb{% else %}#f8fafc{% endif %}; transition: transform 0.12s;">
+            <div style="height: 46px; border-radius: 8px; background: #e2e8f0; display: flex; align-items: center; justify-content: center; color: #475569; font-weight: 800; font-size: 0.85rem; margin-bottom: 0.6rem;">
+              <i class="fas fa-user-shield" style="margin-right: 0.35rem;"></i> {{ a.score }}/{{ a.total_marks }}
+            </div>
+            <div style="font-weight: 700; font-size: 0.88rem; color: #0f172a;">{{ a.student_name }}</div>
+            <div style="font-size: 0.74rem; color: #64748b;">Tab switches: {{ a.tab_switches_count|default:0 }}</div>
+            <div style="font-size: 0.74rem; font-weight: 700; margin-top: 0.3rem; color: {% if a.is_flagged %}#dc2626{% elif a.proctor_status == 'paused' %}#d97706{% else %}#16a34a{% endif %};">
+              {% if a.proctor_status == 'terminated' %}Terminated
+              {% elif a.is_flagged %}Flagged: tab switch x{{ a.tab_switches_count|default:1 }}
+              {% elif a.proctor_status == 'paused' %}Paused
+              {% else %}Clean session{% endif %}
+            </div>
+          </div>
+        {% endfor %}
+      </div>
+    {% else %}
+      <p style="color: #64748b; font-size: 0.9rem; margin: 0;">No student attempts recorded for this exam yet.</p>
+    {% endif %}
+  </div>
+
+  <!-- Right Panel: Event Feed & Selected Candidate Controls -->
+  <div style="display: flex; flex-direction: column; gap: 1.25rem;">
+    <div class="edu-card">
+      <h2 style="font-size: 1.05rem; font-weight: 800; color: #0f172a; margin: 0 0 0.85rem;">Event feed</h2>
+      <div style="display: flex; flex-direction: column; gap: 0.6rem; max-height: 240px; overflow-y: auto;">
+        {% for a in attempts %}
+          {% if a.is_flagged or a.proctor_events %}
+            <div style="font-size: 0.82rem; padding-bottom: 0.5rem; border-bottom: 1px solid #f1f5f9;">
+              <div style="display: flex; justify-content: space-between; font-weight: 700; color: #0f172a;">
+                <span>{{ a.student_name }}</span>
+                <span style="color: #94a3b8; font-weight: 500;">{{ a.submitted_at|date:"H:i" }}</span>
+              </div>
+              <div style="color: #dc2626;">
+                {% if a.last_proctor_action %}{{ a.last_proctor_action }}: {{ a.last_proctor_reason }}{% else %}Tab switch anomaly ({{ a.tab_switches_count }}x){% endif %}
+              </div>
+            </div>
+          {% endif %}
+        {% empty %}
+          <div style="font-size: 0.84rem; color: #94a3b8;">No proctor alerts yet.</div>
+        {% endfor %}
+      </div>
+    </div>
+
+    <div class="edu-card">
+      <h2 id="selectedCandidateTitle" style="font-size: 1.05rem; font-weight: 800; color: #0f172a; margin: 0 0 0.3rem;">
+        Selected: {% if attempts %}None (click a candidate){% else %}No candidates{% endif %}
+      </h2>
+      <p id="selectedCandidateMeta" style="font-size: 0.82rem; color: #64748b; margin: 0 0 1rem;">
+        Click any candidate card on the left to inspect or take invigilation action.
+      </p>
+
+      <input type="hidden" id="selectedAttemptId" value="">
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.6rem;">
+        <button type="button" class="btn btn-secondary btn-sm" onclick="runProctorAction('send_warning')">Send warning</button>
+        <button type="button" class="btn btn-secondary btn-sm" onclick="runProctorAction('pause_student')">Pause student</button>
+        <button type="button" class="btn btn-secondary btn-sm" onclick="runProctorAction('extend_time')">Extend time (+15m)</button>
+        <button type="button" class="btn btn-secondary btn-sm" onclick="runProctorAction('clear_flag')" style="color: #16a34a; border-color: #bbf7d0;">Clear flag</button>
+        <button type="button" class="btn btn-sm" onclick="runProctorAction('terminate')" style="grid-column: 1 / -1; background: #b91c1c; color: #fff; border: none;">Terminate attempt</button>
+      </div>
+
+      <p style="font-size: 0.74rem; color: #94a3b8; margin: 0.85rem 0 0;">
+        Every action requires a reason and is written to the immutable audit log.
+      </p>
+    </div>
+  </div>
+</div>
+
+<script>
+function selectCandidate(attemptId, name, tabs, status, score) {
+  document.getElementById("selectedAttemptId").value = attemptId;
+  document.getElementById("selectedCandidateTitle").textContent = "Selected: " + name;
+  document.getElementById("selectedCandidateMeta").textContent = `${tabs} tab switches · Score: ${score} · Status: ${status}`;
+}
+
+function runProctorAction(action) {
+  const attemptId = document.getElementById("selectedAttemptId").value;
+  if (!attemptId) {
+    alert("Please click a candidate card first.");
+    return;
+  }
+  const reason = prompt(`Enter reason for '${action}' (required for audit log):`);
+  if (!reason || !reason.trim()) return;
+
+  fetch(`/exams/api/attempt/${attemptId}/proctor-action/`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ action: action, reason: reason.trim() })
+  })
+  .then(r => r.json())
+  .then(res => {
+    if (res.status === 200 || res.data) {
+      window.location.reload();
+    } else {
+      alert(res.message || "Proctor action failed.");
+    }
+  });
+}
+</script>
+{% endblock %}

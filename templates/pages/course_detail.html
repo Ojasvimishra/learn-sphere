@@ -56,6 +56,11 @@
     {% endif %}
 
     <div style="display: flex; gap: 1rem; align-items: center; flex-wrap: wrap;">
+      {% if user and user.role in "educator,super_admin,dept_admin" %}
+        <a href="/courses/educator/{{ course.id }}/edit/" class="btn btn-primary" style="padding: 0.85rem 1.75rem; font-size: 1rem;">
+          <i class="fas fa-edit"></i> Edit Course &amp; Syllabus
+        </a>
+      {% endif %}
       {% if is_enrolled %}
         {% if first_lesson_id %}
           <a href="/courses/{{ course.id }}/lessons/{{ first_lesson_id }}/" class="btn btn-emerald" style="padding: 0.85rem 2rem; font-size: 1rem;">

@@ -65,7 +65,8 @@ def course_detail_view(request, course_id):
         "course": course,
         "is_enrolled": is_enrolled,
         "progress": progress,
-        "first_lesson_id": first_lesson_id
+        "first_lesson_id": first_lesson_id,
+        "user": user
     })
 
 
@@ -167,8 +168,8 @@ def educator_course_edit_view(request, course_id):
         raise Http404("Course not found")
 
     is_owner = str(course.get("instructor_id")) == str(user.get("id"))
-    is_admin = user.get("role") in ["super_admin", "dept_admin"]
-    if not (is_owner or is_admin):
+    is_staff = user.get("role") in ["educator", "super_admin", "dept_admin"]
+    if not (is_owner or is_staff):
         raise Http404("You do not have permission to edit this course")
 
     error_msg = None

@@ -1,0 +1,139 @@
+{% extends "base.html" %}
+
+{% block extra_css %}
+<style>
+  .educator-shell {
+    display: flex;
+    min-height: calc(100vh - 68px);
+    background: #f8fafc;
+  }
+  .educator-sidebar {
+    width: 248px;
+    flex-shrink: 0;
+    background: #0f172a;
+    color: #cbd5e1;
+    padding: 1.5rem 0.9rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.35rem;
+  }
+  .educator-sidebar-brand {
+    padding: 0 0.75rem 1.25rem;
+    border-bottom: 1px solid rgba(255,255,255,0.08);
+    margin-bottom: 0.75rem;
+  }
+  .educator-sidebar-brand .title {
+    font-size: 1.05rem;
+    font-weight: 800;
+    color: #ffffff;
+    letter-spacing: -0.01em;
+  }
+  .educator-sidebar-brand .subtitle {
+    font-size: 0.8rem;
+    color: #94a3b8;
+    font-weight: 600;
+  }
+  .edu-nav-item {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.65rem 0.9rem;
+    border-radius: 10px;
+    color: #cbd5e1;
+    text-decoration: none;
+    font-size: 0.88rem;
+    font-weight: 500;
+    transition: all 0.15s ease;
+  }
+  .edu-nav-item:hover {
+    background: rgba(255,255,255,0.08);
+    color: #ffffff;
+  }
+  .edu-nav-item.active {
+    background: #2563eb;
+    color: #ffffff;
+    font-weight: 600;
+  }
+  .edu-nav-item i {
+    width: 16px;
+    text-align: center;
+    font-size: 0.88rem;
+  }
+  .educator-main {
+    flex: 1;
+    min-width: 0;
+    padding: 2rem 2.25rem 4rem;
+    max-width: 1320px;
+  }
+  .edu-card {
+    background: #ffffff;
+    border: 1px solid #e2e8f0;
+    border-radius: 18px;
+    padding: 1.35rem 1.5rem;
+    box-shadow: 0 1px 3px rgba(15, 23, 42, 0.04);
+  }
+  @media (max-width: 960px) {
+    .educator-shell {
+      flex-direction: column;
+    }
+    .educator-sidebar {
+      width: 100%;
+      flex-direction: row;
+      flex-wrap: wrap;
+      padding: 1rem;
+    }
+    .educator-sidebar-brand {
+      width: 100%;
+      padding-bottom: 0.75rem;
+      margin-bottom: 0.5rem;
+    }
+    .educator-main {
+      padding: 1.25rem;
+    }
+  }
+</style>
+{% block educator_extra_css %}{% endblock %}
+{% endblock %}
+
+{% block content %}
+<div class="educator-shell">
+  <aside class="educator-sidebar" aria-label="Educator Portal Navigation">
+    <div class="educator-sidebar-brand">
+      <div class="title">LearnSphere</div>
+      <div class="subtitle">Educator Portal</div>
+    </div>
+
+    <a href="/educator/" class="edu-nav-item {% if request.path == '/educator/' %}active{% endif %}">
+      <i class="fas fa-th-large"></i> Dashboard
+    </a>
+    <a href="/educator/students-progress/" class="edu-nav-item {% if '/educator/students' in request.path %}active{% endif %}">
+      <i class="fas fa-user-graduate"></i> Students
+    </a>
+    <a href="/educator/#courses-section" class="edu-nav-item">
+      <i class="fas fa-book-open"></i> My courses &amp; batches
+    </a>
+    <a href="/courses/educator/create/" class="edu-nav-item {% if '/courses/educator/' in request.path %}active{% endif %}">
+      <i class="fas fa-folder-plus"></i> Course builder
+    </a>
+    <a href="/exams/educator/create/" class="edu-nav-item {% if '/exams/educator/create' in request.path %}active{% endif %}">
+      <i class="fas fa-clipboard-list"></i> Question bank &amp; tests
+    </a>
+    <a href="/educator/exams/submissions/" class="edu-nav-item {% if '/submissions' in request.path %}active{% endif %}">
+      <i class="fas fa-check-double"></i> Grading
+    </a>
+    <a href="/educator/proctoring/" class="edu-nav-item {% if '/proctor' in request.path %}active{% endif %}">
+      <i class="fas fa-user-shield"></i> Exams &amp; invigilation
+    </a>
+    <a href="/live/" class="edu-nav-item {% if '/live/' in request.path %}active{% endif %}">
+      <i class="fas fa-video"></i> Live sessions
+    </a>
+    <a href="/educator/#admin-reports-section" class="edu-nav-item">
+      <i class="fas fa-paper-plane"></i> Admin updates
+    </a>
+  </aside>
+
+  <section class="educator-main">
+    {% block educator_content %}{% endblock %}
+  </section>
+</div>
+{% endblock %}

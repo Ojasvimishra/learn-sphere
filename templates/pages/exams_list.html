@@ -58,6 +58,16 @@
           <a href="/exams/{{ exam.id }}/take/" class="btn btn-primary" style="width: 100%; text-align: center;">
             <i class="fas fa-play"></i> Start Proctored Exam
           </a>
+          {% if user and user.role in "educator,super_admin,dept_admin" %}
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.5rem; margin-top: 0.6rem;">
+              <a href="/exams/educator/{{ exam.id }}/proctor/" class="btn btn-secondary btn-sm" style="text-align: center;">
+                <i class="fas fa-user-shield"></i> Proctor
+              </a>
+              <a href="/exams/educator/{{ exam.id }}/submissions/" class="btn btn-secondary btn-sm" style="text-align: center;">
+                <i class="fas fa-list-alt"></i> Submissions
+              </a>
+            </div>
+          {% endif %}
         </div>
       </div>
     {% empty %}

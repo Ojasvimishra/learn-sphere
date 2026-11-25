@@ -118,7 +118,7 @@
                       {{ s.student_name|slice:":1"|upper }}
                     </div>
                     <div>
-                      <strong style="color: var(--text-primary); font-size: 0.95rem;">{{ s.student_name }}</strong>
+                      <a href="/educator/students/{{ s.student_id }}/" style="color: var(--google-blue); font-weight: 700; font-size: 0.95rem; text-decoration: none;">{{ s.student_name }}</a>
                       <div style="font-size: 0.78rem; color: var(--text-tertiary);">{{ s.student_email }}</div>
                     </div>
                   </div>

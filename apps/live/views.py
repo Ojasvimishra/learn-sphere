@@ -60,7 +60,10 @@ def educator_create_live_view(request):
     """Allows instructors to schedule a live broadcast session."""
     user = request.mongo_user
     error_msg = None
-    courses = course_service.get_instructor_courses(user["id"])
+    own_courses = course_service.get_instructor_courses(user["id"])
+    all_courses = course_service.get_courses(status="published")
+    seen_ids = {str(c.get("id")) for c in own_courses}
+    courses = list(own_courses) + [c for c in all_courses if str(c.get("id")) not in seen_ids]
 
     if request.method == "POST":
         title = request.POST.get("title", "")

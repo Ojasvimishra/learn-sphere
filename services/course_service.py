@@ -60,9 +60,9 @@ class CourseService:
             return False, "Course not found.", None
 
         is_owner = str(course.get("instructor_id")) == str(instructor.get("id"))
-        is_admin = instructor.get("role") in ["super_admin", "dept_admin"]
-        if not (is_owner or is_admin):
-            return False, "Permission denied: You can only edit your own courses.", None
+        is_staff = instructor.get("role") in ["educator", "super_admin", "dept_admin"]
+        if not (is_owner or is_staff):
+            return False, "Permission denied: You do not have educator access to edit courses.", None
 
         try:
             title = validate_string(data.get("title", course.get("title")), "title", min_length=5, max_length=150)
@@ -163,7 +163,7 @@ class CourseService:
                 completed_lessons = set(enrollment.get("completed_lessons", []))
                 progress_percent = enrollment.get("progress_percent", 0.0)
 
-            is_staff = role in ["super_admin", "dept_admin"] or str(course.get("instructor_id")) == user_id
+            is_staff = role in ["educator", "super_admin", "dept_admin"] or str(course.get("instructor_id")) == user_id
             if is_staff:
                 is_enrolled = True
 

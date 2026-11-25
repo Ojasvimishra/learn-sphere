@@ -15,6 +15,9 @@ urlpatterns = [
     # Educator Studio Exam Management
     path("create/", views.educator_exam_create_view, name="exam_create_alias"),
     path("educator/create/", views.educator_exam_create_view, name="educator_exam_create"),
+    path("educator/proctoring/", views.educator_proctor_console_view, name="educator_proctor_default"),
+    path("educator/<str:exam_id>/proctor/", views.educator_proctor_console_view, name="educator_exam_proctor"),
     path("educator/<str:exam_id>/submissions/", views.educator_submissions_view, name="educator_exam_submissions"),
     path("api/attempt/<str:attempt_id>/override-grade/", views.api_override_grade, name="api_override_grade"),
+    path("api/attempt/<str:attempt_id>/proctor-action/", views.api_proctor_action, name="api_proctor_action"),
 ]
